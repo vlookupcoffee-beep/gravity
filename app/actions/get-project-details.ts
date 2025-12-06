@@ -39,10 +39,15 @@ export async function getProjectDetails(projectId: string) {
         })
     }
 
-    // Calculate length for each route
-    const routeBreakdown: Array<{ name: string; length: number }> = []
+    // Calculate length for each route (exclude HDPE)
+    const routeBreakdown: Array<{ name: string; length: number; type: string }> = []
     if (routes) {
         routes.forEach((route: any) => {
+            // Skip HDPE karena sudah include dalam route kabel
+            if (route.type === 'HDPE' || route.name?.includes('HDPE')) {
+                return
+            }
+
             let length = 0
             if (Array.isArray(route.path) && route.path.length > 1) {
                 for (let i = 0; i < route.path.length - 1; i++) {
@@ -55,7 +60,8 @@ export async function getProjectDetails(projectId: string) {
             }
             routeBreakdown.push({
                 name: route.name || route.type,
-                length: Math.round(length * 100) / 100
+                length: Math.round(length * 100) / 100,
+                type: route.type
             })
         })
     }

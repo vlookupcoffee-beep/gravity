@@ -49,6 +49,12 @@ export async function getProjects() {
         let totalLength = 0
         if (routes) {
             routes.forEach((route: any) => {
+                // Skip HDPE karena sudah include dalam route kabel (KFU)
+                if (route.type === 'HDPE' || route.name?.includes('HDPE')) {
+                    console.log(`Skipping HDPE route: "${route.name}"`)
+                    return
+                }
+
                 if (Array.isArray(route.path) && route.path.length > 1) {
                     let routeLength = 0
                     // Hitung jarak untuk setiap segmen
@@ -65,7 +71,7 @@ export async function getProjects() {
                 }
             })
         }
-        console.log(`Total calculated length: ${totalLength.toFixed(2)} km`)
+        console.log(`Total calculated length (excluding HDPE): ${totalLength.toFixed(2)} km`)
 
         return {
             ...p,
