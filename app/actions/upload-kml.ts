@@ -66,8 +66,8 @@ export async function processKmlUpload(formData: FormData) {
                 structures.push({
                     project_id: project.id,
                     name,
-                    type: name.includes('MH') ? 'MH' : name.includes('HH') ? 'HH' : 'POLE', // Simple heuristic
-                    coordinates: `POINT(${lon} ${lat})`,
+                    type: name.includes('MH') ? 'MH' : name.includes('HH') ? 'HH' : 'POLE',
+                    coordinates: { lat, lon }, // Simpan sebagai JSON
                     metadata: { original_kml: placemark }
                 })
             }
@@ -77,14 +77,14 @@ export async function processKmlUpload(formData: FormData) {
                 const coordsRaw = placemark.LineString[0].coordinates[0].trim()
                 const points = coordsRaw.split(/\s+/).map((p: string) => {
                     const [lon, lat] = p.split(',').map(Number)
-                    return `${lon} ${lat}`
-                }).join(',')
+                    return { lat, lon }
+                })
 
                 routes.push({
                     project_id: project.id,
                     name,
                     type: name.includes('HDPE') ? 'HDPE' : 'CABLE',
-                    path: `LINESTRING(${points})`,
+                    path: points, // Simpan sebagai JSON array
                     metadata: { original_kml: placemark }
                 })
             }
