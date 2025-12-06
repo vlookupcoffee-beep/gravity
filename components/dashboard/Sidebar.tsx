@@ -43,7 +43,7 @@ export default function Sidebar() {
                 <div className="grid grid-cols-1 gap-3">
                     <StatsCard
                         label="Total Length"
-                        value={`${(totalLength / 1000).toFixed(2)} km`}
+                        value={`${totalLength.toFixed(2)} km`}
                         icon={Activity}
                     />
                     <StatsCard
@@ -76,7 +76,7 @@ export default function Sidebar() {
                                             <HardDrive size={10} /> {p.structureCount}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <Activity size={10} /> {(p.routeLength / 1000).toFixed(1)} km
+                                            <Activity size={10} /> {p.routeLength.toFixed(2)} km
                                         </span>
                                     </div>
                                 </div>
