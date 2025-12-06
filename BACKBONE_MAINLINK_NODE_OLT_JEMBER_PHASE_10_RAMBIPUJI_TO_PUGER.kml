@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>BACKBONE MAINLINK NODE OLT JEMBER PHASE 10 - RAMBIPUJI TO PUGER.kml</name>
+	<StyleMap id="msn_square143">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_square13</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_square231</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_square49">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_square6</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_square34</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_ylw-pushpin1222">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ylw-pushpin006</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ylw-pushpin217</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="msn_ylw-pushpin1412">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#sn_ylw-pushpin95</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#sh_ylw-pushpin207</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Style id="sh_square231">
+		<IconStyle>
+			<color>ff0000ff</color>
+			<scale>1.4</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/square.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="sh_square34">
+		<IconStyle>
+			<scale>1.4</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/square.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="sh_ylw-pushpin207">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<LineStyle>
+			<color>ff0000ff</color>
+			<width>9</width>
+		</LineStyle>
+	</Style>
+	<Style id="sh_ylw-pushpin217">
+		<IconStyle>
+			<scale>1.3</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<LineStyle>
+			<color>ffff0000</color>
+			<width>3</width>
+		</LineStyle>
+	</Style>
+	<Style id="sn_square13">
+		<IconStyle>
+			<color>ff0000ff</color>
+			<scale>1.2</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/square.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="sn_square6">
+		<IconStyle>
+			<scale>1.2</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/shapes/square.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="sn_ylw-pushpin006">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<LineStyle>
+			<color>ffff0000</color>
+			<width>3</width>
+		</LineStyle>
+	</Style>
+	<Style id="sn_ylw-pushpin95">
+		<IconStyle>
+			<scale>1.1</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+			</Icon>
+			<hotSpot x="20" y="2" xunits="pixels" yunits="pixels"/>
+		</IconStyle>
+		<LineStyle>
+			<color>ff0000ff</color>
+			<width>9</width>
+		</LineStyle>
+	</Style>
+	<Folder>
+		<name>BACKBONE MAINLINK NODE OLT JEMBER PHASE 10 - RAMBIPUJI TO PUGER</name>
+		<open>1</open>
+		<Folder>
+			<name>MH-HH</name>
+			<Placemark>
+				<name>MH-120</name>
+				<open>1</open>
+				<Camera>
+					<longitude>113.5365098421537</longitude>
+					<latitude>-8.276164963665968</latitude>
+					<altitude>164.597269770234</altitude>
+					<heading>-11.48520039499071</heading>
+					<tilt>27.96399915089139</tilt>
+					<roll>-7.274600192507637</roll>
+					<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+				</Camera>
+				<styleUrl>#msn_square49</styleUrl>
+				<Point>
+					<gx:drawOrder>1</gx:drawOrder>
+					<coordinates>113.5361387224293,-8.275372599625635,0</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>MH-120</name>
+				<LookAt>
+					<longitude>113.4840669738356</longitude>
+					<latitude>-8.316664815898292</latitude>
+					<altitude>0</altitude>
+					<heading>-2.458060610516236e-05</heading>
+					<tilt>0</tilt>
+					<range>257.4257723024725</range>
+					<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+				</LookAt>
+				<styleUrl>#msn_square143</styleUrl>
+				<Point>
+					<gx:drawOrder>1</gx:drawOrder>
+					<coordinates>113.4835140358375,-8.31670741206548,0</coordinates>
+				</Point>
+			</Placemark>
+			<Placemark>
+				<name>MH-120</name>
+				<LookAt>
+					<longitude>113.6021603650051</longitude>
+					<latitude>-8.210259122993126</latitude>
+					<altitude>0</altitude>
+					<heading>-0.01702767538514424</heading>
+					<tilt>22.75567731303613</tilt>
+					<range>244.0104074199012</range>
+					<gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode>
+				</LookAt>
+				<styleUrl>#msn_square143</styleUrl>
+				<Point>
+					<gx:drawOrder>1</gx:drawOrder>
+					<coordinates>113.602150929341,-8.210054031931321,0</coordinates>
+				</Point>
+			</Placemark>
+		</Folder>
+		<Folder>
+			<name>CABLE</name>
+			<open>1</open>
+			<Placemark>
+				<name>KFD 96C</name>
+				<styleUrl>#msn_ylw-pushpin1222</styleUrl>
+				<LineString>
+					<tessellate>1</tessellate>
+					<coordinates>
+						113.4835171459263,-8.316703109749801,0 113.4843465715952,-8.315974766575854,0 113.4958604902251,-8.305949150072529,0 113.5113184239191,-8.294627123669953,0 113.5229704849613,-8.286806333507686,0 113.5322511110393,-8.280741971201198,0 113.5361404005143,-8.275352741037242,0 113.5402324511483,-8.269242068683909,0 113.5470601855418,-8.259147080493397,0 113.5497187839031,-8.256558624951413,0 113.5591394066215,-8.248561765276024,0 113.5634445696805,-8.245104399640613,0 113.5667068027737,-8.242623896009468,0 113.5727621354881,-8.237943245894668,0 113.5785020746052,-8.232892008009072,0 113.6021551352519,-8.210023477412406,0 
+					</coordinates>
+				</LineString>
+			</Placemark>
+		</Folder>
+		<Folder>
+			<name>HDPE</name>
+			<Placemark>
+				<name>HDPE</name>
+				<open>1</open>
+				<styleUrl>#msn_ylw-pushpin1412</styleUrl>
+				<LineString>
+					<tessellate>1</tessellate>
+					<coordinates>
+						113.4835171459263,-8.316703109749801,0 113.4843465715952,-8.315974766575854,0 113.4958604902251,-8.305949150072529,0 113.5113184239191,-8.294627123669953,0 113.5229704849613,-8.286806333507686,0 113.5322511110393,-8.280741971201198,0 113.5361404005143,-8.275352741037242,0 113.5402324511483,-8.269242068683909,0 113.5470601855418,-8.259147080493397,0 113.5497187839031,-8.256558624951413,0 113.5591394066215,-8.248561765276024,0 113.5634445696805,-8.245104399640613,0 113.5667068027737,-8.242623896009468,0 113.5727621354881,-8.237943245894668,0 113.5785020746052,-8.232892008009072,0 113.6021551352519,-8.210023477412406,0 
+					</coordinates>
+				</LineString>
+			</Placemark>
+		</Folder>
+		<atom:link rel="app" href="https://www.google.com/earth/about/versions/#earth-pro" title="Google Earth Pro 7.3.6.10441"></atom:link>
+	</Folder>
+</Document>
+</kml>
