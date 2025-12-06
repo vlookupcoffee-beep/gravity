@@ -27,63 +27,46 @@ export default function DashboardPage() {
                 .from('routes')
                 .select('id, name, type, path')
 
+            console.log('Structures from DB:', structures)
+
             if (structures) {
                 const parsedMarkers = structures.map((s: any) => {
-                    // Koordinat bisa dalam format text atau object
-                    let coords = s.coordinates
+                    const coords = s.coordinates
 
-                    // Jika coordinates adalah object dengan coordinates property
-                    if (typeof coords === 'object' && coords.coordinates) {
-                        const [lon, lat] = coords.coordinates
+                    // Format JSON: {lat: number, lon: number}
+                    if (coords && typeof coords === 'object' && coords.lat && coords.lon) {
                         return {
                             id: s.id,
-                            position: [lat, lon],
+                            position: [coords.lat, coords.lon],
                             name: s.name,
                             type: s.type
                         }
                     }
 
-                    // Jika format POINT(lon lat)
-                    if (typeof coords === 'string') {
-                        const match = coords.match(/POINT\(([\d\.\-]+)\s+([\d\.\-]+)\)/)
-                        if (match) {
-                            return {
-                                id: s.id,
-                                position: [parseFloat(match[2]), parseFloat(match[1])],
-                                name: s.name,
-                                type: s.type
-                            }
-                        }
-                    }
-
+                    console.warn('Invalid coordinates for structure:', s)
                     return null
                 }).filter(Boolean)
+
+                console.log('Parsed markers:', parsedMarkers)
                 setMarkers(parsedMarkers)
             }
 
+            console.log('Routes from DB:', routesData)
+
             if (routesData) {
                 const parsedRoutes = routesData.map((r: any) => {
-                    let path = r.path
+                    const path = r.path
 
-                    // Jika path adalah object dengan coordinates property
-                    if (typeof path === 'object' && path.coordinates) {
-                        const points = path.coordinates.map(([lon, lat]: number[]) => [lat, lon])
-                        return {
-                            id: r.id,
-                            positions: points,
-                            name: r.name,
-                            type: r.type
-                        }
-                    }
+                    // Format JSON: [{lat: number, lon: number}, ...]
+                    if (Array.isArray(path) && path.length > 0) {
+                        const points = path.map((p: any) => {
+                            if (p.lat && p.lon) {
+                                return [p.lat, p.lon]
+                            }
+                            return null
+                        }).filter(Boolean)
 
-                    // Jika format LINESTRING(lon lat, lon lat, ...)
-                    if (typeof path === 'string') {
-                        const match = path.match(/LINESTRING\((.*)\)/)
-                        if (match) {
-                            const points = match[1].split(',').map((p: string) => {
-                                const [lon, lat] = p.trim().split(/\s+/).map(Number)
-                                return [lat, lon]
-                            })
+                        if (points.length > 0) {
                             return {
                                 id: r.id,
                                 positions: points,
@@ -93,8 +76,11 @@ export default function DashboardPage() {
                         }
                     }
 
+                    console.warn('Invalid path for route:', r)
                     return null
                 }).filter(Boolean)
+
+                console.log('Parsed routes:', parsedRoutes)
                 setRoutes(parsedRoutes)
             }
         }
