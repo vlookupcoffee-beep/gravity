@@ -20,22 +20,42 @@ export default function DashboardPage() {
         const fetchData = async () => {
             const supabase = createClient()
 
-            const { data: structures } = await supabase.from('structures').select('*')
-            const { data: routesData } = await supabase.from('routes').select('*')
+            const { data: structures } = await supabase
+                .from('structures')
+                .select('id, name, type, coordinates')
+            const { data: routesData } = await supabase
+                .from('routes')
+                .select('id, name, type, path')
 
             if (structures) {
                 const parsedMarkers = structures.map((s: any) => {
-                    // Extract coords from PostGIS POINT(x y)
-                    // Format: POINT(113.536138722429 -8.27537259962564)
-                    const match = s.coordinates.match(/POINT\(([\d\.]+) ([\d\.-]+)\)/)
-                    if (match) {
+                    // Koordinat bisa dalam format text atau object
+                    let coords = s.coordinates
+
+                    // Jika coordinates adalah object dengan coordinates property
+                    if (typeof coords === 'object' && coords.coordinates) {
+                        const [lon, lat] = coords.coordinates
                         return {
                             id: s.id,
-                            position: [parseFloat(match[2]), parseFloat(match[1])], // Lat, Lon
+                            position: [lat, lon],
                             name: s.name,
                             type: s.type
                         }
                     }
+
+                    // Jika format POINT(lon lat)
+                    if (typeof coords === 'string') {
+                        const match = coords.match(/POINT\(([\d\.\-]+)\s+([\d\.\-]+)\)/)
+                        if (match) {
+                            return {
+                                id: s.id,
+                                position: [parseFloat(match[2]), parseFloat(match[1])],
+                                name: s.name,
+                                type: s.type
+                            }
+                        }
+                    }
+
                     return null
                 }).filter(Boolean)
                 setMarkers(parsedMarkers)
@@ -43,13 +63,11 @@ export default function DashboardPage() {
 
             if (routesData) {
                 const parsedRoutes = routesData.map((r: any) => {
-                    // Extract coords from PostGIS LINESTRING(x y, x y, ...)
-                    const match = r.path.match(/LINESTRING\((.*)\)/)
-                    if (match) {
-                        const points = match[1].split(',').map((p: string) => {
-                            const [lon, lat] = p.trim().split(' ').map(Number)
-                            return [lat, lon]
-                        })
+                    let path = r.path
+
+                    // Jika path adalah object dengan coordinates property
+                    if (typeof path === 'object' && path.coordinates) {
+                        const points = path.coordinates.map(([lon, lat]: number[]) => [lat, lon])
                         return {
                             id: r.id,
                             positions: points,
@@ -57,6 +75,24 @@ export default function DashboardPage() {
                             type: r.type
                         }
                     }
+
+                    // Jika format LINESTRING(lon lat, lon lat, ...)
+                    if (typeof path === 'string') {
+                        const match = path.match(/LINESTRING\((.*)\)/)
+                        if (match) {
+                            const points = match[1].split(',').map((p: string) => {
+                                const [lon, lat] = p.trim().split(/\s+/).map(Number)
+                                return [lat, lon]
+                            })
+                            return {
+                                id: r.id,
+                                positions: points,
+                                name: r.name,
+                                type: r.type
+                            }
+                        }
+                    }
+
                     return null
                 }).filter(Boolean)
                 setRoutes(parsedRoutes)

@@ -90,15 +90,31 @@ export async function processKmlUpload(formData: FormData) {
             }
         }
 
-        // Bulk Insert
+        // Bulk Insert dengan PostGIS
         if (structures.length > 0) {
-            const { error: sError } = await supabase.from('structures').insert(structures)
-            if (sError) console.error('Structure insert error:', sError)
+            for (const struct of structures) {
+                const { error: sError } = await supabase.rpc('insert_structure', {
+                    p_project_id: struct.project_id,
+                    p_name: struct.name,
+                    p_type: struct.type,
+                    p_coordinates: struct.coordinates,
+                    p_metadata: struct.metadata
+                })
+                if (sError) console.error('Structure insert error:', sError)
+            }
         }
 
         if (routes.length > 0) {
-            const { error: rError } = await supabase.from('routes').insert(routes)
-            if (rError) console.error('Route insert error:', rError)
+            for (const route of routes) {
+                const { error: rError } = await supabase.rpc('insert_route', {
+                    p_project_id: route.project_id,
+                    p_name: route.name,
+                    p_type: route.type,
+                    p_path: route.path,
+                    p_metadata: route.metadata
+                })
+                if (rError) console.error('Route insert error:', rError)
+            }
         }
 
         return { success: true, counts: { structures: structures.length, routes: routes.length } }
