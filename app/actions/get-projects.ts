@@ -50,17 +50,22 @@ export async function getProjects() {
         if (routes) {
             routes.forEach((route: any) => {
                 if (Array.isArray(route.path) && route.path.length > 1) {
+                    let routeLength = 0
                     // Hitung jarak untuk setiap segmen
                     for (let i = 0; i < route.path.length - 1; i++) {
                         const p1 = route.path[i]
                         const p2 = route.path[i + 1]
                         if (p1.lat && p1.lon && p2.lat && p2.lon) {
-                            totalLength += haversineDistance(p1.lat, p1.lon, p2.lat, p2.lon)
+                            const segmentLength = haversineDistance(p1.lat, p1.lon, p2.lat, p2.lon)
+                            routeLength += segmentLength
                         }
                     }
+                    console.log(`Route "${route.name}": ${routeLength.toFixed(2)} km (${route.path.length} points)`)
+                    totalLength += routeLength
                 }
             })
         }
+        console.log(`Total calculated length: ${totalLength.toFixed(2)} km`)
 
         return {
             ...p,
