@@ -6,10 +6,12 @@ import { getProjects } from '@/app/actions/get-projects'
 import KmlUploader from '@/components/tools/KmlUploader'
 import StatsCard from './StatsCard'
 import { Activity, Map as MapIcon, Database, HardDrive } from 'lucide-react'
+import ProjectDetailModal from './ProjectDetailModal'
 
 export default function Sidebar() {
     const [projects, setProjects] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [selectedProject, setSelectedProject] = useState<any>(null)
 
     useEffect(() => {
         loadProjects()
@@ -67,7 +69,11 @@ export default function Sidebar() {
                             <div className="text-sm text-gray-500 text-center py-4">No projects yet</div>
                         ) : (
                             projects.map((p) => (
-                                <div key={p.id} className="p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition cursor-pointer group">
+                                <div
+                                    key={p.id}
+                                    className="p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition cursor-pointer group"
+                                    onClick={() => setSelectedProject(p)}
+                                >
                                     <div className="flex justify-between items-start mb-1">
                                         <h4 className="font-medium text-gray-900 group-hover:text-blue-600 truncate flex-1" title={p.name}>{p.name}</h4>
                                     </div>
@@ -89,6 +95,15 @@ export default function Sidebar() {
             <div className="p-4 border-t border-gray-200 bg-white text-xs text-center text-gray-400">
                 v0.1.0 • ID-NET Gravity
             </div>
+
+            {/* Modal */}
+            {selectedProject && (
+                <ProjectDetailModal
+                    projectId={selectedProject.id}
+                    projectName={selectedProject.name}
+                    onClose={() => setSelectedProject(null)}
+                />
+            )}
         </div>
     )
 }
