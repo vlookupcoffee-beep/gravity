@@ -46,7 +46,8 @@ export default function MapComponent({
 }: MapProps) {
     useEffect(() => {
         fixLeafletIcon()
-    }, [])
+        console.log('MapComponent received:', { markers, routes })
+    }, [markers, routes])
 
     return (
         <MapContainer
