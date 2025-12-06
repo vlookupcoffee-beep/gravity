@@ -90,30 +90,47 @@ export async function processKmlUpload(formData: FormData) {
             }
         }
 
-        // Bulk Insert dengan PostGIS
+        // Bulk Insert - gunakan format sederhana dulu
         if (structures.length > 0) {
+            // Insert satu per satu untuk debugging
             for (const struct of structures) {
-                const { error: sError } = await supabase.rpc('insert_structure', {
-                    p_project_id: struct.project_id,
-                    p_name: struct.name,
-                    p_type: struct.type,
-                    p_coordinates: struct.coordinates,
-                    p_metadata: struct.metadata
-                })
-                if (sError) console.error('Structure insert error:', sError)
+                const { data, error: sError } = await supabase
+                    .from('structures')
+                    .insert({
+                        project_id: struct.project_id,
+                        name: struct.name,
+                        type: struct.type,
+                        coordinates: struct.coordinates, // Akan di-cast otomatis oleh Supabase
+                        metadata: struct.metadata
+                    })
+                    .select()
+
+                if (sError) {
+                    console.error('Structure insert error:', sError)
+                } else {
+                    console.log('Structure inserted:', data)
+                }
             }
         }
 
         if (routes.length > 0) {
             for (const route of routes) {
-                const { error: rError } = await supabase.rpc('insert_route', {
-                    p_project_id: route.project_id,
-                    p_name: route.name,
-                    p_type: route.type,
-                    p_path: route.path,
-                    p_metadata: route.metadata
-                })
-                if (rError) console.error('Route insert error:', rError)
+                const { data, error: rError } = await supabase
+                    .from('routes')
+                    .insert({
+                        project_id: route.project_id,
+                        name: route.name,
+                        type: route.type,
+                        path: route.path, // Akan di-cast otomatis oleh Supabase
+                        metadata: route.metadata
+                    })
+                    .select()
+
+                if (rError) {
+                    console.error('Route insert error:', rError)
+                } else {
+                    console.log('Route inserted:', data)
+                }
             }
         }
 
