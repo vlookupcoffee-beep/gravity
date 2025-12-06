@@ -1,4 +1,3 @@
-```javascript
 export default function Home() {
   return (
     <div style={{ padding: 50, textAlign: 'center' }}>
@@ -8,4 +7,3 @@ export default function Home() {
     </div>
   );
 }
-```
