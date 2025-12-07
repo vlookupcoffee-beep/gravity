@@ -7,6 +7,7 @@ import KmlUploader from '@/components/tools/KmlUploader'
 import StatsCard from './StatsCard'
 import { Activity, Map as MapIcon, Database, HardDrive } from 'lucide-react'
 import ProjectDetailModal from './ProjectDetailModal'
+import Image from 'next/image'
 
 export default function Sidebar() {
     const [projects, setProjects] = useState<any[]>([])
@@ -30,11 +31,16 @@ export default function Sidebar() {
     return (
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full bg-gray-50/50">
             <div className="p-6 border-b border-gray-200 bg-white">
-                <div className="flex items-center gap-2 mb-6">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                        G
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="relative w-10 h-10">
+                        <Image
+                            src="/Logo.png"
+                            alt="Logo"
+                            fill
+                            className="object-contain"
+                        />
                     </div>
-                    <span className="text-xl font-bold text-gray-900">Gravity Network</span>
+                    <span className="text-xl font-bold text-gray-900">My Database</span>
                 </div>
 
                 <KmlUploader />
