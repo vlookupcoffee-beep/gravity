@@ -1,0 +1,107 @@
+NO;ITEM DESIGN;URAIAN DESIGN;SATUAN; HARGA
+;;;;
+1;AC-ADSS-SM-12C;Jasa Pemasangan Aerial Cable Fiber Optik Single Mode 12 Core G.652 C Type ADSS Cable;meter; Rp4.200 
+2;AC-ADSS-SM-24C;Jasa Pemasangan Aerial Cable Fiber Optik Single Mode 24 Core G.652 C Type ADSS Cable;meter; Rp4.200 
+3;AC-ADSS-SM-48C;Jasa Pemasangan Aerial Cable Fiber Optik Single Mode 48 Core G.652 C Type ADSS Cable;meter; Rp4.200 
+4;AC-ADSS-SM-96C;Jasa Pemasangan Aerial Cable Fiber Optik Single Mode 96 Core G.652 C Type ADSS Cable;meter; Rp4.200 
+5;AC-ADSS-SM-144C;Jasa Pemasangan Aerial Cable Fiber Optik Single Mode 144 Core G.652 C Type ADSS Cable;meter; Rp3.800 
+6;AC-ADSS-SM-288C;Jasa Pemasangan Aerial Cable Fiber Optik Single Mode 288 Core G.652 C Type ADSS Cable;meter; Rp3.800 
+7;JC-OF-SM-12C;Jasa Pemasangan Joint Closure Untuk Fiber Optik Kapasitas 12 Core;pcs; Rp30.700 
+8;JC-OF-SM-24C;Jasa Pemasangan Joint Closure Untuk Fiber Optik Kapasitas 24 Core;pcs; Rp30.700 
+9;JC-OF-SM-48C;Jasa Pemasangan Joint Closure Untuk Fiber Optik Kapasitas 48 Core;pcs; Rp49.000 
+10;JC-OF-SM-96C;Jasa Pemasangan Joint Closure Untuk Fiber Optik Kapasitas 96 Core;pcs; Rp49.000 
+11;JC-OF-SM-144C;Jasa Pemasangan Joint Closure Untuk Fiber Optik Kapasitas 144 Core;pcs; Rp52.500 
+12;JC-OF-SM-288C;Jasa Pemasangan Joint Closure Untuk Fiber Optik Kapasitas 288 Core;pcs; Rp57.000 
+13;OTB-SM-6;Jasa Pemasangan OTB Single Mode kapasitas 12 core, Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp31.000 
+14;OTB-SM-8;Jasa Pemasangan OTB Single Mode kapasitas 12 core, Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp31.000 
+15;OTB-SM-12;Jasa Pemasangan OTB Single Mode kapasitas 12 core, Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp45.000 
+16;OTB-SM-24;Jasa Pemasangan OTB Single Mode kapasitas 24 core, Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp61.000 
+17;OTB-SM-48;Jasa Pemasangan OTB Single Mode kapasitas 48 core, Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp61.000 
+18;OTB-SM-96;Jasa Pemasangan OTB Single Mode kapasitas 96 core, Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp93.000 
+19;OTB-SM-144;Jasa Pemasangan OTB Single Mode kapasitas 144 core, Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp100.000 
+20;OTB-SM-288;Jasa Pemasangan OTB Single Mode kapasitas 288 core, Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp180.000 
+21;PS-1-2-FDT;Jasa pemasangan Passive Splitter 1:2, type modular SC/UPC, for FDT, termasuk pigtail;pcs; Rp30.575 
+22;PS-1-4-FDT;Jasa pemasangan Passive Splitter 1:4, type modular SC/UPC, for FDT, termasuk pigtail;pcs; Rp30.575 
+23;PS-1-8-FAT;Jasa pemasangan Passive Splitter 1:8, type modular SC/UPC, for FAT, termasuk pigtail;pcs; Rp30.575 
+24;PS-1-16-FAT;Jasa pemasangan Passive Splitter 1:16, type modular SC/UPC, for FAT, termasuk pigtail;pcs; Rp30.575 
+25;FAT-PB-8C-SOLID;Jasa pemasangan FAT type POLE Kap 8 core adaptor SC/UPC terdiri dari 1 Box Spliter (termasuk 1 spliter 1:8), 1 Box beserta Accessories, berikut pelabelan.;pcs; Rp100.000 
+26;FAT-PB-16C-SOLID;Jasa pemasangan  FAT type POLE Kap 16 core adaptor SC/UPC terdiri dari 2Box Spliter (termasuk 2 spliter 1:8), 1 Box beserta Accessories, berikut pelabelan.;pcs; Rp100.000 
+27;Base Tray ODC;Jasa pemasangan OTB termasuk terminasi dan penyambungan kabel optik Single mode kap 12 core serta Adapter (SC Connector), pigtail dan protection sleeve pada cassette/box;pcs; Rp80.000 
+28;FAT-PDSTL-8;Jasa pemasangan FAT ( Pedestal ) kap 8 core termasuk pigtail, berikut space 1 splitter (1:8) dan Pelabelan;pcs; Rp150.000 
+29;FAT-PDSTL-16;Jasa pemasangan FAT ( Pedestal ) kap 16 core termasuk pigtail, berikut space 1 splitter (1:16) dan Pelabelan;pcs; Rp150.000 
+30;FDT-POLE-48C;Jasa pemasangan FDT-Pole (Outdoor) With Space For Passive Splitter, Adaptor SC Kapasitas 48 Core, Berikut Pelabelan;pcs; Rp850.000 
+31;FDT-POLE-96C;Jasa pemasangan FDT-Pole (Outdoor) With Space For Passive Splitter, Adaptor SC Kapasitas 96 Core, Berikut Pelabelan;pcs; Rp2.700.000 
+32;FDT-STDG-96C;Jasa pemasangan Kabinet FDT(Outdoor) With Space For Passive Splitter, Adaptor SC Kapasitas 96 Core, Berikut Pelabelan;pcs; Rp4.700.000 
+33;FDT-STDG-144C;Jasa pemasangan Kabinet FDT(Outdoor) With Space For Passive Splitter, Adaptor SC Kapasitas 144 Core, Berikut Pelabelan;pcs; Rp5.100.000 
+34;FDT-STDG-288C;Jasa pemasangan Kabinet FDT(Outdoor) With Space For Passive Splitter, Adaptor SC Kapasitas 288 Core, Berikut Pelabelan;pcs; Rp5.300.000 
+35;NP-6.0-100-1S;"Jasa pemasangan New Pole 6 Meter 2,5"" x 600, Berikut Cat dengan warna identitas Kuning (atas) Biru (Bawah) & Cor Pondasi dengan Kekuatan Tarik 100 Kg";pcs; Rp175.000 
+36;NP-7.0-140-2S;"Jasa pemasangan New Pole 7 Meter 600 x 3"",200 x 3"" x 100 x 2,5"" , Berikut Cat dengan warna identitas Kuning (atas) Biru (bawah)";pcs; Rp250.000 
+37;NP-7.0-140-3S;"Jasa pemasangan New Pole 7 Meter 300 x 4"",200 x 3"" x 200 x 2,5"" , Berikut Cat dengan warna identitas Kuning (atas) Biru (bawah) & Cor Pondasi dengan Kekuatan Tarik 140 Kg";pcs; Rp250.000 
+38;NP-9.0-140-3S;"Jasa pemasangan New Pole 9 Meter 400 x 4"", 300 x 3"", 200 x 2.5"", Berikut Cat dengan warna identitas Kuning (atas) Biru (bawah) & Cor Pondasi dengan Kekuatan Tarik 140 Kg";pcs; Rp290.000 
+39;NP-CB-7.0-250;Jasa pemasangan New Pole Beton 7 Meter, Berikut Cat dengan warna identitas Kuning (atas) Biru (bawah) & Cor Pondasi dengan Kekuatan Tarik 250 Kg;pcs; Rp385.000 
+40;NP-CB-9.0-250;Jasa pemasangan New Pole Beton 9 Meter, Berikut Cat dengan warna identitas Kuning (atas) Biru (bawah) & Cor Pondasi dengan Kekuatan Tarik 250 Kg;pcs; Rp440.000 
+41;PP-CD-IN;Jasa pemasangan Pipe Protection Indoor Cable (Pvc White) High Impact Conduit 20 Mm;meter; Rp4.000 
+42;PP-CD-OUT;Jasa pemasangan Pipe Protection Outdoor Cable (Pvc Black) High Impact Conduit 20 Mm;meter; Rp4.000 
+43;HDPE-40-33;Jasa pemasangan Pipa Hdpe 40/33 Mm 1 Pipa Dengan Kedalaman 1,5 Meter dan warna identitas Kuning strip Biru;meter; Rp1.700 
+44;TT-NP;Jasa pemasangan Temberang Tarik;pcs; Rp61.000 
+45;GB-0.1-OHM;Jasa pemasangan Grounding 1 titik rod pada FATdengan tahanan maks 3 ohm;pcs; Rp450.000 
+46;GB-0.2-OHM;Jasa pemasangan Grounding 3 titik rod pada FDT dengan tahanan maks 2 ohm;pcs; Rp570.000 
+47;GB-0.3-OHM;Jasa pemasangan Grounding 5 titik rod pada FDT dengan tahanan maks 1 ohm;pcs; Rp500.000 
+48;FS-OF-SM;Jasa Penyambungan Cable Optik Single Mode 1 Core Dengan Cara Fusion Splice;core; Rp40.000 
+49;NN-OTDR-CORE;Jasa Pekerjaan Pengukuran Dengan OTDR, berikut Validasi dan Update Management Data;core; Rp65.000 
+50;NN-CO-CORE;Jasa Pekerjaan Cut Over Kabel Serat Optik, berikut Validasi dan Update Management Data;core; Rp57.500 
+51;EXCAVATION-0.4;Jasa Pekerjaan Galian, Pengurugan Kembali Dan Perbaikan Kembali, Pengisian Pasir,  Kedalaman 40 cm/ 0.4 meter;meter; Rp16.000 
+52;EXCAVATION-0.6;Jasa Pekerjaan Galian, Pengurugan Kembali Dan Perbaikan Kembali, Pengisian Pasir,  Kedalaman 60 cm/ 0.6 meter;meter; Rp18.500 
+53;EXCAVATION-1.0;Jasa Pekerjaan Galian, Pengurugan Kembali Dan Perbaikan Kembali, Pengisian Pasir,  Kedalaman 100 cm/ 1.0 meter;meter; Rp27.500 
+54;EXCAVATION-1.2;Jasa Pekerjaan Galian, Pengurugan Kembali Dan Perbaikan Kembali, Pengisian Pasir,  Kedalaman 120 cm/ 1.2 meter;meter; Rp31.000 
+55;EXCAVATION-1.5;Jasa Pekerjaan & pengadaan Material  Galian, Pengurugan Kembali Dan Perbaikan Kembali, Pengisian Pasir,  Kedalaman 150 cm/ 1.5 meter;meter; Rp41.500 
+56;BCTR-ROCK;Jasa galian batu masif kedalaman 1,5 meter, panjang minimum 5 m, termasuk pengadaan marking post;meter; Rp213.800 
+57;BD-SK;Jasa Pekerjaan & pengadaan Material bobokan dan perbaikan Dinding Chamber / BTS / SHELTER untuk lubang Sparing Kabel;titik; Rp125.774 
+58;DD-BRNG-HDPE-40-1;Jasa Pekerjaan Boring manual (rojok) HDPE  40/33 mm 1 pipa dengan kedalaman 1,5 meter;meter; Rp33.700 
+59;DD-BRNG-HDPE-40-2;Jasa Pemasangan Pipa galvanis dengan ukuran diameter 50 mm dan ketebalan 2,7 mm cara boring manual /mesin 1 pipa dengan kedalaman minimal 150 cm, 2 pipa;meter; Rp35.900 
+60;DD-BRNG-HDPE-50-1;Jasa Pekerjaan Boring manual (rojok)  HDPE  50/42 mm 1 pipa dengan kedalaman 1,5 meter;meter; Rp33.700 
+61;DD-BRNG-HDPE-50-2;Jasa Pekerjaan Boring manual (rojok)  HDPE  50/42 mm 2 pipa dengan kedalaman 1,5 meter;meter; Rp41.200 
+62;DD-ROD;Jasa Pekerjaan Pembersihan pada route Duct yang kosong / Rodding Duct Existing;meter; Rp1.817 
+63;DD-RV-1;Jasa Pekerjaan Perbaikan Route Duct / HDPE, 1 pipa;meter; Rp72.685 
+64;DD-RV-CONCRETE;Jasa Pekerjaan & Pengadaan Material bobok dinding MH / HH termasuk perbaikan kembali;m3; Rp1.715.941 
+65;DD-DS-S1;Jasa Pekerjaan & Pengadaan Material  duct baru dengan cara melakukan boring dibawah dasar parit/sungai dengan kedalaman 1,5 m dengan menggunakan PVC diameter 100 mm dan ketebalan 5,5 mm 1 pipa;meter; Rp454.893 
+66;DD-DS-COD1-M;Jasa Pekerjaan & Pengadaan Material duct baru type COD, dengan mesin pengeboran (borring) dibawah parit, pada kedalaman 1,50 m di bawah dasar selokan, tanpa perlindungan PVC, 1 pipa;meter; Rp452.776 
+67;Klem HDPE;Jasa Pekerjaan & Pengadaan Material Klem HDPE di dinding beton dengan klem ketebalan 2mm lebar 2,5 cm menggunakan dynabolt termasuk rekondisi atau perbaikan kerusakan;pcs; Rp13.800 
+68;MH-HH-170;"Jasa Pekerjaan & Pengadaan Material Handhole Type HH1 ukuran dimensi dalam (P X L X T = 170x150x165) cor beton 1 : 2 : 3 dengan tulisan "" ID-NET """; pcs ; Rp8.436.393 
+69;MH-PIT-120;"Jasa Pekerjaan & Pengadaan Material Handhole Type HH2 ukuran dimensi dalam (P X L X T = 120x130x165) cor beton 1 : 2 : 3 dengan tulisan "" ID-NET """;pcs; Rp8.365.460 
+70;HH-PIT-80;"Jasa Pekerjaan & Pengadaan Material Handhole Pit ukuran dimensi dalam (P x L x T = 80cm x 80cm x 100cm) cor beton 1 : 2 : 3 dengan tulisan "" ID-NET """;pcs; Rp3.166.169 
+71;HH-PIT-P-HA;Jasa Pekerjaan & Pengadaan Material Pembuatan HH Pit Portable Home Access ukuran 40cm beserta aksesorisnya; pcs ; Rp594.830 
+72;HH-PIT-P-FAT;Jasa Pekerjaan & Pengadaan Material Pembuatan dan Pemasangan HH PIT Portable FAT beserta aksesorisnya; pcs; Rp1.195.863 
+73;HH-PIT-P-FDT;Jasa Pekerjaan & Pengadaan Material Pembuatan dan Pemasangan HH PIT Portable FDT beserta aksesorisnya; pcs; Rp2.563.918 
+74;MH-HH-REKONDISI;Jasa Pekerjaan & Pengadaan Material Peninggian Tutup Manhole/Handhole; pcs ; Rp1.481.901 
+75;DRWG-ABD-PRJCT;Jasa Pembuatan As Build Drawing Dalam Ukuran A3 Meliputi Manajemen Core, Peta Lokasi & Skema Kabel Per Segment Per Order;Package; Rp3.260.000 
+76;SITAC-FDT-MH-HH;Biaya perizinan yang diberikan untuk penempatan FDT termasuk MH dan HH di dalam lahan selain PU yang bersifat restribusi;Package; pengajuan
+77;SLACK-SUPPORT-80;Jasa Pemasangan Slack include sabuk ukuran dimensi dalam (P x L = 80cm x 80cm);pcs; Rp38.000 
+78;SLACK-SUPPORT-120;Jasa Pemasangan Slack include sabuk ukuran dimensi dalam (P x L = 120cm x 120cm);pcs; Rp47.000 
+79;LABELING-KFA;Jasa Pemasangan & Pengadaan label kabel Fiber Optik dengan material akrilik warna (P x L = 5cm x 15cm, tebal = 5 mm);pcs; Rp21.800 
+80;LABELING-PC;Jasa Pemasangan & Pengadaan material termasuk jasa Pelabelan Digital dan Perapian Di Dalam FDT;pcs; Rp4.000 
+81;RP-GALVANIS;Jasa Pemasangan Riser Pipe Untuk Pengamanan Kabel Optik Ke FDT Pole / Titik Naik Ku Diameter 2 Inch Panjang 3 Meter;pcs; Rp52.000 
+82;ACC-STAINLESS BELT;Jasa Pemasangan Aksesoris Tiang Besi Stainless Belt dan Pengunci;pcs; Rp6.000 
+83;ACC-SUSPENSION AYUN;Jasa Pemasangan Aksesoris Tiang Besi Suspension Ayun;pcs; Rp17.900 
+84;ACC-HELLICAL;Jasa Pemasangan Aksesoris Tiang Besi Helycal Cable;pcs; Rp17.900 
+85;ACC-ANCHORING;Jasa Pemasangan Aksesoris Tiang Besi Penguat Fiber Optik Figure-8;pcs; Rp15.800 
+86;ACC-Bracket;Jasa Pemasangan Aksesoris Tiang Besi Anchoring/ Bracket A;pcs; Rp37.000 
+87;ACC-POLESTRAP SPIRAL;Jasa Pemasangan Aksesoris Tiang Besi Polestrap Spiral Untuk Penambatan Dropcore;pcs; Rp17.900 
+88;FDT-PROT-144;Jasa Pemasangan Kerangkeng FDT-144, menggunakan rangka besi siku 4 cm dan ram besi beton diameter 10 mm, dengan gembok 50 mm;pcs; Rp700.000 
+89;FDT-PROT-288;Jasa Pemasangan Kerangkeng FDT-288, menggunakan rangka besi siku 4 cm dan ram besi beton dia. 10 mm, dengan gembok 50 mm;pcs; Rp750.000 
+90;REGEL-CABLE;Jasa Perapian Kabel Udara Fiber Optik Single Mode 1-144 core G 652 D Existing Terjuntai;meter; Rp2.200 
+91;ROLLBACK-CABLE;Jasa Geser Kabel Udara Fiber Optik Single Mode kapasitas 1-144 core;meter; Rp1.700 
+92;DISMANTLE-CABLE;Jasa Pembongkaran dan Gulung Kabel Udara Fiber Optik Single Mode kapasitas 1-144 core (beserta pengembalian ke gudang terdekat);meter; Rp1.100 
+93;PU-S7-BACKEND;Jasa Pencabutan Tiang besi 7 meter Eksisting (tiang bengkok dikembalikan ke gudang);pcs; Rp150.000 
+94;PU-S9-BACKEND;Jasa Pencabutan Tiang besi 9 meter Eksisting (tiang bengkok dikembalikan ke gudang);pcs; Rp170.000 
+95;PU-LABEL-EXST;Jasa Pelabelan Tiang dengan menggunakan cat besi sesuai DESIGN PACK;node; Rp5.000 
+96;RK-OLT-OUTDOOR;Jasa Pemasangan Mini OLT Outdoor berikut dengan pondasi Rak Mini OLT Outdoor dan Manhole 120, sesuai guidelines yang berlaku;node; Rp16.500.000 
+97;PIPE-BRIDGE;"jasa Pemasangan Pipa galvanis dengan ukuran diameter 5"" pada jembatan berikut dengan penyambungan pipa dan cat identitas INTERNUSA GROUP";meter; Rp150.000 
+98;MV-MATERIAL-20/39;Delivery material dalam jarak 0-20 km dari WH INTERNUSA ke on site pekerjaan per segment;ls; Rp20.000 
+99;MV-MATERIAL-20/40;Delivery material dalam jarak 20-40 km dari WH INTERNUSA ke on site pekerjaan per segment;ls; Rp40.000 
+100;MV-MATERIAL-40/60;Delivery material dalam jarak 40-60 km dari WH INTERNUSA ke on site pekerjaan per segment;ls; Rp80.000 
+101;MV-MATERIAL-60-UP;Delivery material dalam jarak >60 km dari WH INTERNUSA ke on site pekerjaan per segment;ls; Rp150.000 
+102;PERMIT-HOMEPASS;Nilai perizinan yang diberikan berdasarkan jumlah homepass dalam cluster dengan guidelines INTERNUSA yang berlaku;lot; Rp15.000 
+103;SURVEY-HOMEPASS;Nilai kegiatan survey yang diberikan berdasarkan jumlah homepass dalam cluster dengan guidelines INTERNUSA yang berlaku;lot; Rp5.000 
+104;PRELIMINARY-BCKBN-PEMDA;Biaya-biaya yang timbul dalam rangka untuk perijinan, konsumsi, kompensasi dan Supervisi mulai dari LSM, Private Area dan Rumija Pemda melingkupi PU NASIONAL, PU PROVINSI dan PU KABUPATEN/ KOTA dalam dasar pekerjaan segment Backbone;meter; Rp1.000 
+105;PREP-K3PNWT-PRJCT;Pengadaan dan Pemasangan papan nama proyek tertutup pada kegiatan lubang galian serta rambu-rambu pengaman/ warning tape dalam lingkup area kerja lubang galian/ rojok per segment per Order;lot; Rp2.000.000 

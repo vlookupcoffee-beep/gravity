@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutDashboard, FolderKanban, Map as MapIcon, Settings } from 'lucide-react'
+import { LayoutDashboard, FolderKanban, Map as MapIcon, Settings, Receipt } from 'lucide-react'
 import Image from 'next/image'
 
 export default function DashboardSidebar() {
@@ -27,6 +27,10 @@ export default function DashboardSidebar() {
                 <Link href="/dashboard/projects" className="flex items-center gap-3 px-3 py-2 text-gray-400 rounded-lg hover:bg-gray-800 hover:text-white transition">
                     <FolderKanban size={20} />
                     <span className="font-medium">Projects</span>
+                </Link>
+                <Link href="/dashboard/khs" className="flex items-center gap-3 px-3 py-2 text-gray-400 rounded-lg hover:bg-gray-800 hover:text-white transition">
+                    <Receipt size={20} />
+                    <span className="font-medium">Price Lists (KHS)</span>
                 </Link>
                 <Link href="/dashboard/map" className="flex items-center gap-3 px-3 py-2 text-gray-400 rounded-lg hover:bg-gray-800 hover:text-white transition">
                     <MapIcon size={20} />
