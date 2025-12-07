@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, Trash2, Save, X } from 'lucide-react'
+import { Plus, Search, Trash2, Save, X, Upload } from 'lucide-react' // Added Upload icon
 import { getKHSItems, addProjectItem, getProjectItems, deleteProjectItem } from '@/app/actions/boq-actions'
 import { getKHSProviders } from '@/app/actions/get-khs-providers'
 
@@ -22,6 +22,10 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
     const [selectedKHSItem, setSelectedKHSItem] = useState<any>(null)
     const [quantity, setQuantity] = useState(1)
     const [adding, setAdding] = useState(false)
+
+    // Upload & Recalculate State
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+    const [uploading, setUploading] = useState(false)
 
     useEffect(() => {
         loadProjectItems()
@@ -74,29 +78,80 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
         onUpdate?.()
     }
 
+    async function handleRecalculate() {
+        // Dynamic import to call the server action
+        const { recalculateProjectValue } = await import('@/app/actions/boq-actions')
+        await recalculateProjectValue(projectId)
+        onUpdate?.()
+        alert('Project value recalculated!')
+    }
+
+    async function handleFileUpload(e: React.FormEvent<HTMLInputElement>) {
+        if (!e.currentTarget.files || e.currentTarget.files.length === 0) return
+        if (!selectedProvider) {
+            alert('Please select a provider first')
+            return
+        }
+
+        setUploading(true)
+        const file = e.currentTarget.files[0]
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const { uploadProjectItems } = await import('@/app/actions/boq-actions')
+
+        const result = await uploadProjectItems(projectId, selectedProvider, formData)
+        setUploading(false)
+
+        if (result.success) {
+            alert(`Successfully imported ${result.count || 0} items!`)
+            setIsUploadModalOpen(false)
+            loadProjectItems()
+            onUpdate?.()
+        } else {
+            alert(`Import failed: ${result.error}`)
+        }
+
+        // Reset input
+        e.currentTarget.value = ''
+    }
+
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
 
     const totalValue = items.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0)
 
     return (
         <div className="bg-[#1E293B] rounded-xl border border-gray-700 overflow-hidden">
-            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+            <div className="p-6 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h3 className="font-bold text-white">Work Items (BOQ)</h3>
-                    <p className="text-sm text-gray-400">Total Est. Value: <span className="text-green-400 font-mono">{formatCurrency(totalValue)}</span></p>
+                    <div className="flex items-center gap-4">
+                        <p className="text-sm text-gray-400">Total Est. Value: <span className="text-green-400 font-mono">{formatCurrency(totalValue)}</span></p>
+                        <button onClick={handleRecalculate} className="text-xs text-blue-400 hover:text-blue-300 underline" title="Recalculate total value">
+                            Force Refresh
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2"
-                >
-                    <Plus size={16} /> Add Item
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsUploadModalOpen(true)}
+                        className="bg-gray-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center gap-2"
+                    >
+                        <Upload size={16} /> Import CSV
+                    </button>
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2"
+                    >
+                        <Plus size={16} /> Add Item
+                    </button>
+                </div>
             </div>
 
             {items.length === 0 ? (
                 <div className="p-8 text-center">
                     <p className="text-gray-400 font-medium">No items added yet</p>
-                    <p className="text-sm text-gray-500 mt-1">Add items from the KHS to start calculating project value.</p>
+                    <p className="text-sm text-gray-500 mt-1">Add items manually or import from CSV.</p>
                 </div>
             ) : (
                 <div className="overflow-x-auto">
@@ -206,6 +261,52 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                             >
                                 {adding ? 'Adding...' : 'Confirm & Add'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* UPLOAD CSV MODAL */}
+            {isUploadModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-[#1E293B] rounded-xl border border-gray-700 w-full max-w-md p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-white text-lg">Import Items from CSV</h3>
+                            <button onClick={() => setIsUploadModalOpen(false)} className="text-gray-400 hover:text-white"><X size={20} /></button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-sm text-gray-400 mb-1 block">Select KHS Provider (Source)</label>
+                                <select
+                                    className="w-full bg-[#0F172A] border border-gray-600 text-white rounded-lg px-3 py-2 text-sm"
+                                    value={selectedProvider}
+                                    onChange={(e) => setSelectedProvider(e.target.value)}
+                                >
+                                    {providers.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="p-4 border border-dashed border-gray-600 rounded-lg bg-[#0F172A]/50 text-center">
+                                <p className="text-sm text-gray-400 mb-2">Upload CSV with format:</p>
+                                <code className="block bg-black/30 p-2 rounded text-xs text-blue-300 mb-4">Item Code; Quantity</code>
+
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    className="hidden"
+                                    id="csv-upload"
+                                    onChange={handleFileUpload}
+                                    disabled={uploading}
+                                />
+                                <label
+                                    htmlFor="csv-upload"
+                                    className={`inline-block px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition ${uploading ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                                >
+                                    {uploading ? 'Importing...' : 'Select CSV File'}
+                                </label>
+                            </div>
+                            <p className="text-xs text-gray-500 text-center">Delimiter: Semicolon (;) or Comma (,)</p>
                         </div>
                     </div>
                 </div>
