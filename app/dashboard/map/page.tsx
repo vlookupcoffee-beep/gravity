@@ -11,7 +11,13 @@ const MapComponent = dynamic(() => import('@/components/map/MapComponent'), {
     loading: () => <div className="h-full w-full bg-gray-100 animate-pulse flex items-center justify-center">Loading Map...</div>
 })
 
+import { useSearchParams } from 'next/navigation'
+
+// ... imports remain the same
+
 export default function MapPage() {
+    const searchParams = useSearchParams()
+    const projectId = searchParams.get('projectId')
     const [markers, setMarkers] = useState<any[]>([])
     const [routes, setRoutes] = useState<any[]>([])
 
@@ -19,14 +25,25 @@ export default function MapPage() {
         const fetchData = async () => {
             const supabase = createClient()
 
-            const { data: structures } = await supabase
+            let structuresQuery = supabase
                 .from('structures')
                 .select('id, name, type, coordinates')
-            const { data: routesData } = await supabase
+
+            let routesQuery = supabase
                 .from('routes')
                 .select('id, name, type, path')
 
+            // Apply filter if projectId is present
+            if (projectId) {
+                structuresQuery = structuresQuery.eq('project_id', projectId)
+                routesQuery = routesQuery.eq('project_id', projectId)
+            }
+
+            const { data: structures } = await structuresQuery
+            const { data: routesData } = await routesQuery
+
             if (structures) {
+                // ... parsing logic remains the same
                 const parsedMarkers = structures.map((s: any) => {
                     const coords = s.coordinates
                     if (coords && typeof coords === 'object' && coords.lat && coords.lon) {
@@ -43,6 +60,7 @@ export default function MapPage() {
             }
 
             if (routesData) {
+                // ... parsing logic remains the same
                 const parsedRoutes = routesData.map((r: any) => {
                     const path = r.path
                     if (Array.isArray(path) && path.length > 0) {
@@ -69,7 +87,7 @@ export default function MapPage() {
         }
 
         fetchData()
-    }, [])
+    }, [projectId])
 
     return (
         <div className="relative h-[calc(100vh-4rem)] rounded-xl overflow-hidden border border-gray-200">

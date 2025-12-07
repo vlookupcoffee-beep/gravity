@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getProjects } from '@/app/actions/get-projects'
-import { Search, Filter, Plus, FileText, Trash2, Edit } from 'lucide-react'
+import { Search, Filter, Plus, FileText, Trash2, Edit, Map as MapIcon } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProjectsPage() {
@@ -172,9 +172,9 @@ export default function ProjectsPage() {
                                                 <button
                                                     onClick={(e) => toggleDropdown(project.id, e)}
                                                     className={`px-2.5 py-1 rounded-full text-xs font-medium border flex items-center justify-center min-w-[100px] whitespace-nowrap transition-colors ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' :
-                                                            project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' :
-                                                                project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' :
-                                                                    'bg-gray-700/50 text-gray-400 border-gray-600 hover:bg-gray-700'
+                                                        project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' :
+                                                            project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' :
+                                                                'bg-gray-700/50 text-gray-400 border-gray-600 hover:bg-gray-700'
                                                         }`}
                                                 >
                                                     {getStatusLabel(project.status)}
@@ -188,8 +188,8 @@ export default function ProjectsPage() {
                                                                 key={status}
                                                                 onClick={(e) => selectStatus(project.id, status, e)}
                                                                 className={`w-full px-4 py-2 text-xs text-left transition-colors hover:bg-gray-800 ${(project.status || 'planning') === status
-                                                                        ? 'text-white bg-blue-500/10 font-medium'
-                                                                        : 'text-gray-400'
+                                                                    ? 'text-white bg-blue-500/10 font-medium'
+                                                                    : 'text-gray-400'
                                                                     }`}
                                                             >
                                                                 {getStatusLabel(status)}
@@ -213,6 +213,13 @@ export default function ProjectsPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Link
+                                                    href={`/dashboard/map?projectId=${project.id}`}
+                                                    className="p-2 text-gray-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition"
+                                                    title="View on Map"
+                                                >
+                                                    <MapIcon size={16} />
+                                                </Link>
                                                 <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Edit">
                                                     <Edit size={16} />
                                                 </button>
