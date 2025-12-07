@@ -67,8 +67,8 @@ export default function ProjectDetailPage() {
                                 await updateProjectStatus(project.id, newStatus)
                             }}
                             className={`px-2 py-0.5 rounded-full text-xs font-medium border appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-[#1E293B] ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 focus:ring-green-500' :
-                                    project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 focus:ring-blue-500' :
-                                        'bg-gray-700/50 text-gray-400 border-gray-600 focus:ring-gray-500'
+                                project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 focus:ring-blue-500' :
+                                    'bg-gray-700/50 text-gray-400 border-gray-600 focus:ring-gray-500'
                                 }`}
                         >
                             <option value="planning" className="bg-[#1E293B] text-gray-400">Planning</option>
@@ -150,8 +150,7 @@ export default function ProjectDetailPage() {
                         </div>
                     </div>
 
-                    {/* Files Section */}
-                    <FileList files={project.files || []} />
+                    {/* Detailed Breakdown */}
                 </div>
 
                 {/* Right Column (1/3) */}

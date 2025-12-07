@@ -11,6 +11,7 @@ export default function ProjectsPage() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
 
     useEffect(() => {
         loadProjects()
@@ -54,8 +55,30 @@ export default function ProjectsPage() {
         return status.charAt(0).toUpperCase() + status.slice(1)
     }
 
+    const toggleDropdown = (id: string, e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setActiveDropdown(activeDropdown === id ? null : id)
+    }
+
+    const selectStatus = async (projectId: string, newStatus: string, e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        // Optimistic update
+        const updatedProjects = projects.map(p =>
+            p.id === projectId ? { ...p, status: newStatus } : p
+        )
+        setProjects(updatedProjects)
+        setFilteredProjects(updatedProjects)
+        setActiveDropdown(null)
+
+        const { updateProjectStatus } = await import('@/app/actions/project-actions')
+        await updateProjectStatus(projectId, newStatus)
+    }
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6" onClick={() => setActiveDropdown(null)}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white">Projects</h1>
@@ -99,9 +122,9 @@ export default function ProjectsPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-[#1E293B] rounded-xl border border-gray-700 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+            <div className="bg-[#1E293B] rounded-xl border border-gray-700 shadow-sm overflow-hidden min-h-[400px]">
+                <div className="overflow-x-auto overflow-y-visible">
+                    <table className="w-full text-left border-collapse">
                         <thead className="bg-[#0F172A] text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
                             <tr>
                                 <th className="px-6 py-4 font-semibold">Project Name</th>
@@ -130,7 +153,7 @@ export default function ProjectsPage() {
                                 </tr>
                             ) : (
                                 filteredProjects.map((project) => (
-                                    <tr key={project.id} className="hover:bg-gray-800/50 transition group">
+                                    <tr key={project.id} className="hover:bg-gray-800/50 transition group relative">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
@@ -145,38 +168,35 @@ export default function ProjectsPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <div className="relative inline-block isolate">
-                                                {/* Visual Badge (Underneath) */}
-                                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium border flex items-center justify-center min-w-[100px] whitespace-nowrap pointer-events-none ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                        project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                                            project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
-                                                                'bg-gray-700/50 text-gray-400 border-gray-600'
-                                                    }`}>
-                                                    {getStatusLabel(project.status)}
-                                                </span>
-                                                {/* Invisible Select (On Top) */}
-                                                <select
-                                                    value={project.status || 'planning'}
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    onChange={async (e) => {
-                                                        const newStatus = e.target.value
-                                                        const updatedProjects = projects.map(p =>
-                                                            p.id === project.id ? { ...p, status: newStatus } : p
-                                                        )
-                                                        setProjects(updatedProjects)
-                                                        setFilteredProjects(updatedProjects)
-
-                                                        const { updateProjectStatus } = await import('@/app/actions/project-actions')
-                                                        await updateProjectStatus(project.id, newStatus)
-                                                    }}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none z-10"
-                                                    title="Change Status"
+                                            <div className="relative inline-block">
+                                                <button
+                                                    onClick={(e) => toggleDropdown(project.id, e)}
+                                                    className={`px-2.5 py-1 rounded-full text-xs font-medium border flex items-center justify-center min-w-[100px] whitespace-nowrap transition-colors ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' :
+                                                            project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' :
+                                                                project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' :
+                                                                    'bg-gray-700/50 text-gray-400 border-gray-600 hover:bg-gray-700'
+                                                        }`}
                                                 >
-                                                    <option value="planning">Planning</option>
-                                                    <option value="in-progress">In Progress</option>
-                                                    <option value="completed">Completed</option>
-                                                    <option value="on-hold">On Hold</option>
-                                                </select>
+                                                    {getStatusLabel(project.status)}
+                                                </button>
+
+                                                {/* Custom Dropdown Menu */}
+                                                {activeDropdown === project.id && (
+                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-36 bg-[#0B1120] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden py-1">
+                                                        {['planning', 'in-progress', 'completed', 'on-hold'].map((status) => (
+                                                            <button
+                                                                key={status}
+                                                                onClick={(e) => selectStatus(project.id, status, e)}
+                                                                className={`w-full px-4 py-2 text-xs text-left transition-colors hover:bg-gray-800 ${(project.status || 'planning') === status
+                                                                        ? 'text-white bg-blue-500/10 font-medium'
+                                                                        : 'text-gray-400'
+                                                                    }`}
+                                                            >
+                                                                {getStatusLabel(status)}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium text-gray-300">
