@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import FileList from '@/components/dashboard/FileList'
 import StatsCard from '@/components/dashboard/StatsCard'
+import ProjectBOQ from '@/components/dashboard/ProjectBOQ'
 import { HardDrive, Map as MapIcon } from 'lucide-react'
 
 // Reuse map component dynamically
@@ -115,24 +116,8 @@ export default function ProjectDetailPage() {
                     </div>
 
                     {/* Work Items / BOQ Section (Placeholder) */}
-                    <div className="bg-[#1E293B] rounded-xl border border-gray-700">
-                        <div className="p-6 border-b border-gray-700 flex justify-between items-center">
-                            <div>
-                                <h3 className="font-bold text-white">Work Items (BOQ)</h3>
-                                <p className="text-sm text-gray-400">Manage items and track specific progress to calculate value.</p>
-                            </div>
-                            <button className="bg-blue-600/10 text-blue-400 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-600/20 transition flex items-center gap-2">
-                                <Plus size={16} /> Add Items from KHS
-                            </button>
-                        </div>
-                        <div className="p-8 text-center">
-                            <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-500">
-                                <FileText size={24} />
-                            </div>
-                            <p className="text-gray-400 font-medium">No items added yet</p>
-                            <p className="text-sm text-gray-500 mt-1">Import items from a Price List (KHS) to start tracking value.</p>
-                        </div>
-                    </div>
+                    {/* Work Items / BOQ Section */}
+                    <ProjectBOQ projectId={project.id} />
 
                     {/* Files Section */}
                     <FileList files={project.files || []} />
