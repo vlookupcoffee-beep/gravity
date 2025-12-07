@@ -55,12 +55,26 @@ export default function ProjectDetailPage() {
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold text-white">{project.name}</h1>
                     <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                            project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                'bg-gray-700/50 text-gray-400 border-gray-600'
-                            }`}>
-                            {project.status || 'Planning'}
-                        </span>
+                        <select
+                            value={project.status || 'planning'}
+                            onChange={async (e) => {
+                                const newStatus = e.target.value
+                                // Optimistic update
+                                setProject({ ...project, status: newStatus })
+
+                                // Call server action
+                                const { updateProjectStatus } = await import('@/app/actions/project-actions')
+                                await updateProjectStatus(project.id, newStatus)
+                            }}
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium border appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-[#1E293B] ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 focus:ring-green-500' :
+                                    project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 focus:ring-blue-500' :
+                                        'bg-gray-700/50 text-gray-400 border-gray-600 focus:ring-gray-500'
+                                }`}
+                        >
+                            <option value="planning" className="bg-[#1E293B] text-gray-400">Planning</option>
+                            <option value="in-progress" className="bg-[#1E293B] text-blue-400">In Progress</option>
+                            <option value="completed" className="bg-[#1E293B] text-green-400">Completed</option>
+                        </select>
                         <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
                     </div>
                 </div>
