@@ -2,153 +2,217 @@
 
 import { useEffect, useState } from 'react'
 import { getProjects } from '@/app/actions/get-projects'
-import StatsCard from '@/components/dashboard/StatsCard'
-import { Activity, CheckCircle, Clock, Database, Plus } from 'lucide-react'
+import { Search, Filter, Plus, FileText, Trash2, Edit } from 'lucide-react'
 import Link from 'next/link'
 
-export default function DashboardPage() {
+export default function ProjectsPage() {
     const [projects, setProjects] = useState<any[]>([])
+    const [filteredProjects, setFilteredProjects] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [search, setSearch] = useState('')
+    const [statusFilter, setStatusFilter] = useState('all')
 
     useEffect(() => {
-        async function load() {
-            setLoading(true)
-            const data = await getProjects()
-            setProjects(data)
-            setLoading(false)
-        }
-        load()
+        loadProjects()
     }, [])
 
-    const totalProjects = projects.length
-    const completedProjects = projects.filter(p => p.status === 'completed').length
-    const inProgressProjects = projects.filter(p => p.status === 'in-progress').length
-    const totalValue = projects.reduce((acc, p) => acc + (p.value || 0), 0)
+    useEffect(() => {
+        let result = projects
 
-    // Helper for currency format
+        // Search
+        if (search) {
+            result = result.filter(p =>
+                p.name.toLowerCase().includes(search.toLowerCase()) ||
+                p.description?.toLowerCase().includes(search.toLowerCase())
+            )
+        }
+
+        // Filter
+        if (statusFilter !== 'all') {
+            result = result.filter(p => p.status === statusFilter)
+        }
+
+        setFilteredProjects(result)
+    }, [search, statusFilter, projects])
+
+    async function loadProjects() {
+        setLoading(true)
+        const data = await getProjects()
+        setProjects(data)
+        setFilteredProjects(data)
+        setLoading(false)
+    }
+
     const formatCurrency = (val: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            maximumFractionDigits: 0
-        }).format(val)
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val || 0)
+    }
+
+    const getStatusLabel = (status: string) => {
+        if (status === 'in-progress') return 'In Progress'
+        if (status === 'on-hold') return 'On Hold'
+        if (!status) return 'Planning'
+        return status.charAt(0).toUpperCase() + status.slice(1)
     }
 
     return (
-        <div className="space-y-8">
-            {/* Header */}
-            <div className="flex justify-between items-center">
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
-                    <p className="text-gray-400">Welcome back! Here's what's happening today.</p>
+                    <h1 className="text-2xl font-bold text-white">Projects</h1>
+                    <p className="text-gray-400">Manage and track all your engineering projects.</p>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20">
+                <Link
+                    href="/dashboard/projects/new"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
+                >
                     <Plus size={20} />
-                    <span>New Project</span>
-                </button>
+                    <span>Create Project</span>
+                </Link>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <StatsCard
-                    label="Total Projects"
-                    value={totalProjects}
-                    icon={Database}
-                />
-                <StatsCard
-                    label="Completed"
-                    value={completedProjects}
-                    icon={CheckCircle}
-                />
-                <StatsCard
-                    label="In Progress"
-                    value={inProgressProjects}
-                    icon={Activity}
-                />
-                <StatsCard
-                    label="Total Value"
-                    value={formatCurrency(totalValue)}
-                    icon={Clock}
-                    className="sm:col-span-2 lg:col-span-2 bg-gradient-to-r from-[#1E293B] to-[#0F172A]"
-                />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Project List Widget */}
-                <div className="lg:col-span-2 bg-[#1E293B] p-6 rounded-xl border border-gray-700">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-bold text-white">Active Projects</h2>
-                        <Link href="/dashboard/projects" className="text-blue-400 text-sm hover:underline">View All</Link>
-                    </div>
-
-                    <div className="space-y-4">
-                        {projects.slice(0, 5).map((project) => (
-                            <div key={project.id} className="p-4 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition bg-[#0F172A]/50">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h3 className="font-semibold text-white">{project.name}</h3>
-                                        <p className="text-xs text-gray-400">{project.structures?.count || 0} structures • {(project.routeLength || 0).toFixed(2)} km</p>
-                                    </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap min-w-[80px] text-center ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                                        project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                            'bg-gray-700/50 text-gray-400 border border-gray-600'
-                                        }`}>
-                                        {project.status || 'Planning'}
-                                    </span>
-                                </div>
-
-                                {/* Simple Progress Bar */}
-                                <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
-                                    <div
-                                        className="bg-blue-500 h-2 rounded-full"
-                                        style={{ width: `${project.progress || 0}%` }}
-                                    ></div>
-                                </div>
-                                <div className="flex justify-end mt-1">
-                                    <span className="text-xs text-gray-500">{project.progress || 0}%</span>
-                                </div>
-                            </div>
-                        ))}
-                        {projects.length === 0 && (
-                            <p className="text-center text-gray-500 py-4">No active projects.</p>
-                        )}
-                    </div>
+            {/* Controls */}
+            <div className="bg-[#1E293B] p-4 rounded-xl border border-gray-700 shadow-sm flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Search projects by name or description..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#0F172A] text-white placeholder-gray-500"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
+                <div className="flex items-center gap-2">
+                    <Filter className="text-gray-400" size={20} />
+                    <select
+                        className="border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#0F172A] text-white"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="all">All Status</option>
+                        <option value="planning">Planning</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="on-hold">On Hold</option>
+                    </select>
+                </div>
+            </div>
 
-                {/* Quick Stats / Distribution */}
-                <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
-                    <h2 className="text-lg font-bold text-white mb-6">Status Distribution</h2>
-                    <div className="space-y-4">
-                        {/* Visual Representation (Simple Bars) */}
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-400">Completed</span>
-                                <span className="font-medium text-white">{completedProjects}</span>
-                            </div>
-                            <div className="w-full bg-gray-700 rounded-full h-2">
-                                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${totalProjects ? (completedProjects / totalProjects) * 100 : 0}%` }}></div>
-                            </div>
-                        </div>
+            {/* Table */}
+            <div className="bg-[#1E293B] rounded-xl border border-gray-700 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-[#0F172A] text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
+                            <tr>
+                                <th className="px-6 py-4 font-semibold">Project Name</th>
+                                <th className="px-6 py-4 font-semibold text-center">Status</th>
+                                <th className="px-6 py-4 font-semibold">Value</th>
+                                <th className="px-6 py-4 font-semibold">Progress</th>
+                                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-700">
+                            {loading ? (
+                                [...Array(5)].map((_, i) => (
+                                    <tr key={i} className="animate-pulse">
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-48"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-20"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-24"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-32"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-8 ml-auto"></div></td>
+                                    </tr>
+                                ))
+                            ) : filteredProjects.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                        No projects found matching your criteria.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredProjects.map((project) => (
+                                    <tr key={project.id} className="hover:bg-gray-800/50 transition group">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
+                                                    <FileText size={18} />
+                                                </div>
+                                                <div>
+                                                    <Link href={`/dashboard/projects/${project.id}`} className="font-medium text-white hover:text-blue-400">
+                                                        {project.name}
+                                                    </Link>
+                                                    <p className="text-xs text-gray-500 truncate max-w-xs">{project.description || 'No description'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="relative inline-block isolate">
+                                                {/* Visual Badge (Underneath) */}
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-medium border flex items-center justify-center min-w-[100px] whitespace-nowrap pointer-events-none ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                                        project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                            project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                                                                'bg-gray-700/50 text-gray-400 border-gray-600'
+                                                    }`}>
+                                                    {getStatusLabel(project.status)}
+                                                </span>
+                                                {/* Invisible Select (On Top) */}
+                                                <select
+                                                    value={project.status || 'planning'}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onChange={async (e) => {
+                                                        const newStatus = e.target.value
+                                                        const updatedProjects = projects.map(p =>
+                                                            p.id === project.id ? { ...p, status: newStatus } : p
+                                                        )
+                                                        setProjects(updatedProjects)
+                                                        setFilteredProjects(updatedProjects)
 
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-400">In Progress</span>
-                                <span className="font-medium text-white">{inProgressProjects}</span>
-                            </div>
-                            <div className="w-full bg-gray-700 rounded-full h-2">
-                                <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${totalProjects ? (inProgressProjects / totalProjects) * 100 : 0}%` }}></div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-400">Planning</span>
-                                <span className="font-medium text-white">{totalProjects - completedProjects - inProgressProjects}</span>
-                            </div>
-                            <div className="w-full bg-gray-700 rounded-full h-2">
-                                <div className="bg-gray-500 h-2 rounded-full" style={{ width: `${totalProjects ? ((totalProjects - completedProjects - inProgressProjects) / totalProjects) * 100 : 0}%` }}></div>
-                            </div>
-                        </div>
+                                                        const { updateProjectStatus } = await import('@/app/actions/project-actions')
+                                                        await updateProjectStatus(project.id, newStatus)
+                                                    }}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none z-10"
+                                                    title="Change Status"
+                                                >
+                                                    <option value="planning">Planning</option>
+                                                    <option value="in-progress">In Progress</option>
+                                                    <option value="completed">Completed</option>
+                                                    <option value="on-hold">On Hold</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-300">
+                                            {formatCurrency(project.value)}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="w-full bg-gray-700 rounded-full h-2 mb-1">
+                                                <div
+                                                    className={`h-2 rounded-full ${project.progress >= 100 ? 'bg-green-500' : 'bg-blue-600'}`}
+                                                    style={{ width: `${project.progress || 0}%` }}
+                                                ></div>
+                                            </div>
+                                            <span className="text-xs text-gray-500">{project.progress || 0}% Complete</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Edit">
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Delete">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                {/* Pagination */}
+                <div className="px-6 py-4 border-t border-gray-700 flex justify-between items-center bg-[#0F172A]/50">
+                    <p className="text-xs text-gray-400">Showing {filteredProjects.length} projects</p>
+                    <div className="flex gap-2">
+                        <button className="px-3 py-1 border border-gray-700 rounded bg-[#1E293B] text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-800" disabled>Previous</button>
+                        <button className="px-3 py-1 border border-gray-700 rounded bg-[#1E293B] text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-800" disabled>Next</button>
                     </div>
                 </div>
             </div>
