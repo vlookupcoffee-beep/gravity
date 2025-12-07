@@ -49,7 +49,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <StatsCard
                     label="Total Projects"
                     value={totalProjects}
@@ -69,6 +69,7 @@ export default function DashboardPage() {
                     label="Total Value"
                     value={formatCurrency(totalValue)}
                     icon={Clock}
+                    className="sm:col-span-2 lg:col-span-2 bg-gradient-to-r from-[#1E293B] to-[#0F172A]"
                 />
             </div>
 

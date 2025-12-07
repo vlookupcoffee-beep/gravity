@@ -6,11 +6,12 @@ interface StatsCardProps {
     value: string | number
     icon: LucideIcon
     subtext?: string
+    className?: string
 }
 
-export default function StatsCard({ label, value, icon: Icon, subtext }: StatsCardProps) {
+export default function StatsCard({ label, value, icon: Icon, subtext, className }: StatsCardProps) {
     return (
-        <div className="bg-[#1E293B] p-4 rounded-xl shadow-sm border border-gray-700 flex items-center gap-4 hover:border-blue-500/50 transition duration-300">
+        <div className={`bg-[#1E293B] p-4 rounded-xl shadow-sm border border-gray-700 flex items-center gap-4 hover:border-blue-500/50 transition duration-300 ${className}`}>
             <div className="p-3 bg-blue-500/10 text-blue-400 rounded-lg shrink-0">
                 <Icon size={24} />
             </div>
