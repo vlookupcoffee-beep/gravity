@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Search, Trash2, Save, X } from 'lucide-react'
-import { getKHSItems, addProjectItem, getProjectItems } from '@/app/actions/boq-actions'
+import { getKHSItems, addProjectItem, getProjectItems, deleteProjectItem } from '@/app/actions/boq-actions'
 import { getKHSProviders } from '@/app/actions/get-khs-providers'
 
 interface Props {
@@ -65,6 +65,12 @@ export default function ProjectBOQ({ projectId }: Props) {
         }
     }
 
+    async function handleDelete(itemId: string) {
+        if (!confirm('Are you sure you want to delete this item?')) return
+        await deleteProjectItem(itemId, projectId)
+        loadProjectItems()
+    }
+
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
 
     const totalValue = items.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0)
@@ -111,7 +117,10 @@ export default function ProjectBOQ({ projectId }: Props) {
                                     <td className="px-4 py-3 text-center text-white font-semibold">{item.quantity} {item.unit}</td>
                                     <td className="px-4 py-3 text-right text-green-400">{formatCurrency(item.unit_price * item.quantity)}</td>
                                     <td className="px-4 py-3">
-                                        <button className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-900/20">
+                                        <button
+                                            onClick={() => handleDelete(item.id)}
+                                            className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-900/20"
+                                        >
                                             <Trash2 size={14} />
                                         </button>
                                     </td>
