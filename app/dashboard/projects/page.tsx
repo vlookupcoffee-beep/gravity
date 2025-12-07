@@ -138,13 +138,33 @@ export default function ProjectsPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                    project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                                        project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
-                                                            'bg-gray-700/50 text-gray-400 border-gray-600'
-                                                }`}>
-                                                {project.status || 'Planning'}
-                                            </span>
+                                            <select
+                                                value={project.status || 'planning'}
+                                                onClick={(e) => e.stopPropagation()} // Prevent row click
+                                                onChange={async (e) => {
+                                                    const newStatus = e.target.value
+                                                    // Optimistic update
+                                                    const updatedProjects = projects.map(p =>
+                                                        p.id === project.id ? { ...p, status: newStatus } : p
+                                                    )
+                                                    setProjects(updatedProjects)
+                                                    setFilteredProjects(updatedProjects) // Update filtered list too
+
+                                                    // Call server action
+                                                    const { updateProjectStatus } = await import('@/app/actions/project-actions')
+                                                    await updateProjectStatus(project.id, newStatus)
+                                                }}
+                                                className={`px-2.5 py-1 rounded-full text-xs font-medium border appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-[#1E293B] whitespace-nowrap w-28 text-center ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 focus:ring-green-500' :
+                                                        project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 focus:ring-blue-500' :
+                                                            project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 focus:ring-orange-500' :
+                                                                'bg-gray-700/50 text-gray-400 border-gray-600 focus:ring-gray-500'
+                                                    }`}
+                                            >
+                                                <option value="planning" className="bg-[#1E293B] text-gray-400">Planning</option>
+                                                <option value="in-progress" className="bg-[#1E293B] text-blue-400">In Progress</option>
+                                                <option value="completed" className="bg-[#1E293B] text-green-400">Completed</option>
+                                                <option value="on-hold" className="bg-[#1E293B] text-orange-400">On Hold</option>
+                                            </select>
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium text-gray-300">
                                             {formatCurrency(project.value)}
