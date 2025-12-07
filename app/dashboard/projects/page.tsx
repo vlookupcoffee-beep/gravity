@@ -1,0 +1,189 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { getProjects } from '@/app/actions/get-projects'
+import { Search, Filter, MoreVertical, Plus, FileText, Trash2, Edit } from 'lucide-react'
+import Link from 'next/link'
+
+export default function ProjectsPage() {
+    const [projects, setProjects] = useState<any[]>([])
+    const [filteredProjects, setFilteredProjects] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [search, setSearch] = useState('')
+    const [statusFilter, setStatusFilter] = useState('all')
+
+    useEffect(() => {
+        loadProjects()
+    }, [])
+
+    useEffect(() => {
+        let result = projects
+
+        // Search
+        if (search) {
+            result = result.filter(p =>
+                p.name.toLowerCase().includes(search.toLowerCase()) ||
+                p.description?.toLowerCase().includes(search.toLowerCase())
+            )
+        }
+
+        // Filter
+        if (statusFilter !== 'all') {
+            result = result.filter(p => p.status === statusFilter)
+        }
+
+        setFilteredProjects(result)
+    }, [search, statusFilter, projects])
+
+    async function loadProjects() {
+        setLoading(true)
+        const data = await getProjects()
+        setProjects(data)
+        setFilteredProjects(data)
+        setLoading(false)
+    }
+
+    const formatCurrency = (val: number) => {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val || 0)
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-white">Projects</h1>
+                    <p className="text-gray-400">Manage and track all your engineering projects.</p>
+                </div>
+                <Link
+                    href="/dashboard/projects/new"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
+                >
+                    <Plus size={20} />
+                    <span>Create Project</span>
+                </Link>
+            </div>
+
+            {/* Controls */}
+            <div className="bg-[#1E293B] p-4 rounded-xl border border-gray-700 shadow-sm flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Search projects by name or description..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#0F172A] text-white placeholder-gray-500"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+                <div className="flex items-center gap-2">
+                    <Filter className="text-gray-400" size={20} />
+                    <select
+                        className="border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#0F172A] text-white"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="all">All Status</option>
+                        <option value="planning">Planning</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="on-hold">On Hold</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-[#1E293B] rounded-xl border border-gray-700 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-[#0F172A] text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
+                            <tr>
+                                <th className="px-6 py-4 font-semibold">Project Name</th>
+                                <th className="px-6 py-4 font-semibold">Status</th>
+                                <th className="px-6 py-4 font-semibold">Value</th>
+                                <th className="px-6 py-4 font-semibold">Progress</th>
+                                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-700">
+                            {loading ? (
+                                [...Array(5)].map((_, i) => (
+                                    <tr key={i} className="animate-pulse">
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-48"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-20"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-24"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-32"></div></td>
+                                        <td className="px-6 py-4"><div className="h-4 bg-gray-700 rounded w-8 ml-auto"></div></td>
+                                    </tr>
+                                ))
+                            ) : filteredProjects.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                        No projects found matching your criteria.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredProjects.map((project) => (
+                                    <tr key={project.id} className="hover:bg-gray-800/50 transition group">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg">
+                                                    <FileText size={18} />
+                                                </div>
+                                                <div>
+                                                    <Link href={`/dashboard/projects/${project.id}`} className="font-medium text-white hover:text-blue-400">
+                                                        {project.name}
+                                                    </Link>
+                                                    <p className="text-xs text-gray-500 truncate max-w-xs">{project.description || 'No description'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                                    project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                        project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                                                            'bg-gray-700/50 text-gray-400 border-gray-600'
+                                                }`}>
+                                                {project.status || 'Planning'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-300">
+                                            {formatCurrency(project.value)}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="w-full bg-gray-700 rounded-full h-2 mb-1">
+                                                <div
+                                                    className={`h-2 rounded-full ${project.progress >= 100 ? 'bg-green-500' : 'bg-blue-600'
+                                                        }`}
+                                                    style={{ width: `${project.progress || 0}%` }}
+                                                ></div>
+                                            </div>
+                                            <span className="text-xs text-gray-500">{project.progress || 0}% Complete</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Edit">
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Delete">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                {/* Pagination - Simplified for now */}
+                <div className="px-6 py-4 border-t border-gray-700 flex justify-between items-center bg-[#0F172A]/50">
+                    <p className="text-xs text-gray-400">Showing {filteredProjects.length} projects</p>
+                    <div className="flex gap-2">
+                        <button className="px-3 py-1 border border-gray-700 rounded bg-[#1E293B] text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-800" disabled>Previous</button>
+                        <button className="px-3 py-1 border border-gray-700 rounded bg-[#1E293B] text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-800" disabled>Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}

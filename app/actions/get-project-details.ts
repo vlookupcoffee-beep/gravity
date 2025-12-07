@@ -30,6 +30,20 @@ export async function getProjectDetails(projectId: string) {
         .select('name, type, path')
         .eq('project_id', projectId)
 
+    // Fetch project metadata
+    const { data: project } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .single()
+
+    // Fetch files
+    const { data: files } = await supabase
+        .from('project_files')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false })
+
     // Group structures by name
     const structureBreakdown: Record<string, number> = {}
     if (structures) {
@@ -67,7 +81,9 @@ export async function getProjectDetails(projectId: string) {
     }
 
     return {
+        ...project,
         structures: structureBreakdown,
-        routes: routeBreakdown
+        routes: routeBreakdown,
+        files: files || []
     }
 }

@@ -24,7 +24,13 @@ export async function getProjects() {
         .select(`
       id,
       name,
-      created_at
+      created_at,
+      status,
+      value,
+      description,
+      progress,
+      start_date,
+      end_date
     `)
         .order('created_at', { ascending: false })
 
