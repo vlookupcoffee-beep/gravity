@@ -1,12 +1,26 @@
 'use client'
 
-import { Upload, FileText, Plus, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { Upload, FileText, Plus, Loader2, Database } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { uploadKHS } from '@/app/actions/upload-khs'
+import { getKHSProviders } from '@/app/actions/get-khs-providers'
 
 export default function KHSPage() {
     const [isUploading, setIsUploading] = useState(false)
     const [uploadResult, setUploadResult] = useState<any>(null)
+    const [providers, setProviders] = useState<any[]>([])
+    const [loadingData, setLoadingData] = useState(true)
+
+    useEffect(() => {
+        loadProviders()
+    }, [])
+
+    async function loadProviders() {
+        setLoadingData(true)
+        const data = await getKHSProviders()
+        setProviders(data || [])
+        setLoadingData(false)
+    }
 
     async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
@@ -17,12 +31,14 @@ export default function KHSPage() {
 
         const formData = new FormData()
         formData.append('file', file)
-        // Hardcoded provider name for this specific file, or could be dynamic
         formData.append('providerName', 'PT INTERNUSA DUTA MAKMUR (IDNET)')
 
         try {
             const result = await uploadKHS(formData)
             setUploadResult(result)
+            if (result.success) {
+                loadProviders() // Refresh list
+            }
         } catch (error) {
             console.error(error)
             setUploadResult({ error: 'An unexpected error occurred.' })
@@ -54,26 +70,32 @@ export default function KHSPage() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Example Card for Existing Data - In real app, map this from DB */}
-                <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700 hover:border-blue-500/50 transition cursor-pointer group">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-blue-500/10 text-blue-400 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition">
-                            <FileText size={24} />
+                {loadingData ? (
+                    [...Array(3)].map((_, i) => (
+                        <div key={i} className="h-40 bg-[#1E293B] animate-pulse rounded-xl border border-gray-700"></div>
+                    ))
+                ) : providers.length === 0 ? (
+                    <div className="col-span-full py-12 text-center text-gray-500 bg-[#1E293B] rounded-xl border border-gray-700 border-dashed">
+                        <Database size={48} className="mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium text-gray-400">No Price Lists Found</p>
+                        <p className="text-sm">Please upload a CSV file to get started.</p>
+                    </div>
+                ) : (
+                    providers.map((provider) => (
+                        <div key={provider.id} className="bg-[#1E293B] p-6 rounded-xl border border-gray-700 hover:border-blue-500/50 transition cursor-pointer group">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="p-3 bg-blue-500/10 text-blue-400 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition">
+                                    <FileText size={24} />
+                                </div>
+                                <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
+                                    {provider.items?.[0]?.count || 0} Items
+                                </span>
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2 truncate" title={provider.name}>{provider.name}</h3>
+                            <p className="text-sm text-gray-400">Imported {new Date(provider.created_at).toLocaleDateString()}</p>
                         </div>
-                        <span className="text-xs text-gray-500">Active</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2">PT INTERNUSA DUTA MAKMUR</h3>
-                    <p className="text-sm text-gray-400">Standard KHS for 2024/2025.</p>
-                </div>
-
-                {/* Placeholder for New Provider */}
-                <button className="bg-[#0F172A] p-6 rounded-xl border border-dashed border-gray-700 hover:border-blue-500 hover:bg-gray-800/50 transition flex flex-col items-center justify-center text-center h-full min-h-[180px]">
-                    <div className="p-3 bg-gray-800 text-gray-400 rounded-full mb-3">
-                        <Plus size={24} />
-                    </div>
-                    <h3 className="font-semibold text-white">Add New Provider</h3>
-                    <p className="text-xs text-gray-500 mt-1">Create a blank price list</p>
-                </button>
+                    ))
+                )}
             </div>
         </div>
     )
