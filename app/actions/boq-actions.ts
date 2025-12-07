@@ -16,7 +16,16 @@ async function updateProjectValue(projectId: string) {
     const totalValue = items?.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0) || 0
 
     // 2. Update Project
-    await supabase.from('projects').update({ value: totalValue }).eq('id', projectId)
+    const { error } = await supabase
+        .from('projects')
+        .update({ value: totalValue })
+        .eq('id', projectId)
+
+    if (error) {
+        console.error('FAILED to update project value:', error)
+    } else {
+        console.log(`Successfully updated project ${projectId} value to ${totalValue}`)
+    }
 }
 
 // Fetch items from a specific KHS Provider

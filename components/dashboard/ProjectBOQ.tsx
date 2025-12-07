@@ -7,9 +7,10 @@ import { getKHSProviders } from '@/app/actions/get-khs-providers'
 
 interface Props {
     projectId: string
+    onUpdate?: () => void
 }
 
-export default function ProjectBOQ({ projectId }: Props) {
+export default function ProjectBOQ({ projectId, onUpdate }: Props) {
     const [items, setItems] = useState<any[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -60,6 +61,7 @@ export default function ProjectBOQ({ projectId }: Props) {
             loadProjectItems() // Refresh list
             setQuantity(1)
             setSelectedKHSItem(null)
+            onUpdate?.()
         } else {
             alert('Failed to add item')
         }
@@ -69,6 +71,7 @@ export default function ProjectBOQ({ projectId }: Props) {
         if (!confirm('Are you sure you want to delete this item?')) return
         await deleteProjectItem(itemId, projectId)
         loadProjectItems()
+        onUpdate?.()
     }
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)

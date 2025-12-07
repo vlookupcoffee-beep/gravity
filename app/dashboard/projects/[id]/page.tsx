@@ -117,7 +117,7 @@ export default function ProjectDetailPage() {
 
                     {/* Work Items / BOQ Section (Placeholder) */}
                     {/* Work Items / BOQ Section */}
-                    <ProjectBOQ projectId={project.id} />
+                    <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
 
                     {/* Files Section */}
                     <FileList files={project.files || []} />
