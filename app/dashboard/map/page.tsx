@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { createClient } from '@/utils/supabase/client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import KmlUploader from '@/components/tools/KmlUploader'
 
 // Dynamically import MapComponent
@@ -15,7 +15,7 @@ import { useSearchParams } from 'next/navigation'
 
 // ... imports remain the same
 
-export default function MapPage() {
+function MapContent() {
     const searchParams = useSearchParams()
     const projectId = searchParams.get('projectId')
     const [markers, setMarkers] = useState<any[]>([])
@@ -98,5 +98,13 @@ export default function MapPage() {
                 <KmlUploader />
             </div>
         </div>
+    )
+}
+
+export default function MapPage() {
+    return (
+        <Suspense fallback={<div className="h-full w-full flex items-center justify-center text-white">Loading Map...</div>}>
+            <MapContent />
+        </Suspense>
     )
 }
