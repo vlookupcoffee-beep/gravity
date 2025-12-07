@@ -39,7 +39,7 @@ export default function ProjectDetailPage() {
     if (!project) return <div className="p-8 text-center text-white">Project not found</div>
 
     const formatCurrency = (val: number) => {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val || 0)
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0)
     }
 
     const totalLength = project.routes.reduce((acc: number, r: any) => acc + r.length, 0)
@@ -69,18 +69,24 @@ export default function ProjectDetailPage() {
                 </button>
             </div>
 
+            {/* Top Row: Stats (Full Width) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <StatsCard
+                    label="Value"
+                    value={formatCurrency(project.value)}
+                    icon={DollarSign}
+                    className="sm:col-span-2 lg:col-span-2 bg-gradient-to-r from-[#1E293B] to-[#0F172A]"
+                />
+                <StatsCard label="Progress" value={`${project.progress || 0}%`} icon={Activity} />
+                <StatsCard label="Length" value={`${totalLength.toFixed(2)} km`} icon={MapIcon} />
+                <StatsCard label="Structures" value={totalStructures} icon={HardDrive} />
+            </div>
+
+            {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {/* Left Column: Stats & Map */}
+                {/* Left Column (2/3) */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        <StatsCard label="Value" value={formatCurrency(project.value)} icon={DollarSign} />
-                        <StatsCard label="Progress" value={`${project.progress || 0}%`} icon={Activity} />
-                        <StatsCard label="Length" value={`${totalLength.toFixed(2)} km`} icon={MapIcon} />
-                        <StatsCard label="Structures" value={totalStructures} icon={HardDrive} />
-                    </div>
-
                     {/* Description */}
                     <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
                         <h2 className="font-bold text-white mb-4">Description</h2>
@@ -88,6 +94,9 @@ export default function ProjectDetailPage() {
                             {project.description || "No description provided."}
                         </p>
                     </div>
+
+                    {/* Work Items / BOQ Section */}
+                    <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
 
                     {/* Detailed Breakdown */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -100,68 +109,78 @@ export default function ProjectDetailPage() {
                                         <span className="font-medium text-white">{r.length.toFixed(2)} km</span>
                                     </div>
                                 ))}
+                                {project.routes.length === 0 && <p className="text-gray-500 text-sm">No routes defined.</p>}
                             </div>
                         </div>
+
                         <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
                             <h3 className="font-bold text-white mb-4 text-sm uppercase text-gray-500">Structure Breakdown</h3>
                             <div className="space-y-3">
-                                {Object.entries(project.structures).map(([key, val]: [string, any]) => (
-                                    <div key={key} className="flex justify-between text-sm">
-                                        <span className="text-gray-400">{key}</span>
-                                        <span className="font-medium text-white">{val}</span>
-                                    </div>
-                                ))}
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400">FDT</span>
+                                    <span className="font-medium text-white">{project.structures?.FDT || 0}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400">FAT</span>
+                                    <span className="font-medium text-white">{project.structures?.FAT || 0}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400">Pole (Tiang)</span>
+                                    <span className="font-medium text-white">{project.structures?.POLE || 0}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400">Slack Support</span>
+                                    <span className="font-medium text-white">{project.structures?.SLACK_SUPPORT || 0}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Work Items / BOQ Section (Placeholder) */}
-                    {/* Work Items / BOQ Section */}
-                    <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
 
                     {/* Files Section */}
                     <FileList files={project.files || []} />
                 </div>
 
-                {/* Right Column: Timeline & Notes */}
+                {/* Right Column (1/3) */}
                 <div className="space-y-6">
+                    {/* Timeplan - Aligned with Description */}
                     <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
                         <h2 className="font-bold text-white mb-4">Timeplan</h2>
                         <div className="space-y-4">
                             <div>
-                                <p className="text-xs text-gray-500 mb-1">Start Date</p>
-                                <div className="flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <label className="text-xs text-gray-500 block mb-1">Start Date</label>
+                                <div className="flex items-center gap-2 text-gray-300">
                                     <Calendar size={16} className="text-blue-500" />
-                                    {project.start_date ? new Date(project.start_date).toLocaleDateString() : '-'}
+                                    <span>{project.start_date ? new Date(project.start_date).toLocaleDateString() : '-'}</span>
                                 </div>
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500 mb-1">End Date</p>
-                                <div className="flex items-center gap-2 text-sm font-medium text-gray-300">
+                                <label className="text-xs text-gray-500 block mb-1">End Date</label>
+                                <div className="flex items-center gap-2 text-gray-300">
                                     <Calendar size={16} className="text-red-500" />
-                                    {project.end_date ? new Date(project.end_date).toLocaleDateString() : '-'}
+                                    <span>{project.end_date ? new Date(project.end_date).toLocaleDateString() : '-'}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Progress Timeline (Mockup for Phase 1) */}
                     <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
                         <h2 className="font-bold text-white mb-4">Activity Log</h2>
-                        <div className="relative border-l-2 border-gray-700 ml-3 space-y-6">
-                            <div className="ml-4 relative">
-                                <div className="absolute -left-[25px] top-1 w-4 h-4 rounded-full bg-blue-600 border-2 border-[#1E293B]"></div>
+                        <div className="space-y-6 relative before:absolute before:left-2 before:top-10 before:bottom-0 before:w-0.5 before:bg-gray-700">
+                            {/* Mock Activity - In real app, fetch from logs */}
+                            <div className="relative pl-8">
+                                <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-blue-500 border-4 border-[#1E293B]"></div>
                                 <p className="text-sm font-medium text-white">Project data updated</p>
                                 <p className="text-xs text-gray-500">Just now</p>
                             </div>
-                            <div className="ml-4 relative">
-                                <div className="absolute -left-[25px] top-1 w-4 h-4 rounded-full bg-gray-600 border-2 border-[#1E293B]"></div>
+                            <div className="relative pl-8">
+                                <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-gray-600 border-4 border-[#1E293B]"></div>
                                 <p className="text-sm font-medium text-white">Project created</p>
                                 <p className="text-xs text-gray-500">{new Date(project.created_at).toLocaleDateString()}</p>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     )
