@@ -83,10 +83,14 @@ export default function DashboardPage() {
 
                     <div className="space-y-4">
                         {projects.slice(0, 5).map((project) => (
-                            <div key={project.id} className="p-4 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition bg-[#0F172A]/50">
+                            <Link
+                                key={project.id}
+                                href={`/dashboard/projects/${project.id}`}
+                                className="block p-4 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition bg-[#0F172A]/50 group"
+                            >
                                 <div className="flex justify-between items-start mb-2">
                                     <div>
-                                        <h3 className="font-semibold text-white">{project.name}</h3>
+                                        <h3 className="font-semibold text-white group-hover:text-blue-400 transition">{project.name}</h3>
                                         <p className="text-xs text-gray-400">{project.structures?.count || 0} structures • {(project.routeLength || 0).toFixed(2)} km</p>
                                     </div>
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap min-w-[80px] text-center ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
@@ -107,7 +111,7 @@ export default function DashboardPage() {
                                 <div className="flex justify-end mt-1">
                                     <span className="text-xs text-gray-500">{project.progress || 0}%</span>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                         {projects.length === 0 && (
                             <p className="text-center text-gray-500 py-4">No active projects.</p>
