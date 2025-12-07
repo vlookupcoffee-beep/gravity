@@ -27,7 +27,11 @@ export default function DashboardPage() {
 
     // Helper for currency format
     const formatCurrency = (val: number) => {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val)
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 0
+        }).format(val)
     }
 
     return (
@@ -85,8 +89,8 @@ export default function DashboardPage() {
                                         <p className="text-xs text-gray-400">{project.structures?.count || 0} structures • {(project.routeLength || 0).toFixed(2)} km</p>
                                     </div>
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${project.status === 'completed' ? 'bg-green-500/10 text-green-400' :
-                                            project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400' :
-                                                'bg-gray-700/50 text-gray-400'
+                                        project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400' :
+                                            'bg-gray-700/50 text-gray-400'
                                         }`}>
                                         {project.status || 'Planning'}
                                     </span>
