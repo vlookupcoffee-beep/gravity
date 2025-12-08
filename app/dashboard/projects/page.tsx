@@ -77,6 +77,30 @@ export default function ProjectsPage() {
         await updateProjectStatus(projectId, newStatus)
     }
 
+    const handleDelete = async (projectId: string, projectName: string, e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (!confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+            return
+        }
+
+        // Optimistic update - remove from list
+        const updatedProjects = projects.filter(p => p.id !== projectId)
+        setProjects(updatedProjects)
+        setFilteredProjects(updatedProjects)
+
+        const { deleteProject } = await import('@/app/actions/project-actions')
+        const result = await deleteProject(projectId)
+
+        if (!result.success) {
+            // Revert on error
+            alert('Failed to delete project: ' + result.error)
+            loadProjects()
+        }
+    }
+
+
     return (
         <div className="space-y-6" onClick={() => setActiveDropdown(null)}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -223,7 +247,11 @@ export default function ProjectsPage() {
                                                 <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Edit">
                                                     <Edit size={16} />
                                                 </button>
-                                                <button className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="Delete">
+                                                <button
+                                                    onClick={(e) => handleDelete(project.id, project.name, e)}
+                                                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                                                    title="Delete"
+                                                >
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>

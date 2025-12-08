@@ -64,3 +64,31 @@ export async function createProject(formData: FormData) {
     }
 }
 
+export async function deleteProject(projectId: string) {
+    const supabase = await createClient()
+
+    try {
+        // Delete related data first (cascade delete)
+        await supabase.from('structures').delete().eq('project_id', projectId)
+        await supabase.from('routes').delete().eq('project_id', projectId)
+        await supabase.from('rab_items').delete().eq('project_id', projectId)
+
+        // Delete the project
+        const { error } = await supabase
+            .from('projects')
+            .delete()
+            .eq('id', projectId)
+
+        if (error) {
+            console.error('Error deleting project:', error)
+            return { success: false, error: error.message }
+        }
+
+        revalidatePath('/dashboard/projects')
+        return { success: true }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
+}
+
+
