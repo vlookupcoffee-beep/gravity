@@ -115,46 +115,6 @@ export default function ProjectDetailPage() {
 
                     {/* Work Items / BOQ Section */}
                     <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
-
-                    {/* Detailed Breakdown */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
-                            <h3 className="font-bold text-white mb-4 text-sm uppercase text-gray-500">Route Breakdown</h3>
-                            <div className="space-y-3">
-                                {project.routes.map((r: any, i: number) => (
-                                    <div key={i} className="flex justify-between text-sm">
-                                        <span className="text-gray-400">{r.name}</span>
-                                        <span className="font-medium text-white">{r.length.toFixed(2)} km</span>
-                                    </div>
-                                ))}
-                                {project.routes.length === 0 && <p className="text-gray-500 text-sm">No routes defined.</p>}
-                            </div>
-                        </div>
-
-                        <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
-                            <h3 className="font-bold text-white mb-4 text-sm uppercase text-gray-500">Structure Breakdown</h3>
-                            <div className="space-y-3">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-400">FDT</span>
-                                    <span className="font-medium text-white">{project.structures?.FDT || 0}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-400">FAT</span>
-                                    <span className="font-medium text-white">{project.structures?.FAT || 0}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-400">Pole (Tiang)</span>
-                                    <span className="font-medium text-white">{project.structures?.POLE || 0}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-400">Slack Support</span>
-                                    <span className="font-medium text-white">{project.structures?.SLACK_SUPPORT || 0}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Detailed Breakdown */}
                 </div>
 
 
