@@ -199,3 +199,21 @@ export async function getProjectItems(projectId: string) {
 
     return data
 }
+
+// Delete ALL items from Project BOQ (for re-upload)
+export async function deleteAllProjectItems(projectId: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+        .from('project_items')
+        .delete()
+        .eq('project_id', projectId)
+
+    if (error) {
+        return { success: false, error: error.message }
+    }
+
+    await updateProjectValue(projectId)
+    revalidatePath(`/dashboard/projects/${projectId}`)
+    return { success: true }
+}

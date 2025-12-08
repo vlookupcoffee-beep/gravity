@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Search, Trash2, Save, X, Upload } from 'lucide-react' // Added Upload icon
-import { getKHSItems, addProjectItem, getProjectItems, deleteProjectItem } from '@/app/actions/boq-actions'
+import { getKHSItems, addProjectItem, getProjectItems, deleteProjectItem, deleteAllProjectItems } from '@/app/actions/boq-actions'
 import { getKHSProviders } from '@/app/actions/get-khs-providers'
 
 interface Props {
@@ -86,6 +86,26 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
         alert('Project value recalculated!')
     }
 
+    async function handleDeleteAll() {
+        if (!confirm('⚠️ PERINGATAN: Ini akan menghapus SEMUA item BOQ dari project ini!\n\nAnda yakin ingin melanjutkan?')) {
+            return
+        }
+
+        if (!confirm('Konfirmasi sekali lagi: Semua data BOQ akan dihapus permanen. Lanjutkan?')) {
+            return
+        }
+
+        const result = await deleteAllProjectItems(projectId)
+
+        if (result.success) {
+            alert('✅ Semua item BOQ berhasil dihapus!')
+            loadProjectItems()
+            onUpdate?.()
+        } else {
+            alert(`❌ Gagal menghapus: ${result.error}`)
+        }
+    }
+
     async function handleFileUpload(e: React.FormEvent<HTMLInputElement>) {
         if (!e.currentTarget.files || e.currentTarget.files.length === 0) return
         if (!selectedProvider) {
@@ -133,6 +153,15 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    {items.length > 0 && (
+                        <button
+                            onClick={handleDeleteAll}
+                            className="bg-red-600/10 text-red-400 border border-red-600/30 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-600/20 transition flex items-center gap-2"
+                            title="Delete all BOQ items"
+                        >
+                            <Trash2 size={16} /> Delete All
+                        </button>
+                    )}
                     <button
                         onClick={() => setIsUploadModalOpen(true)}
                         className="bg-gray-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center gap-2"
