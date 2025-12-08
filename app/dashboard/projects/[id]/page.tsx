@@ -110,11 +110,11 @@ export default function ProjectDetailPage() {
                         </p>
                     </div>
 
-                    {/* Work Items / BOQ Section */}
-                    <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
-
                     {/* Plan of Work Section */}
                     <ProjectPoW projectId={project.id} onUpdate={() => loadProject(project.id)} />
+
+                    {/* Work Items / BOQ Section */}
+                    <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
 
                     {/* Detailed Breakdown */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -156,6 +156,7 @@ export default function ProjectDetailPage() {
 
                     {/* Detailed Breakdown */}
                 </div>
+
 
                 {/* Right Column (1/3) */}
                 <div className="space-y-6">
