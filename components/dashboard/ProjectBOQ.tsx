@@ -172,7 +172,9 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                     <td className="px-4 py-3 text-white font-mono text-xs">{item.item_code}</td>
                                     <td className="px-4 py-3 text-gray-300">{item.description}</td>
                                     <td className="px-4 py-3 text-right text-gray-400">{formatCurrency(item.unit_price)}</td>
-                                    <td className="px-4 py-3 text-center text-white font-semibold">{item.quantity} {item.unit}</td>
+                                    <td className="px-4 py-3 text-center text-white font-semibold">
+                                        {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity)} {item.unit}
+                                    </td>
                                     <td className="px-4 py-3 text-right text-green-400">{formatCurrency(item.unit_price * item.quantity)}</td>
                                     <td className="px-4 py-3">
                                         <button
