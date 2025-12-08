@@ -1,8 +1,8 @@
 'use client'
 
-import { Upload, FileText, Plus, Loader2, Database } from 'lucide-react'
+import { Upload, FileText, Plus, Loader2, Database, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { uploadKHS } from '@/app/actions/upload-khs'
+import { uploadKHS, deleteAllKHSItems } from '@/app/actions/upload-khs'
 import { getKHSProviders } from '@/app/actions/get-khs-providers'
 
 export default function KHSPage() {
@@ -47,6 +47,25 @@ export default function KHSPage() {
         }
     }
 
+    async function handleDeleteProvider(providerId: string, providerName: string) {
+        if (!confirm(`⚠️ PERINGATAN: Ini akan menghapus SEMUA item dari "${providerName}"!\n\nAnda yakin ingin melanjutkan?`)) {
+            return
+        }
+
+        if (!confirm('Konfirmasi sekali lagi: Semua data KHS dari provider ini akan dihapus permanen. Lanjutkan?')) {
+            return
+        }
+
+        const result = await deleteAllKHSItems(providerId)
+
+        if (result.success) {
+            alert('✅ Semua item KHS berhasil dihapus!')
+            loadProviders()
+        } else {
+            alert(`❌ Gagal menghapus: ${result.error}`)
+        }
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -82,14 +101,26 @@ export default function KHSPage() {
                     </div>
                 ) : (
                     providers.map((provider) => (
-                        <div key={provider.id} className="bg-[#1E293B] p-6 rounded-xl border border-gray-700 hover:border-blue-500/50 transition cursor-pointer group">
+                        <div key={provider.id} className="bg-[#1E293B] p-6 rounded-xl border border-gray-700 hover:border-blue-500/50 transition group">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="p-3 bg-blue-500/10 text-blue-400 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition">
                                     <FileText size={24} />
                                 </div>
-                                <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
-                                    {provider.items?.[0]?.count || 0} Items
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded">
+                                        {provider.items?.[0]?.count || 0} Items
+                                    </span>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            handleDeleteProvider(provider.id, provider.name)
+                                        }}
+                                        className="p-1.5 bg-red-600/10 text-red-400 border border-red-600/30 rounded hover:bg-red-600/20 transition"
+                                        title="Delete all items from this provider"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
                             </div>
                             <h3 className="text-lg font-bold text-white mb-2 truncate" title={provider.name}>{provider.name}</h3>
                             <p className="text-sm text-gray-400">Imported {new Date(provider.created_at).toLocaleDateString()}</p>

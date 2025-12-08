@@ -94,3 +94,20 @@ export async function uploadKHS(formData: FormData) {
     revalidatePath('/dashboard/khs')
     return { success: true, count: itemsToInsert.length }
 }
+
+// Delete ALL KHS items from a provider (for re-upload)
+export async function deleteAllKHSItems(providerId: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase
+        .from('khs_items')
+        .delete()
+        .eq('provider_id', providerId)
+
+    if (error) {
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath('/dashboard/khs')
+    return { success: true }
+}
