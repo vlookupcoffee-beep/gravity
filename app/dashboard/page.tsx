@@ -84,9 +84,30 @@ export default function DashboardPage() {
 
             {/* PoW Table Widget */}
             <div className="bg-[#1E293B] rounded-xl border border-gray-700 overflow-hidden">
-                <div className="p-6 border-b border-gray-700 flex justify-between items-center">
-                    <h2 className="text-lg font-bold text-white">Plan of Work Overview</h2>
-                    <Link href="/dashboard/projects" className="text-blue-400 text-sm hover:underline">View All Projects</Link>
+                <div className="p-6 border-b border-gray-700">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-bold text-white">Plan of Work Overview</h2>
+                        <Link href="/dashboard/projects" className="text-blue-400 text-sm hover:underline">View All Projects</Link>
+                    </div>
+                    {/* Search Bar */}
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search projects..."
+                            className="w-full bg-[#0F172A] border border-gray-700 text-white rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(e) => {
+                                const searchTerm = e.target.value.toLowerCase()
+                                const rows = document.querySelectorAll('[data-project-row]')
+                                rows.forEach((row: any) => {
+                                    const projectName = row.getAttribute('data-project-name').toLowerCase()
+                                    row.style.display = projectName.includes(searchTerm) ? '' : 'none'
+                                })
+                            }}
+                        />
+                        <svg className="absolute left-3 top-2.5 text-gray-400" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
                 </div>
 
                 {projects.length === 0 ? (
@@ -96,36 +117,63 @@ export default function DashboardPage() {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-[#0F172A] text-gray-400 font-medium border-b border-gray-700">
                                 <tr>
-                                    <th className="px-4 py-3 sticky left-0 bg-[#0F172A] z-10">No</th>
-                                    <th className="px-4 py-3 sticky left-12 bg-[#0F172A] z-10 min-w-[200px]">Project Name</th>
-                                    <th className="px-4 py-3 text-center border-l border-gray-700" colSpan={3}>1. PREPARING</th>
-                                    <th className="px-4 py-3 text-center border-l border-gray-700" colSpan={4}>2. MATERIAL DELIVERY</th>
-                                    <th className="px-4 py-3 text-center border-l border-gray-700" colSpan={6}>3. INSTALASI & COMMISSIONING TEST</th>
-                                    <th className="px-4 py-3 text-center border-l border-gray-700">4. CLOSING</th>
+                                    <th className="px-4 py-3 sticky left-0 bg-[#0F172A] z-10 border-r border-gray-700">No</th>
+                                    <th className="px-4 py-3 sticky left-12 bg-[#0F172A] z-10 min-w-[220px] border-r border-gray-700">Project Name</th>
+                                    <th className="px-4 py-3 sticky left-[280px] bg-[#0F172A] z-10 text-center border-r border-gray-700">Progress</th>
+                                    <th className="px-4 py-3 text-center bg-blue-900/20 border-l border-gray-700" colSpan={3}>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                                            1. PREPARING
+                                        </div>
+                                    </th>
+                                    <th className="px-4 py-3 text-center bg-purple-900/20 border-l border-gray-700" colSpan={4}>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                                            2. MATERIAL DELIVERY
+                                        </div>
+                                    </th>
+                                    <th className="px-4 py-3 text-center bg-orange-900/20 border-l border-gray-700" colSpan={6}>
+                                        <div className="flex items-center justify-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-orange-400"></span>
+                                            3. INSTALASI & COMMISSIONING
+                                        </div>
+                                    </th>
+                                    <th className="px-4 py-3 text-center bg-green-900/20 border-l border-gray-700">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                                            4. CLOSING
+                                        </div>
+                                    </th>
                                 </tr>
-                                <tr className="text-xs">
-                                    <th className="px-4 py-2 sticky left-0 bg-[#0F172A] z-10"></th>
-                                    <th className="px-4 py-2 sticky left-12 bg-[#0F172A] z-10"></th>
-                                    <th className="px-2 py-2 text-center border-l border-gray-700/50">1.2 KOM</th>
-                                    <th className="px-2 py-2 text-center">1.3 Survey</th>
-                                    <th className="px-2 py-2 text-center">1.4 DRM</th>
-                                    <th className="px-2 py-2 text-center border-l border-gray-700/50">2.1 Fabrikasi</th>
-                                    <th className="px-2 py-2 text-center">2.2 HDPE</th>
-                                    <th className="px-2 py-2 text-center">2.3 Kabel</th>
-                                    <th className="px-2 py-2 text-center">2.4 Tiang</th>
-                                    <th className="px-2 py-2 text-center border-l border-gray-700/50">3.1 Ijin</th>
-                                    <th className="px-2 py-2 text-center">3.2 HDPE</th>
-                                    <th className="px-2 py-2 text-center">3.3 Tiang</th>
-                                    <th className="px-2 py-2 text-center">3.4 Kabel</th>
-                                    <th className="px-2 py-2 text-center">3.5 Joint</th>
-                                    <th className="px-2 py-2 text-center">3.6 Test</th>
-                                    <th className="px-2 py-2 text-center border-l border-gray-700/50">4.1 ATP</th>
+                                <tr className="text-xs bg-[#0F172A]/50">
+                                    <th className="px-4 py-2 sticky left-0 bg-[#0F172A]/50 z-10 border-r border-gray-700"></th>
+                                    <th className="px-4 py-2 sticky left-12 bg-[#0F172A]/50 z-10 border-r border-gray-700"></th>
+                                    <th className="px-4 py-2 sticky left-[280px] bg-[#0F172A]/50 z-10 border-r border-gray-700"></th>
+                                    <th className="px-2 py-2 text-center border-l border-gray-700/50">KOM</th>
+                                    <th className="px-2 py-2 text-center">Survey</th>
+                                    <th className="px-2 py-2 text-center">DRM</th>
+                                    <th className="px-2 py-2 text-center border-l border-gray-700/50">Fabrikasi</th>
+                                    <th className="px-2 py-2 text-center">HDPE</th>
+                                    <th className="px-2 py-2 text-center">Kabel</th>
+                                    <th className="px-2 py-2 text-center">Tiang</th>
+                                    <th className="px-2 py-2 text-center border-l border-gray-700/50">Ijin</th>
+                                    <th className="px-2 py-2 text-center">HDPE</th>
+                                    <th className="px-2 py-2 text-center">Tiang</th>
+                                    <th className="px-2 py-2 text-center">Kabel</th>
+                                    <th className="px-2 py-2 text-center">Joint</th>
+                                    <th className="px-2 py-2 text-center">Test</th>
+                                    <th className="px-2 py-2 text-center border-l border-gray-700/50">ATP</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-700">
                                 {projects.map((project, index) => {
                                     // Get tasks for this project
                                     const projectTasks = powTasks.filter((t: any) => t.projects?.id === project.id)
+
+                                    // Calculate overall progress
+                                    const totalTasks = 14 // Total PoW tasks
+                                    const completedTasks = projectTasks.filter((t: any) => t.status === 'completed').length
+                                    const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
 
                                     // Helper to get task status icon
                                     const getTaskIcon = (taskName: string) => {
@@ -139,12 +187,32 @@ export default function DashboardPage() {
                                     }
 
                                     return (
-                                        <tr key={project.id} className="hover:bg-gray-800/50">
-                                            <td className="px-4 py-3 text-gray-400 sticky left-0 bg-[#1E293B] z-10">{index + 1}</td>
-                                            <td className="px-4 py-3 sticky left-12 bg-[#1E293B] z-10">
-                                                <Link href={`/dashboard/projects/${project.id}`} className="text-white hover:text-blue-400 font-medium">
+                                        <tr
+                                            key={project.id}
+                                            className="hover:bg-gray-800/50 transition"
+                                            data-project-row
+                                            data-project-name={project.name}
+                                        >
+                                            <td className="px-4 py-3 text-gray-400 sticky left-0 bg-[#1E293B] z-10 border-r border-gray-700/50">{index + 1}</td>
+                                            <td className="px-4 py-3 sticky left-12 bg-[#1E293B] z-10 border-r border-gray-700/50">
+                                                <Link href={`/dashboard/projects/${project.id}`} className="text-white hover:text-blue-400 font-medium block">
                                                     {project.name}
                                                 </Link>
+                                                <span className="text-xs text-gray-500">{project.structures?.count || 0} structures</span>
+                                            </td>
+                                            <td className="px-4 py-3 sticky left-[280px] bg-[#1E293B] z-10 border-r border-gray-700/50">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 bg-gray-700 rounded-full h-2">
+                                                        <div
+                                                            className={`h-2 rounded-full transition-all ${overallProgress === 100 ? 'bg-green-500' :
+                                                                overallProgress >= 50 ? 'bg-blue-500' :
+                                                                    overallProgress > 0 ? 'bg-yellow-500' : 'bg-gray-600'
+                                                                }`}
+                                                            style={{ width: `${overallProgress}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-xs text-gray-400 min-w-[35px]">{overallProgress}%</span>
+                                                </div>
                                             </td>
                                             {/* PREPARING */}
                                             <td className="px-2 py-3 text-center border-l border-gray-700/50">{getTaskIcon('1.2')}</td>
