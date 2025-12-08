@@ -42,10 +42,13 @@ export default function DashboardPage() {
                     <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
                     <p className="text-gray-400">Welcome back! Here's what's happening today.</p>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20">
+                <Link
+                    href="/dashboard/projects/new"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
+                >
                     <Plus size={20} />
                     <span>New Project</span>
-                </button>
+                </Link>
             </div>
 
             {/* Stats Cards */}
