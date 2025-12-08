@@ -143,3 +143,27 @@ export async function updateTaskProgress(taskId: string, projectId: string, prog
         return { success: false, error: e.message }
     }
 }
+
+export async function getAllPowTasks() {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+        .from('pow_tasks')
+        .select(`
+            *,
+            projects (
+                id,
+                name
+            )
+        `)
+        .order('start_date', { ascending: true })
+        .limit(20)
+
+    if (error) {
+        console.error('Error fetching all PoW tasks:', error)
+        return []
+    }
+
+    return data || []
+}
+

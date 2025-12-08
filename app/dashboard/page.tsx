@@ -2,19 +2,25 @@
 
 import { useEffect, useState } from 'react'
 import { getProjects } from '@/app/actions/get-projects'
+import { getAllPowTasks } from '@/app/actions/pow-actions'
 import StatsCard from '@/components/dashboard/StatsCard'
-import { Activity, CheckCircle, Clock, Database, Plus } from 'lucide-react'
+import { Activity, CheckCircle, Clock, Database, Plus, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export default function DashboardPage() {
     const [projects, setProjects] = useState<any[]>([])
+    const [powTasks, setPowTasks] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         async function load() {
             setLoading(true)
-            const data = await getProjects()
-            setProjects(data)
+            const [projectsData, powData] = await Promise.all([
+                getProjects(),
+                getAllPowTasks()
+            ])
+            setProjects(projectsData)
+            setPowTasks(powData)
             setLoading(false)
         }
         load()
@@ -158,6 +164,62 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* PoW Tasks Widget */}
+            <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-bold text-white">Upcoming Tasks (PoW)</h2>
+                    <Link href="/dashboard/projects" className="text-blue-400 text-sm hover:underline">View All Projects</Link>
+                </div>
+
+                {powTasks.length === 0 ? (
+                    <p className="text-center text-gray-500 py-4">No tasks scheduled yet.</p>
+                ) : (
+                    <div className="space-y-3">
+                        {powTasks.slice(0, 10).map((task: any) => (
+                            <Link
+                                key={task.id}
+                                href={`/dashboard/projects/${task.projects?.id}`}
+                                className="block p-3 border border-gray-700/50 rounded-lg hover:bg-gray-800/50 transition group"
+                            >
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1">
+                                        <h4 className="text-sm font-medium text-white group-hover:text-blue-400 transition">{task.task_name}</h4>
+                                        <p className="text-xs text-gray-500 mt-0.5">{task.projects?.name || 'Unknown Project'}</p>
+                                    </div>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${task.status === 'completed' ? 'bg-green-500/10 text-green-400' :
+                                            task.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400' :
+                                                task.status === 'delayed' ? 'bg-red-500/10 text-red-400' :
+                                                    'bg-gray-500/10 text-gray-400'
+                                        }`}>
+                                        {task.status === 'completed' ? <CheckCircle2 size={10} /> :
+                                            task.status === 'in-progress' ? <TrendingUp size={10} /> :
+                                                task.status === 'delayed' ? <AlertCircle size={10} /> :
+                                                    <Clock size={10} />}
+                                        {task.progress}%
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                    <div
+                                        className={`h-1.5 rounded-full transition-all ${task.status === 'completed' ? 'bg-green-500' :
+                                                task.status === 'in-progress' ? 'bg-blue-500' :
+                                                    task.status === 'delayed' ? 'bg-red-500' :
+                                                        'bg-gray-600'
+                                            }`}
+                                        style={{ width: `${task.progress}%` }}
+                                    />
+                                </div>
+                                {task.start_date && (
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        {new Date(task.start_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                                        {task.end_date && ` - ${new Date(task.end_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}`}
+                                    </p>
+                                )}
+                            </Link>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     )

@@ -160,9 +160,9 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
                                 <div className="w-full bg-gray-700 rounded-full h-2">
                                     <div
                                         className={`h-2 rounded-full transition-all ${task.status === 'completed' ? 'bg-green-500' :
-                                                task.status === 'in-progress' ? 'bg-blue-500' :
-                                                    task.status === 'delayed' ? 'bg-red-500' :
-                                                        'bg-gray-600'
+                                            task.status === 'in-progress' ? 'bg-blue-500' :
+                                                task.status === 'delayed' ? 'bg-red-500' :
+                                                    'bg-gray-600'
                                             }`}
                                         style={{ width: `${task.progress}%` }}
                                     />
@@ -254,6 +254,43 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-gray-400 mb-1">Task Category (Quick Select)</label>
+                                    <select
+                                        className="w-full bg-[#0F172A] border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        onChange={(e) => {
+                                            if (e.target.value) {
+                                                setFormData({ ...formData, task_name: e.target.value })
+                                            }
+                                        }}
+                                        defaultValue=""
+                                    >
+                                        <option value="">-- Select from template --</option>
+                                        <optgroup label="1. PREPARING">
+                                            <option value="1.2 Kick Off Meeting (KOM)">1.2 Kick Off Meeting (KOM)</option>
+                                            <option value="1.3 Survey">1.3 Survey</option>
+                                            <option value="1.4 Design Review Meeting (DRM)">1.4 Design Review Meeting (DRM)</option>
+                                        </optgroup>
+                                        <optgroup label="2. MATERIAL DELIVERY">
+                                            <option value="2.1 Fabrikasi Material">2.1 Fabrikasi Material</option>
+                                            <option value="2.2 Delivery Material HDPE">2.2 Delivery Material HDPE</option>
+                                            <option value="2.3 Delivery Material Kabel">2.3 Delivery Material Kabel</option>
+                                            <option value="2.4 Delivery Material Tiang">2.4 Delivery Material Tiang</option>
+                                        </optgroup>
+                                        <optgroup label="3. INSTALASI & COMMISSIONING TEST">
+                                            <option value="3.1 Pengurusan Ijin Kerja">3.1 Pengurusan Ijin Kerja</option>
+                                            <option value="3.2 Penggalian Tanah dan Penanaman HDPE">3.2 Penggalian Tanah dan Penanaman HDPE</option>
+                                            <option value="3.3 Penanaman Tiang dan Pembuatan HH">3.3 Penanaman Tiang dan Pembuatan HH</option>
+                                            <option value="3.4 Penarikan Kabel Duct">3.4 Penarikan Kabel Duct</option>
+                                            <option value="3.5 Joint dan Terminasi">3.5 Joint dan Terminasi</option>
+                                            <option value="3.6 Test Commisioning">3.6 Test Commisioning</option>
+                                        </optgroup>
+                                        <optgroup label="4. CLOSING">
+                                            <option value="4.1 ATP">4.1 ATP</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+
                                 <div className="md:col-span-2">
                                     <label className="block text-xs font-medium text-gray-400 mb-1">Task Name *</label>
                                     <input
