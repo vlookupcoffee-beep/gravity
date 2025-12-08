@@ -17,6 +17,7 @@ export async function updateProjectStatus(projectId: string, newStatus: string) 
             return { success: false, error: error.message }
         }
 
+
         revalidatePath(`/dashboard/projects/${projectId}`)
         revalidatePath('/dashboard/projects')
 
@@ -25,3 +26,41 @@ export async function updateProjectStatus(projectId: string, newStatus: string) 
         return { success: false, error: e.message }
     }
 }
+
+export async function createProject(formData: FormData) {
+    const supabase = await createClient()
+
+    const name = formData.get('name') as string
+    const description = formData.get('description') as string
+    const status = formData.get('status') as string
+    const value = parseFloat(formData.get('value') as string) || 0
+    const start_date = formData.get('start_date') as string
+    const end_date = formData.get('end_date') as string
+
+    try {
+        const { data, error } = await supabase
+            .from('projects')
+            .insert({
+                name,
+                description,
+                status,
+                value,
+                start_date: start_date || null,
+                end_date: end_date || null,
+                progress: 0
+            })
+            .select()
+            .single()
+
+        if (error) {
+            console.error('Error creating project:', error)
+            return { success: false, error: error.message }
+        }
+
+        revalidatePath('/dashboard/projects')
+        return { success: true, projectId: data.id }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
+}
+
