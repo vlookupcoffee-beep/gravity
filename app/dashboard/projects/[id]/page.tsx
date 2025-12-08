@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation'
 import FileList from '@/components/dashboard/FileList'
 import StatsCard from '@/components/dashboard/StatsCard'
 import ProjectBOQ from '@/components/dashboard/ProjectBOQ'
+import ProjectPoW from '@/components/dashboard/ProjectPoW'
 import { HardDrive, Map as MapIcon } from 'lucide-react'
 
 // Reuse map component dynamically
@@ -111,6 +112,9 @@ export default function ProjectDetailPage() {
 
                     {/* Work Items / BOQ Section */}
                     <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
+
+                    {/* Plan of Work Section */}
+                    <ProjectPoW projectId={project.id} onUpdate={() => loadProject(project.id)} />
 
                     {/* Detailed Breakdown */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
