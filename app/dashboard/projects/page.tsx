@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getProjects } from '@/app/actions/get-projects'
-import { Search, Filter, Plus, FileText, Trash2, Edit, Map as MapIcon } from 'lucide-react'
+import { Search, Filter, Plus, FileText, Trash2, Edit, Map as MapIcon, Download } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProjectsPage() {
@@ -97,6 +97,42 @@ export default function ProjectsPage() {
             // Revert on error
             alert('Failed to delete project: ' + result.error)
             loadProjects()
+        }
+    }
+
+    const handleDownload = async (projectId: string, projectName: string, e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        try {
+            const { downloadProjectArchive } = await import('@/app/actions/download-project')
+            const result = await downloadProjectArchive(projectId)
+
+            if (!result.success) {
+                alert('Failed to download project: ' + result.error)
+                return
+            }
+
+            // Convert base64 to blob and trigger download
+            const byteCharacters = atob(result.data!)
+            const byteNumbers = new Array(byteCharacters.length)
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i)
+            }
+            const byteArray = new Uint8Array(byteNumbers)
+            const blob = new Blob([byteArray], { type: 'application/zip' })
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = result.filename!
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+        } catch (error: any) {
+            alert('Error downloading project: ' + error.message)
         }
     }
 
@@ -244,6 +280,13 @@ export default function ProjectsPage() {
                                                 >
                                                     <MapIcon size={16} />
                                                 </Link>
+                                                <button
+                                                    onClick={(e) => handleDownload(project.id, project.name, e)}
+                                                    className="p-2 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition"
+                                                    title="Download Project"
+                                                >
+                                                    <Download size={16} />
+                                                </button>
                                                 <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Edit">
                                                     <Edit size={16} />
                                                 </button>
