@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { signIn } from '@/app/actions/auth-actions'
-import Link from 'next/link'
 import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
@@ -126,23 +125,6 @@ export default function LoginPage() {
                             )}
                         </button>
                     </form>
-
-                    {/* Divider */}
-                    <div className="mt-6 flex items-center gap-3">
-                        <div className="flex-1 h-px bg-gray-700"></div>
-                        <span className="text-gray-500 text-sm">OR</span>
-                        <div className="flex-1 h-px bg-gray-700"></div>
-                    </div>
-
-                    {/* Register Link */}
-                    <div className="mt-6 text-center">
-                        <p className="text-gray-400">
-                            Don't have an account?{' '}
-                            <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium transition">
-                                Create Account
-                            </Link>
-                        </p>
-                    </div>
                 </div>
 
                 {/* Footer */}

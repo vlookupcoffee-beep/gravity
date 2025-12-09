@@ -8,9 +8,8 @@ export async function middleware(request: NextRequest) {
     // Get pathname
     const path = request.nextUrl.pathname
 
-    // Public paths that don't require authentication
-    const publicPaths = ['/login', '/register']
-    const isPublicPath = publicPaths.some(p => path.startsWith(p))
+    // Public path - only login page
+    const isLoginPath = path.startsWith('/login')
 
     // Root path - check auth and redirect accordingly
     if (path === '/') {
@@ -33,14 +32,14 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // If authenticated and trying to access login/register, redirect to dashboard
-    if (isPublicPath) {
+    // If authenticated and trying to access login, redirect to dashboard
+    if (isLoginPath) {
         const supabase = response.cookies.getAll()
         const hasSession = supabase.some(cookie =>
             cookie.name.includes('auth-token') || cookie.name.includes('sb-')
         )
 
-        if (hasSession && (path === '/login' || path === '/register')) {
+        if (hasSession) {
             return NextResponse.redirect(new URL('/dashboard', request.url))
         }
     }
