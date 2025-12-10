@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "My Database",
   description: "Project Management System",
   icons: {
-    icon: '/logo.png',
+    icon: '/gravity-logo.png',
   },
 };
 

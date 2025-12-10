@@ -39,7 +39,7 @@ export default function LoginPage() {
                 <div className="text-center mb-8 flex flex-col items-center">
                     <div className="bg-white p-4 rounded-xl mb-6 shadow-lg shadow-blue-900/20">
                         <Image
-                            src="/logo.png"
+                            src="/gravity-logo.png"
                             alt="Gravity Logo"
                             width={120}
                             height={120}

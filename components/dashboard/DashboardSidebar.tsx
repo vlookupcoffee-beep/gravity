@@ -39,7 +39,7 @@ export default function DashboardSidebar() {
                 <div className="flex items-center gap-3">
                     <div className="relative w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
                         <Image
-                            src="/logo.png"
+                            src="/gravity-logo.png"
                             alt="Logo"
                             fill
                             className="object-contain"
