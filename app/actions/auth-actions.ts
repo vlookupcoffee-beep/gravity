@@ -19,28 +19,27 @@ export async function signIn(formData: FormData) {
     }
 
     try {
-        // Query the custom login table
-        const { data: user, error } = await supabase
-            .from('login')
-            .select('*')
-            .eq('username', username)
-            .single()
+        // Use RPC function for secure login (bypassing table RLS)
+        const { data: users, error } = await supabase.rpc('login_user', {
+            p_username: username,
+            p_password: password
+        })
 
-        if (error || !user) {
-            return { error: 'Invalid username or password' }
+        if (error) {
+            return { error: error.message }
         }
 
-        // Validate password (direct comparison for now, assuming plain text as per initial plan)
-        // TODO: Implement hashing if passwords are hashed in DB
-        if (user.password !== password) {
+        const user = users && users.length > 0 ? users[0] : null
+
+        if (!user) {
             return { error: 'Invalid username or password' }
         }
 
         // Set Session Cookie
         const sessionData = {
-            id: user.id,
-            username: user.username,
-            role: user.role
+            id: user.user_id,
+            username: user.user_username,
+            role: user.user_role
         }
 
         // Store session in cookie

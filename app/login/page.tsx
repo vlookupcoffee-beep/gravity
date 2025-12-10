@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from '@/app/actions/auth-actions'
 import { LogIn, User, Lock, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LoginPage() {
     const [error, setError] = useState('')
@@ -34,7 +35,18 @@ export default function LoginPage() {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0B1120] via-[#1E293B] to-[#0F172A] p-4">
             <div className="w-full max-w-md">
                 {/* Logo/Title */}
-                <div className="text-center mb-8">
+                {/* Logo/Title */}
+                <div className="text-center mb-8 flex flex-col items-center">
+                    <div className="bg-white p-4 rounded-xl mb-6 shadow-lg shadow-blue-900/20">
+                        <Image
+                            src="/logo-new.png"
+                            alt="Gravity Logo"
+                            width={120}
+                            height={120}
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
                     <h1 className="text-4xl font-bold text-white mb-2">Gravity</h1>
                     <p className="text-gray-400">Project Management System</p>
                 </div>
