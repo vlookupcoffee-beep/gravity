@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { checkOwnerRole } from './auth-actions'
 
 export async function getPowTasks(projectId: string) {
     const supabase = await createClient()
@@ -24,6 +25,8 @@ export async function createPowTask(projectId: string, taskData: any) {
     const supabase = await createClient()
 
     try {
+        await checkOwnerRole()
+
         const { data, error } = await supabase
             .from('pow_tasks')
             .insert({
@@ -59,6 +62,8 @@ export async function updatePowTask(taskId: string, projectId: string, taskData:
     const supabase = await createClient()
 
     try {
+        await checkOwnerRole()
+
         const { data, error } = await supabase
             .from('pow_tasks')
             .update({
@@ -94,6 +99,8 @@ export async function deletePowTask(taskId: string, projectId: string) {
     const supabase = await createClient()
 
     try {
+        await checkOwnerRole()
+
         const { error } = await supabase
             .from('pow_tasks')
             .delete()
@@ -123,6 +130,8 @@ export async function updateTaskProgress(taskId: string, projectId: string, prog
     }
 
     try {
+        await checkOwnerRole()
+
         const { error } = await supabase
             .from('pow_tasks')
             .update({

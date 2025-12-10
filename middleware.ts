@@ -1,30 +1,26 @@
-import { updateSession } from '@/utils/supabase/middleware'
+
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-    // Update session
-    const response = await updateSession(request)
-
-    // Get pathname
     const path = request.nextUrl.pathname
+
+    // Check for custom session cookie
+    const hasSession = request.cookies.has('gravity_session')
 
     // Public path - only login page
     const isLoginPath = path.startsWith('/login')
 
-    // Root path - check auth and redirect accordingly
+    // Root path handling
     if (path === '/') {
-        // Let the page component handle the redirect based on auth
-        return response
+        if (hasSession) {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        } else {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
     }
 
-    // If trying to access dashboard without auth, redirect to login
+    // Protect dashboard routes
     if (path.startsWith('/dashboard')) {
-        // Check if user is authenticated
-        const supabase = response.cookies.getAll()
-        const hasSession = supabase.some(cookie =>
-            cookie.name.includes('auth-token') || cookie.name.includes('sb-')
-        )
-
         if (!hasSession) {
             const redirectUrl = new URL('/login', request.url)
             redirectUrl.searchParams.set('redirectTo', path)
@@ -32,19 +28,12 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // If authenticated and trying to access login, redirect to dashboard
-    if (isLoginPath) {
-        const supabase = response.cookies.getAll()
-        const hasSession = supabase.some(cookie =>
-            cookie.name.includes('auth-token') || cookie.name.includes('sb-')
-        )
-
-        if (hasSession) {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
-        }
+    // Redirect authenticated users away from login
+    if (isLoginPath && hasSession) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
-    return response
+    return NextResponse.next()
 }
 
 export const config = {

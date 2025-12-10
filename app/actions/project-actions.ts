@@ -2,11 +2,14 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { checkOwnerRole } from './auth-actions'
 
 export async function updateProjectStatus(projectId: string, newStatus: string) {
     const supabase = await createClient()
 
     try {
+        await checkOwnerRole()
+
         const { error } = await supabase
             .from('projects')
             .update({ status: newStatus })
@@ -38,6 +41,8 @@ export async function createProject(formData: FormData) {
     const end_date = formData.get('end_date') as string
 
     try {
+        await checkOwnerRole()
+
         const { data, error } = await supabase
             .from('projects')
             .insert({
@@ -68,6 +73,8 @@ export async function deleteProject(projectId: string) {
     const supabase = await createClient()
 
     try {
+        await checkOwnerRole()
+
         // Delete related data first (cascade delete)
         await supabase.from('structures').delete().eq('project_id', projectId)
         await supabase.from('routes').delete().eq('project_id', projectId)

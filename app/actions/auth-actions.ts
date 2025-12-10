@@ -3,89 +3,70 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 
-// Sign up new user
-export async function signUp(formData: FormData) {
-    const supabase = await createClient()
+const SESSION_COOKIE_NAME = 'gravity_session'
 
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    const fullName = formData.get('full_name') as string
-
-    if (!email || !password) {
-        return { error: 'Email and password are required' }
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            data: {
-                full_name: fullName || ''
-            }
-        }
-    })
-
-    if (error) {
-        return { error: error.message }
-    }
-
-    revalidatePath('/', 'layout')
-    redirect('/dashboard')
-}
-
-// Sign in existing user
+// Sign in existing user using Custom Login Table
 export async function signIn(formData: FormData) {
     const supabase = await createClient()
 
-    const email = formData.get('email') as string
+    const username = formData.get('username') as string
     const password = formData.get('password') as string
 
-    if (!email || !password) {
-        return { error: 'Email and password are required' }
+    if (!username || !password) {
+        return { error: 'Username and password are required' }
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-    })
+    try {
+        // Query the custom login table
+        const { data: user, error } = await supabase
+            .from('login')
+            .select('*')
+            .eq('username', username)
+            .single()
 
-    if (error) {
-        return { error: error.message }
+        if (error || !user) {
+            return { error: 'Invalid username or password' }
+        }
+
+        // Validate password (direct comparison for now, assuming plain text as per initial plan)
+        // TODO: Implement hashing if passwords are hashed in DB
+        if (user.password !== password) {
+            return { error: 'Invalid username or password' }
+        }
+
+        // Set Session Cookie
+        const sessionData = {
+            id: user.id,
+            username: user.username,
+            role: user.role
+        }
+
+        // Store session in cookie
+        const cookieStore = await cookies()
+        cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(sessionData), {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7 // 1 week
+        })
+
+        revalidatePath('/', 'layout')
+        redirect('/dashboard')
+    } catch (e: any) {
+        if (e.message.includes('NEXT_REDIRECT')) {
+            throw e;
+        }
+        return { error: e.message || 'Login failed' }
     }
-
-    // Check if profile exists, if not create it
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', data.user.id)
-        .single()
-
-    if (!profile) {
-        // Create profile if it doesn't exist
-        await supabase
-            .from('profiles')
-            .insert({
-                id: data.user.id,
-                email: data.user.email,
-                full_name: data.user.user_metadata?.full_name || '',
-                role: 'admin'
-            })
-    }
-
-    revalidatePath('/', 'layout')
-    redirect('/dashboard')
 }
 
 // Sign out current user
 export async function signOut() {
-    const supabase = await createClient()
-
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-        return { error: error.message }
-    }
+    const cookieStore = await cookies()
+    cookieStore.delete(SESSION_COOKIE_NAME)
 
     revalidatePath('/', 'layout')
     redirect('/login')
@@ -93,49 +74,25 @@ export async function signOut() {
 
 // Get current authenticated user
 export async function getCurrentUser() {
-    const supabase = await createClient()
+    const cookieStore = await cookies()
+    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)
 
-    const { data: { user }, error } = await supabase.auth.getUser()
-
-    if (error || !user) {
+    if (!sessionCookie || !sessionCookie.value) {
         return null
     }
 
-    // Also fetch profile data
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-    return {
-        id: user.id,
-        email: user.email,
-        ...profile
+    try {
+        const user = JSON.parse(sessionCookie.value)
+        return user
+    } catch (e) {
+        return null
     }
 }
 
-// Update user profile
-export async function updateProfile(formData: FormData) {
-    const supabase = await createClient()
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { error: 'Not authenticated' }
+// Helper to check for owner role
+export async function checkOwnerRole() {
+    const user = await getCurrentUser()
+    if (!user || user.role !== 'owner') {
+        throw new Error('Unauthorized: Only owners can perform this action')
     }
-
-    const fullName = formData.get('full_name') as string
-
-    const { error } = await supabase
-        .from('profiles')
-        .update({ full_name: fullName, updated_at: new Date().toISOString() })
-        .eq('id', user.id)
-
-    if (error) {
-        return { error: error.message }
-    }
-
-    revalidatePath('/dashboard')
-    return { success: true }
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { signIn } from '@/app/actions/auth-actions'
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react'
+import { LogIn, User, Lock, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
     const [error, setError] = useState('')
@@ -21,6 +21,9 @@ export default function LoginPage() {
                 setError(result.error)
             }
         } catch (err: any) {
+            if (err.message.includes('NEXT_REDIRECT')) {
+                throw err;
+            }
             setError(err.message || 'An error occurred during login')
         } finally {
             setLoading(false)
@@ -56,20 +59,20 @@ export default function LoginPage() {
 
                     {/* Login Form */}
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Email Field */}
+                        {/* Username Field */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                                Email Address
+                            <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
+                                Username
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                                 <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
+                                    type="text"
+                                    id="username"
+                                    name="username"
                                     required
                                     className="w-full pl-11 pr-4 py-3 bg-[#0F172A] border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                                    placeholder="you@example.com"
+                                    placeholder="username"
                                 />
                             </div>
                         </div>
