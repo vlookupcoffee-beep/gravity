@@ -34,7 +34,7 @@ export default function Sidebar() {
                 <div className="flex items-center gap-3 mb-6">
                     <div className="relative w-10 h-10">
                         <Image
-                            src="/My Logo.png"
+                            src="/logo.png"
                             alt="Logo"
                             fill
                             className="object-contain"

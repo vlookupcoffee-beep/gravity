@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "My Database",
   description: "Project Management System",
   icons: {
-    icon: '/My Logo.png',
+    icon: '/logo.png',
   },
 };
 
