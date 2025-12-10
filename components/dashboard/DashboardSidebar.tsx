@@ -37,9 +37,9 @@ export default function DashboardSidebar() {
         <aside className="w-64 bg-[#0B1120] border-r border-gray-800 flex flex-col h-full fixed left-0 top-0 bottom-0 z-10">
             <div className="p-6 border-b border-gray-800">
                 <div className="flex items-center gap-3">
-                    <div className="relative w-8 h-8">
+                    <div className="relative w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
                         <Image
-                            src="/Logo.png"
+                            src="/logo.png"
                             alt="Logo"
                             fill
                             className="object-contain"

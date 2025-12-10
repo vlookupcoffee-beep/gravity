@@ -13,10 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gravity",
+  title: "My Database",
   description: "Project Management System",
   icons: {
-    icon: '/logo-new.png',
+    icon: '/logo.png',
   },
 };
 
