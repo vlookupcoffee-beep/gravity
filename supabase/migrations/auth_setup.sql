@@ -16,6 +16,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- 3. Create RLS policies for profiles table
+-- Drop existing policies if any
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+
 -- Allow everyone to view profiles (read-only access to profile info)
 CREATE POLICY "Public profiles are viewable by everyone"
     ON public.profiles

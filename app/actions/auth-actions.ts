@@ -54,6 +54,25 @@ export async function signIn(formData: FormData) {
         return { error: error.message }
     }
 
+    // Check if profile exists, if not create it
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', data.user.id)
+        .single()
+
+    if (!profile) {
+        // Create profile if it doesn't exist
+        await supabase
+            .from('profiles')
+            .insert({
+                id: data.user.id,
+                email: data.user.email,
+                full_name: data.user.user_metadata?.full_name || '',
+                role: 'admin'
+            })
+    }
+
     revalidatePath('/', 'layout')
     redirect('/dashboard')
 }
