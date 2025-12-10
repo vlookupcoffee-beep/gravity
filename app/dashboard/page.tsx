@@ -180,10 +180,43 @@ export default function DashboardPage() {
                                         const task = projectTasks.find((t: any) => t.task_name.includes(taskName))
                                         if (!task) return <span className="text-gray-600">-</span>
 
-                                        if (task.status === 'completed') return <CheckCircle2 className="text-green-400 mx-auto" size={16} />
-                                        if (task.status === 'in-progress') return <TrendingUp className="text-blue-400 mx-auto" size={16} />
-                                        if (task.status === 'delayed') return <AlertCircle className="text-red-400 mx-auto" size={16} />
-                                        return <Clock className="text-gray-400 mx-auto" size={16} />
+                                        const icon = (() => {
+                                            if (task.status === 'completed') return <CheckCircle2 className="text-green-400 mx-auto" size={16} />
+                                            if (task.status === 'in-progress') return <TrendingUp className="text-blue-400 mx-auto" size={16} />
+                                            if (task.status === 'delayed') return <AlertCircle className="text-red-400 mx-auto" size={16} />
+                                            return <Clock className="text-gray-400 mx-auto" size={16} />
+                                        })()
+
+                                        return (
+                                            <div className="relative group flex justify-center items-center cursor-help">
+                                                {icon}
+                                                {/* Tooltip */}
+                                                <div className="absolute bottom-full mb-2 hidden group-hover:block z-50 min-w-[200px] p-3 bg-gray-900/95 backdrop-blur border border-gray-700 rounded-lg shadow-xl text-left">
+                                                    <div className="font-semibold text-white text-xs mb-1">{task.task_name}</div>
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between text-xs text-gray-300">
+                                                            <span>Status:</span>
+                                                            <span className={
+                                                                task.status === 'completed' ? 'text-green-400' :
+                                                                    task.status === 'in-progress' ? 'text-blue-400' :
+                                                                        task.status === 'delayed' ? 'text-red-400' : 'text-gray-400'
+                                                            }>{task.status.replace('-', ' ')}</span>
+                                                        </div>
+                                                        <div className="flex justify-between text-xs text-gray-300">
+                                                            <span>Progress:</span>
+                                                            <span className="text-white font-medium">{task.progress || 0}%</span>
+                                                        </div>
+                                                        {task.description && (
+                                                            <div className="pt-2 mt-1 border-t border-gray-700 text-[10px] text-gray-400 italic">
+                                                                "{task.description}"
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {/* Arrow */}
+                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900/95"></div>
+                                                </div>
+                                            </div>
+                                        )
                                     }
 
                                     return (
@@ -198,7 +231,6 @@ export default function DashboardPage() {
                                                 <Link href={`/dashboard/projects/${project.id}`} className="text-white hover:text-blue-400 font-medium block">
                                                     {project.name}
                                                 </Link>
-                                                <span className="text-xs text-gray-500">{project.structures?.count || 0} structures</span>
                                             </td>
                                             <td className="px-4 py-3 sticky left-[280px] bg-[#1E293B] z-10 border-r border-gray-700/50">
                                                 <div className="flex items-center gap-2">

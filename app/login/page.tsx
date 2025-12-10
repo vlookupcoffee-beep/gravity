@@ -39,7 +39,7 @@ export default function LoginPage() {
                 <div className="text-center mb-8 flex flex-col items-center">
                     <div className="bg-white p-4 rounded-xl mb-6 shadow-lg shadow-blue-900/20">
                         <Image
-                            src="/logo-new.png"
+                            src="/logo.png"
                             alt="Gravity Logo"
                             width={120}
                             height={120}
@@ -47,7 +47,7 @@ export default function LoginPage() {
                             priority
                         />
                     </div>
-                    <h1 className="text-4xl font-bold text-white mb-2">Gravity</h1>
+                    <h1 className="text-4xl font-bold text-white mb-2">Welcome My Database</h1>
                     <p className="text-gray-400">Project Management System</p>
                 </div>
 
