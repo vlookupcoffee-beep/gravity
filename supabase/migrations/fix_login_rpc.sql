@@ -1,16 +1,18 @@
 -- Create a secure login function to bypass RLS issues on the table
+DROP FUNCTION IF EXISTS login_user(TEXT, TEXT);
+
 CREATE OR REPLACE FUNCTION login_user(p_username TEXT, p_password TEXT)
 RETURNS TABLE (
-    user_id UUID,
+    user_id TEXT,
     user_username TEXT,
     user_role TEXT
 ) 
-SECURITY DEFINER -- This function runs with the privileges of the creator (postgres/superuser), bypassing RLS
-SET search_path = public -- Secure search path
+SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
     RETURN QUERY
-    SELECT id, username, role
+    SELECT id::text, username, role
     FROM login
     WHERE username = p_username AND password = p_password;
 END;
