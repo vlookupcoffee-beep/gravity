@@ -9,6 +9,7 @@ import FileList from '@/components/dashboard/FileList'
 import StatsCard from '@/components/dashboard/StatsCard'
 import ProjectBOQ from '@/components/dashboard/ProjectBOQ'
 import ProjectPoW from '@/components/dashboard/ProjectPoW'
+import EditProjectModal from '@/components/dashboard/EditProjectModal'
 import { HardDrive, Map as MapIcon } from 'lucide-react'
 
 // Reuse map component dynamically
@@ -22,6 +23,7 @@ export default function ProjectDetailPage() {
     const params = useParams()
     const [project, setProject] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
     useEffect(() => {
         if (params.id) {
@@ -79,7 +81,10 @@ export default function ProjectDetailPage() {
                         <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
                     </div>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm">
+                <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
+                >
                     <Edit size={16} /> Edit Project
                 </button>
             </div>
@@ -160,6 +165,14 @@ export default function ProjectDetailPage() {
                 </div>
 
             </div>
+
+            {isEditModalOpen && (
+                <EditProjectModal
+                    project={project}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onUpdate={() => loadProject(project.id)}
+                />
+            )}
         </div>
     )
 }

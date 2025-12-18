@@ -37,15 +37,16 @@ export default function LoginPage() {
                 {/* Logo/Title */}
                 {/* Logo/Title */}
                 <div className="text-center mb-8 flex flex-col items-center">
-                    <div className="bg-white p-4 rounded-xl mb-6 shadow-lg shadow-blue-900/20">
+                    <div className="p-4 mb-6 flex flex-col items-center">
                         <Image
                             src="/logo.png"
                             alt="Gravity Logo"
                             width={120}
                             height={120}
-                            className="object-contain"
+                            className="object-contain mb-2"
                             priority
                         />
+                        <p className="text-xs text-gray-500 font-medium tracking-wide">Network Autentication Keep Arcived</p>
                     </div>
                     <h1 className="text-4xl font-bold text-white mb-2">Welcome My Database</h1>
                     <p className="text-gray-400">Project Management System</p>

@@ -98,4 +98,41 @@ export async function deleteProject(projectId: string) {
     }
 }
 
+export async function updateProject(projectId: string, formData: FormData) {
+    const supabase = await createClient()
 
+    const name = formData.get('name') as string
+    const description = formData.get('description') as string
+    const status = formData.get('status') as string
+    const value = parseFloat(formData.get('value') as string) || 0
+    const start_date = formData.get('start_date') as string
+    const end_date = formData.get('end_date') as string
+
+    try {
+        await checkOwnerRole()
+
+        const { error } = await supabase
+            .from('projects')
+            .update({
+                name,
+                description,
+                status,
+                value,
+                start_date: start_date || null,
+                end_date: end_date || null
+            })
+            .eq('id', projectId)
+
+        if (error) {
+            console.error('Error updating project:', error)
+            return { success: false, error: error.message }
+        }
+
+        revalidatePath(`/dashboard/projects/${projectId}`)
+        revalidatePath('/dashboard/projects')
+
+        return { success: true }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
+}

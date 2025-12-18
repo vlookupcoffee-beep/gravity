@@ -36,16 +36,19 @@ export default function DashboardSidebar() {
     return (
         <aside className="w-64 bg-[#0B1120] border-r border-gray-800 flex flex-col h-full fixed left-0 top-0 bottom-0 z-10">
             <div className="p-6 border-b border-gray-800">
-                <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10 bg-white rounded-lg p-1.5 flex items-center justify-center">
-                        <Image
-                            src="/logo.png"
-                            alt="Logo"
-                            fill
-                            className="object-contain"
-                        />
+                <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-3">
+                        <div className="relative w-10 h-10 flex items-center justify-center">
+                            <Image
+                                src="/logo.png"
+                                alt="Logo"
+                                fill
+                                className="object-contain"
+                            />
+                        </div>
+                        <span className="text-lg font-bold text-white">My Database</span>
                     </div>
-                    <span className="text-lg font-bold text-white">My Database</span>
+                    <p className="text-[10px] text-gray-400 font-medium tracking-wide">Network Autentication Keep Arcived</p>
                 </div>
             </div>
 
