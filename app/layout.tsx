@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "My Database",
+  title: "NAKA",
   description: "Project Management System",
   icons: {
     icon: '/logo.png',

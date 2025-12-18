@@ -40,7 +40,7 @@ export default function Sidebar() {
                             className="object-contain"
                         />
                     </div>
-                    <span className="text-xl font-bold text-gray-900">My Database</span>
+                    <span className="text-xl font-bold text-gray-900">NAKA</span>
                 </div>
 
                 <KmlUploader />

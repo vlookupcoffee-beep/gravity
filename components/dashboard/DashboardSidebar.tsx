@@ -46,7 +46,7 @@ export default function DashboardSidebar() {
                                 className="object-contain"
                             />
                         </div>
-                        <span className="text-lg font-bold text-white">My Database</span>
+                        <span className="text-lg font-bold text-white">NAKA</span>
                     </div>
                     <p className="text-[10px] text-gray-400 font-medium tracking-wide">Network Autentication Keep Arcived</p>
                 </div>

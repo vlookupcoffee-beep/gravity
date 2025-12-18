@@ -48,7 +48,7 @@ export default function LoginPage() {
                         />
                         <p className="text-xs text-gray-500 font-medium tracking-wide">Network Autentication Keep Arcived</p>
                     </div>
-                    <h1 className="text-4xl font-bold text-white mb-2">Welcome My Database</h1>
+                    <h1 className="text-4xl font-bold text-white mb-2">Welcome NAKA</h1>
                     <p className="text-gray-400">Project Management System</p>
                 </div>
 
