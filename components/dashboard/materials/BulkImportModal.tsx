@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { bulkCreateMaterials } from '@/app/actions/material-actions'
-import { Loader2, X, Upload, AlertTriangle, Check } from 'lucide-react'
+import { getProjects } from '@/app/actions/get-projects'
+import { Loader2, X, Upload, AlertTriangle, Check, FileSpreadsheet } from 'lucide-react'
 
 interface BulkImportModalProps {
     onClose: () => void
@@ -14,6 +15,14 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
     const [rawText, setRawText] = useState('')
     const [parsedData, setParsedData] = useState<any[]>([])
     const [error, setError] = useState('')
+
+    // Global Project Selection
+    const [globalProjectId, setGlobalProjectId] = useState<string>('')
+    const [projects, setProjects] = useState<any[]>([])
+
+    useEffect(() => {
+        getProjects().then(setProjects).catch(console.error)
+    }, [])
 
     // Auto-detect columns and parse
     function parseData() {
@@ -34,39 +43,54 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
             const line = lines[i].trim()
             if (!line) continue
 
-            // Simple CSV/TSV parser (does not handle quoted strings with delimiters inside)
+            // Simple CSV/TSV parser
             const cols = line.split(delimiter).map(c => c.trim())
-
-            // Expected format order, or try to be smart? 
-            // Let's assume: Name | Description | Unit | Stock
-            // Or: Name | Unit | Stock
 
             let name = cols[0]
             let description = ''
             let unit = 'pcs'
             let stock = 0
 
+            // Try to be smart about column mapping
             if (cols.length >= 4) {
+                // Name | Desc | Unit | Stock
                 description = cols[1]
                 unit = cols[2]
                 stock = parseFloat(cols[3]) || 0
             } else if (cols.length === 3) {
-                // Name | Unit | Stock (Maybe desc is missing)
-                // OR Name | Desc | Unit (Stock missing)
-                // Let's guess based on column 2 content (if it looks like a number?)
+                // Heuristic: Name | Unit | Stock vs Name | Desc | Stock
+                // If col 2 is number, it's stock.
                 if (!isNaN(parseFloat(cols[2]))) {
-                    unit = cols[1]
+                    // Name | Unit? | Stock
+                    unit = cols[1] // assume col 1 is unit if col 2 is number
                     stock = parseFloat(cols[2])
                 } else {
+                    // Name | Desc | Stock?
                     description = cols[1]
-                    unit = cols[2]
+                    if (!isNaN(parseFloat(cols[2]))) {
+                        stock = parseFloat(cols[2])
+                    } else {
+                        // Name | Desc | Unit (Stock 0)
+                        unit = cols[2]
+                    }
                 }
             } else if (cols.length === 2) {
-                unit = cols[1]
+                // Name | Stock or Name | Unit?
+                if (!isNaN(parseFloat(cols[1]))) {
+                    stock = parseFloat(cols[1])
+                } else {
+                    unit = cols[1]
+                }
             }
 
             if (name) {
-                data.push({ name, description, unit, initial_stock: stock })
+                data.push({
+                    name,
+                    description,
+                    unit,
+                    initial_stock: stock,
+                    project_id: globalProjectId || undefined // Link to selected project
+                })
             }
         }
 
@@ -82,7 +106,13 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
 
     async function handleSubmit() {
         setLoading(true)
-        const result = await bulkCreateMaterials(parsedData)
+        // Ensure project ID is applied if it wasn't during parse (e.g. user changed selection after parse)
+        const finalData = parsedData.map(d => ({
+            ...d,
+            project_id: globalProjectId || undefined
+        }))
+
+        const result = await bulkCreateMaterials(finalData)
 
         if (result.success) {
             onClose()
@@ -96,10 +126,35 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h3 className="font-semibold text-gray-900">Bulk Import Materials</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <div>
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <FileSpreadsheet className="text-green-600" size={20} />
+                            Bulk Import Materials
+                        </h3>
+                        <p className="text-xs text-gray-500">Paste data from Excel or CSV.</p>
+                    </div>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-full">
                         <X size={20} />
                     </button>
+                </div>
+
+                <div className="p-4 bg-gray-50/80 border-b border-gray-100 grid md:grid-cols-2 gap-4">
+                    {/* Global Project Selector */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Assign Import to Project <span className="text-gray-400 font-normal">(Optional)</span>
+                        </label>
+                        <select
+                            className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all"
+                            value={globalProjectId}
+                            onChange={e => setGlobalProjectId(e.target.value)}
+                        >
+                            <option value="">-- General / Central Stock --</option>
+                            {projects.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6">
@@ -114,13 +169,15 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                         <div className="space-y-4">
                             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-800">
                                 <p className="font-semibold mb-1">Instructions:</p>
-                                <p>Paste your data from Excel or CSV below. The system will try to auto-detect columns.</p>
-                                <p className="mt-1 text-xs opacity-75">Recommended Format: <strong>Name | Description | Unit | Initial Stock</strong></p>
+                                <p>1. Copy columns from your spreadsheet (Excel/Google Sheets).</p>
+                                <p>2. Paste them below.</p>
+                                <p className="mt-2 text-xs opacity-75">Supported Columns Order: <strong>Name | Description | Unit | Stock</strong></p>
+                                <p className="text-xs opacity-75">Or simplified: <strong>Name | Unit | Stock</strong></p>
                             </div>
 
                             <textarea
-                                className="w-full h-80 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                                placeholder={`Item A\tDescription for A\tunit\t10\nItem B\tDescription for B\tunit\t5`}
+                                className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-xs leading-relaxed"
+                                placeholder={`Pipa PVC 2 inch\tPipa air bersih\tm\t50\nKabel NYM 2x1.5\tKabel Listrik\troll\t10`}
                                 value={rawText}
                                 onChange={(e) => setRawText(e.target.value)}
                             />
@@ -130,7 +187,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                             <p className="text-sm text-gray-600">Please verify the parsed data below before importing:</p>
                             <div className="border border-gray-200 rounded-lg overflow-hidden">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="bg-gray-50 text-gray-500 font-medium">
+                                    <thead className="bg-gray-50 text-gray-500 font-medium text-xs uppercase">
                                         <tr>
                                             <th className="px-4 py-2">Name</th>
                                             <th className="px-4 py-2">Description</th>
@@ -141,16 +198,19 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                                     <tbody className="divide-y divide-gray-100">
                                         {parsedData.map((row, i) => (
                                             <tr key={i} className="hover:bg-gray-50">
-                                                <td className="px-4 py-2 font-medium">{row.name}</td>
-                                                <td className="px-4 py-2 text-gray-500 truncate max-w-xs">{row.description}</td>
-                                                <td className="px-4 py-2 text-gray-500">{row.unit}</td>
-                                                <td className="px-4 py-2 text-right">{row.initial_stock}</td>
+                                                <td className="px-4 py-2 font-medium text-gray-900">{row.name}</td>
+                                                <td className="px-4 py-2 text-gray-500 truncate max-w-xs text-xs">{row.description}</td>
+                                                <td className="px-4 py-2 text-gray-500 text-xs font-mono">{row.unit}</td>
+                                                <td className="px-4 py-2 text-right font-medium">{row.initial_stock}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-                            <p className="text-xs text-gray-500 text-right">Found {parsedData.length} items.</p>
+                            <div className="flex justify-between text-xs text-gray-500">
+                                <span>Found <strong>{parsedData.length}</strong> items to import.</span>
+                                <span>Project: <strong>{projects.find(p => p.id === globalProjectId)?.name || 'None (General Stock)'}</strong></span>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -180,7 +240,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                         {step === 'input' ? (
                             <button
                                 onClick={parseData}
-                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
+                                className="px-4 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2"
                             >
                                 <Check size={16} />
                                 Parse Data
@@ -189,7 +249,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                             <button
                                 onClick={handleSubmit}
                                 disabled={loading}
-                                className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-5 py-2 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading && <Loader2 size={16} className="animate-spin" />}
                                 Import {parsedData.length} Items

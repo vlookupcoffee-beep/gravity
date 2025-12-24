@@ -7,7 +7,10 @@ import { Plus, Minus, Package, Search, Filter, Upload } from 'lucide-react'
 import AddMaterialModal from '@/components/dashboard/materials/AddMaterialModal'
 import UpdateStockModal from '@/components/dashboard/materials/UpdateStockModal'
 
+import { useRouter } from 'next/navigation'
+
 export default function MaterialsPage() {
+    const router = useRouter()
     const [materials, setMaterials] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
@@ -18,8 +21,11 @@ export default function MaterialsPage() {
     const [showBulkModal, setShowBulkModal] = useState(false)
 
     useEffect(() => {
-        loadMaterials()
-    }, [showAddModal, showUpdateModal, showBulkModal]) // Reload when modals close/change
+        if (!showAddModal && !showUpdateModal && !showBulkModal) {
+            router.refresh() // Force server component refresh
+            loadMaterials()
+        }
+    }, [showAddModal, showUpdateModal, showBulkModal, router])
 
     async function loadMaterials() {
         setLoading(true)
