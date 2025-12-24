@@ -110,6 +110,7 @@ export async function useMaterial(formData: FormData) {
     const materialId = formData.get('material_id') as string
     const quantity = parseFloat(formData.get('quantity') as string)
     const notes = formData.get('notes') as string
+    const projectId = formData.get('project_id') as string
 
     if (!materialId || quantity <= 0) {
         return { success: false, error: 'Invalid input' }
@@ -131,7 +132,8 @@ export async function useMaterial(formData: FormData) {
                 material_id: materialId,
                 transaction_type: 'OUT',
                 quantity: quantity,
-                notes: notes
+                notes: notes,
+                project_id: projectId || null
             })
 
         if (txError) throw txError
@@ -202,4 +204,54 @@ export async function bulkCreateMaterials(materials: { name: string; description
     } catch (e: any) {
         return { success: false, error: e.message }
     }
+}
+
+export async function getProjectMaterials(projectId: string) {
+    const supabase = await createClient()
+
+    const { data: transactions, error } = await supabase
+        .from('material_transactions')
+        .select(`
+            quantity,
+            materials (
+                id,
+                name,
+                unit
+            )
+        `)
+        .eq('project_id', projectId)
+        .eq('transaction_type', 'OUT')
+
+    if (error) {
+        console.error('Error getting project materials:', error)
+        return []
+    }
+
+    const usageMap = new Map<string, { id: string, name: string, unit: string, total: number }>()
+
+    transactions.forEach((t: any) => {
+        const mat = t.materials
+        // @ts-ignore
+        if (!mat) return
+
+        // @ts-ignore
+        if (!usageMap.has(mat.id)) {
+            // @ts-ignore
+            usageMap.set(mat.id, {
+                // @ts-ignore
+                id: mat.id,
+                // @ts-ignore
+                name: mat.name,
+                // @ts-ignore
+                unit: mat.unit,
+                total: 0
+            })
+        }
+
+        // @ts-ignore
+        const current = usageMap.get(mat.id)!
+        current.total += t.quantity
+    })
+
+    return Array.from(usageMap.values())
 }

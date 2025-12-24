@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useMaterial } from '@/app/actions/material-actions'
+import { getProjects } from '@/app/actions/get-projects'
 import { Loader2, X, AlertTriangle } from 'lucide-react'
 
 interface UpdateStockModalProps {
@@ -13,6 +14,24 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [selectedMaterialId, setSelectedMaterialId] = useState('')
+
+    // Project selection
+    const [projects, setProjects] = useState<any[]>([])
+    const [loadingProjects, setLoadingProjects] = useState(true)
+
+    useEffect(() => {
+        async function load() {
+            try {
+                const data = await getProjects()
+                setProjects(data)
+            } catch (e) {
+                console.error("Failed to load projects", e)
+            } finally {
+                setLoadingProjects(false)
+            }
+        }
+        load()
+    }, [])
 
     async function handleSubmit(formData: FormData) {
         setLoading(true)
@@ -47,6 +66,27 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
                             {error}
                         </div>
                     )}
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Select Project <span className="text-gray-400 font-normal">(Optional)</span></label>
+                        <select
+                            name="project_id"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
+                        >
+                            <option value="">-- General Usage / No Project --</option>
+                            {loadingProjects ? (
+                                <option disabled>Loading projects...</option>
+                            ) : (
+                                projects.map(p => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.name}
+                                    </option>
+                                ))
+                            )}
+                        </select>
+                    </div>
+
+                    <div className="border-t border-gray-200 my-4"></div>
 
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Select Material</label>
@@ -91,12 +131,12 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Notes / Project</label>
+                        <label className="text-sm font-medium text-gray-700">Notes</label>
                         <textarea
                             name="notes"
                             rows={2}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                            placeholder="Used for Project X..."
+                            placeholder="Additional details..."
                         />
                     </div>
 

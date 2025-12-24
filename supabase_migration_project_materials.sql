@@ -1,0 +1,7 @@
+-- Add project_id column to material_transactions table
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'material_transactions' AND column_name = 'project_id') THEN
+        ALTER TABLE material_transactions ADD COLUMN project_id UUID REFERENCES projects(id) ON DELETE SET NULL;
+    END IF;
+END $$;
