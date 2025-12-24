@@ -117,7 +117,13 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
         if (result.success) {
             onClose()
         } else {
-            setError(result.error || 'Failed to import materials')
+            if (result.errors && Array.isArray(result.errors)) {
+                // Format list of errors
+                const errorMsg = result.errors.map((e: any) => `${e.name}: ${e.error}`).join(' | ')
+                setError(errorMsg)
+            } else {
+                setError(result.error || 'Failed to import materials')
+            }
             setLoading(false)
         }
     }
