@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { LayoutDashboard, FolderKanban, Map as MapIcon, Settings, Receipt, LogOut, User } from 'lucide-react'
+import { LayoutDashboard, FolderKanban, Map as MapIcon, Settings, Receipt, LogOut, User, Package } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -82,6 +82,16 @@ export default function DashboardSidebar() {
                 >
                     <Receipt size={20} />
                     <span className="font-medium">Price Lists (KHS)</span>
+                </Link>
+                <Link
+                    href="/dashboard/materials"
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition ${isActive('/dashboard/materials')
+                        ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20'
+                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                        }`}
+                >
+                    <Package size={20} />
+                    <span className="font-medium">Materials</span>
                 </Link>
                 <Link
                     href="/dashboard/map"
