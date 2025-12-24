@@ -85,16 +85,6 @@ export async function addStock(formData: FormData) {
         if (txError) throw txError
 
         // 2. Update material stock
-        // We do this by calling a stored procedure or just manual update. 
-        // For simplicity and since we don't have a complex trigger setup, we'll fetch and update or use details if available.
-        // Better approach: use a DB function or simple increment. 
-        // Let's do a read-modify-write for now or use rpc if we had one. 
-        // Actually, let's just do a direct update.
-
-        // Fetch current stock first to be safe or use atomic increment if possible via RPC?
-        // Supabase JS doesn't support atomic increment easily without RPC.
-        // Let's fetch current first.
-
         const { data: mat, error: fetchError } = await supabase.from('materials').select('current_stock').eq('id', materialId).single()
         if (fetchError) throw fetchError
 
@@ -158,6 +148,57 @@ export async function useMaterial(formData: FormData) {
 
         revalidatePath('/dashboard/materials')
         return { success: true }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
+}
+
+export async function bulkCreateMaterials(materials: { name: string; description?: string; unit: string; initial_stock: number }[]) {
+    const supabase = await createClient()
+
+    try {
+        const results = []
+        const errors = []
+
+        for (const m of materials) {
+            // 1. Upsert material
+            const { data: mat, error: matError } = await supabase
+                .from('materials')
+                .upsert({
+                    name: m.name,
+                    description: m.description,
+                    unit: m.unit,
+                }, { onConflict: 'name' })
+                .select()
+                .single()
+
+            if (matError) {
+                errors.push({ name: m.name, error: matError.message })
+                continue
+            }
+
+            // 2. Handle Stock
+            if (m.initial_stock > 0) {
+                const { error: txError } = await supabase.from('material_transactions').insert({
+                    material_id: mat.id,
+                    transaction_type: 'IN',
+                    quantity: m.initial_stock,
+                    notes: 'Bulk Import'
+                })
+
+                if (!txError) {
+                    // Update stock count manually
+                    const { data: current } = await supabase.from('materials').select('current_stock').eq('id', mat.id).single()
+                    await supabase.from('materials').update({
+                        current_stock: (current?.current_stock || 0) + m.initial_stock
+                    }).eq('id', mat.id)
+                }
+            }
+            results.push(mat)
+        }
+
+        revalidatePath('/dashboard/materials')
+        return { success: true, count: results.length, errors }
     } catch (e: any) {
         return { success: false, error: e.message }
     }

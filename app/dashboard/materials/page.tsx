@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { getMaterials } from '@/app/actions/material-actions'
-import { Plus, Minus, Package, Search, Filter } from 'lucide-react'
+import BulkImportModal from '@/components/dashboard/materials/BulkImportModal'
+import { Plus, Minus, Package, Search, Filter, Upload } from 'lucide-react'
 import AddMaterialModal from '@/components/dashboard/materials/AddMaterialModal'
 import UpdateStockModal from '@/components/dashboard/materials/UpdateStockModal'
 
@@ -14,10 +15,11 @@ export default function MaterialsPage() {
     // Modals state
     const [showAddModal, setShowAddModal] = useState(false)
     const [showUpdateModal, setShowUpdateModal] = useState(false)
+    const [showBulkModal, setShowBulkModal] = useState(false)
 
     useEffect(() => {
         loadMaterials()
-    }, [showAddModal, showUpdateModal]) // Reload when modals close/change
+    }, [showAddModal, showUpdateModal, showBulkModal]) // Reload when modals close/change
 
     async function loadMaterials() {
         setLoading(true)
@@ -39,11 +41,18 @@ export default function MaterialsPage() {
                 </div>
                 <div className="flex gap-3">
                     <button
+                        onClick={() => setShowBulkModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                    >
+                        <Upload size={18} />
+                        Import
+                    </button>
+                    <button
                         onClick={() => setShowUpdateModal(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
                     >
                         <Minus size={18} className="text-orange-500" />
-                        Update Material Keluar
+                        Update Stock
                     </button>
                     <button
                         onClick={() => setShowAddModal(true)}
@@ -150,6 +159,10 @@ export default function MaterialsPage() {
                     materials={materials}
                     onClose={() => setShowUpdateModal(false)}
                 />
+            )}
+
+            {showBulkModal && (
+                <BulkImportModal onClose={() => setShowBulkModal(false)} />
             )}
         </div>
     )
