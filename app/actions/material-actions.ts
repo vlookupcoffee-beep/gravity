@@ -175,7 +175,7 @@ export async function bulkCreateMaterials(materials: { name: string; description
                 .single()
 
             if (matError) {
-                errors.push({ name: m.name, error: matError.message })
+                errors.push({ name: m.name, error: `Upsert Failed: ${matError.message}` })
                 continue
             }
 
@@ -189,21 +189,38 @@ export async function bulkCreateMaterials(materials: { name: string; description
                     project_id: m.project_id || null
                 })
 
-                if (!txError) {
+                if (txError) {
+                    errors.push({ name: m.name, error: `Transaction Failed: ${txError.message}` })
+                } else {
                     // Update stock count manually
-                    const { data: current } = await supabase.from('materials').select('current_stock').eq('id', mat.id).single()
-                    await supabase.from('materials').update({
-                        current_stock: (current?.current_stock || 0) + m.initial_stock
-                    }).eq('id', mat.id)
+                    const { data: current, error: fetchError } = await supabase.from('materials').select('current_stock').eq('id', mat.id).single()
+
+                    if (fetchError) {
+                        errors.push({ name: m.name, error: `Fetch Stock Failed: ${fetchError.message}` })
+                    } else {
+                        const { error: updateError } = await supabase.from('materials').update({
+                            current_stock: (current?.current_stock || 0) + m.initial_stock
+                        }).eq('id', mat.id)
+
+                        if (updateError) {
+                            errors.push({ name: m.name, error: `Update Stock Failed: ${updateError.message}` })
+                        }
+                    }
                 }
             }
             results.push(mat)
         }
 
         revalidatePath('/dashboard/materials')
-        return { success: true, count: results.length, errors }
+
+        // Return success if at least one worked, but include errors
+        return {
+            success: errors.length === 0,
+            count: results.length,
+            errors: errors.length > 0 ? errors : undefined
+        }
     } catch (e: any) {
-        return { success: false, error: e.message }
+        return { success: false, error: `System Error: ${e.message}` }
     }
 }
 

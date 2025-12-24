@@ -70,11 +70,18 @@ export default function AddMaterialModal({ onClose }: AddMaterialModalProps) {
 
         const result = await bulkCreateMaterials(payload)
 
+        setLoading(false)
+
         if (result.success) {
             onClose()
         } else {
-            setError(result.error || 'Failed to create materials')
-            setLoading(false)
+            if (result.errors && Array.isArray(result.errors)) {
+                // Format list of errors
+                const errorMsg = result.errors.map((e: any) => `${e.name}: ${e.error}`).join(' | ')
+                setError(errorMsg)
+            } else {
+                setError(result.error || 'Failed to create materials')
+            }
         }
     }
 
