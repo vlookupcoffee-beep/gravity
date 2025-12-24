@@ -273,3 +273,60 @@ export async function getProjectMaterials(projectId: string) {
 
     return Array.from(usageMap.values())
 }
+
+export async function getProjectMaterialSummary(projectId: string) {
+    const supabase = await createClient()
+
+    // Get all transactions for this project
+    const { data: transactions, error } = await supabase
+        .from('material_transactions')
+        .select(`
+            transaction_type,
+            quantity,
+            materials (
+                id,
+                name,
+                unit
+            )
+        `)
+        .eq('project_id', projectId)
+
+    if (error) {
+        console.error('Error getting project material summary:', error)
+        return []
+    }
+
+    const summaryMap = new Map<string, { id: string, name: string, unit: string, total_in: number, total_out: number }>()
+
+    transactions.forEach((t: any) => {
+        const mat = t.materials
+        // @ts-ignore
+        if (!mat) return
+
+        // @ts-ignore
+        if (!summaryMap.has(mat.id)) {
+            // @ts-ignore
+            summaryMap.set(mat.id, {
+                // @ts-ignore
+                id: mat.id,
+                // @ts-ignore
+                name: mat.name,
+                // @ts-ignore
+                unit: mat.unit,
+                total_in: 0,
+                total_out: 0
+            })
+        }
+
+        // @ts-ignore
+        const current = summaryMap.get(mat.id)!
+
+        if (t.transaction_type === 'IN') {
+            current.total_in += t.quantity
+        } else if (t.transaction_type === 'OUT') {
+            current.total_out += t.quantity
+        }
+    })
+
+    return Array.from(summaryMap.values())
+}
