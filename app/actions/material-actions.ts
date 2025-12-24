@@ -155,7 +155,7 @@ export async function useMaterial(formData: FormData) {
     }
 }
 
-export async function bulkCreateMaterials(materials: { name: string; description?: string; unit: string; initial_stock: number }[]) {
+export async function bulkCreateMaterials(materials: { name: string; description?: string; unit: string; initial_stock: number; project_id?: string }[]) {
     const supabase = await createClient()
 
     try {
@@ -185,7 +185,8 @@ export async function bulkCreateMaterials(materials: { name: string; description
                     material_id: mat.id,
                     transaction_type: 'IN',
                     quantity: m.initial_stock,
-                    notes: 'Bulk Import'
+                    notes: 'Bulk Import / Input',
+                    project_id: m.project_id || null
                 })
 
                 if (!txError) {
