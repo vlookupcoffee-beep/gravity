@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useMaterial } from '@/app/actions/material-actions'
+import { useMaterial, addStock } from '@/app/actions/material-actions'
 import { getProjects } from '@/app/actions/get-projects'
-import { Loader2, X, AlertTriangle } from 'lucide-react'
+import { Loader2, X, AlertTriangle, ArrowDown, ArrowUp } from 'lucide-react'
 
 interface UpdateStockModalProps {
     materials: any[]
@@ -14,6 +14,9 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [selectedMaterialId, setSelectedMaterialId] = useState('')
+
+    // Transaction Mode
+    const [type, setType] = useState<'IN' | 'OUT'>('OUT')
 
     // Project selection
     const [projects, setProjects] = useState<any[]>([])
@@ -37,7 +40,12 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
         setLoading(true)
         setError('')
 
-        const result = await useMaterial(formData)
+        let result;
+        if (type === 'IN') {
+            result = await addStock(formData)
+        } else {
+            result = await useMaterial(formData)
+        }
 
         if (result.success) {
             onClose()
@@ -53,7 +61,7 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h3 className="font-semibold text-gray-900">Material Keluar (Usage)</h3>
+                    <h3 className="font-semibold text-gray-900">Update Stock</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
                         <X size={20} />
                     </button>
@@ -67,13 +75,39 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
                         </div>
                     )}
 
+                    {/* Transaction Type Toggle */}
+                    <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-lg">
+                        <button
+                            type="button"
+                            onClick={() => setType('IN')}
+                            className={`flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${type === 'IN'
+                                    ? 'bg-white text-green-600 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <ArrowDown size={16} />
+                            Masuk (IN)
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setType('OUT')}
+                            className={`flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${type === 'OUT'
+                                    ? 'bg-white text-orange-600 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <ArrowUp size={16} />
+                            Terpakai (OUT)
+                        </button>
+                    </div>
+
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Select Project <span className="text-gray-400 font-normal">(Optional)</span></label>
+                        <label className="text-sm font-medium text-gray-700">Project <span className="text-gray-400 font-normal">(Optional)</span></label>
                         <select
                             name="project_id"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white"
                         >
-                            <option value="">-- General Usage / No Project --</option>
+                            <option value="">{type === 'IN' ? '-- General Stock / Purchase --' : '-- General Usage --'}</option>
                             {loadingProjects ? (
                                 <option disabled>Loading projects...</option>
                             ) : (
@@ -84,6 +118,12 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
                                 ))
                             )}
                         </select>
+                        {type === 'OUT' && (
+                            <p className="text-xs text-orange-600">Select a project to record usage for a specific job.</p>
+                        )}
+                        {type === 'IN' && (
+                            <p className="text-xs text-green-600">Select a project if this material was purchased specifically for it.</p>
+                        )}
                     </div>
 
                     <div className="border-t border-gray-200 my-4"></div>
@@ -113,7 +153,7 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Quantity Out</label>
+                        <label className="text-sm font-medium text-gray-700">Quantity {type === 'IN' ? 'In' : 'Out'}</label>
                         <div className="flex items-center gap-2">
                             <input
                                 type="number"
@@ -152,10 +192,11 @@ export default function UpdateStockModal({ materials, onClose }: UpdateStockModa
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${type === 'IN' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'
+                                }`}
                         >
                             {loading && <Loader2 size={16} className="animate-spin" />}
-                            Update Stock
+                            {type === 'IN' ? 'Add Stock' : 'Record Usage'}
                         </button>
                     </div>
                 </form>

@@ -66,6 +66,7 @@ export async function addStock(formData: FormData) {
     const materialId = formData.get('material_id') as string
     const quantity = parseFloat(formData.get('quantity') as string)
     const notes = formData.get('notes') as string
+    const projectId = formData.get('project_id') as string
 
     if (!materialId || quantity <= 0) {
         return { success: false, error: 'Invalid input' }
@@ -79,7 +80,8 @@ export async function addStock(formData: FormData) {
                 material_id: materialId,
                 transaction_type: 'IN',
                 quantity: quantity,
-                notes: notes
+                notes: notes,
+                project_id: projectId || null
             })
 
         if (txError) throw txError
@@ -96,6 +98,27 @@ export async function addStock(formData: FormData) {
             .eq('id', materialId)
 
         if (updateError) throw updateError
+
+        revalidatePath('/dashboard/materials')
+        return { success: true }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
+}
+
+export async function deleteAllMaterials() {
+    const supabase = await createClient()
+
+    try {
+        const { error } = await supabase
+            .from('materials')
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000') // Delete all (using neq random UUID is a trick to match all if no where clause needed, but explicit delete with empty filter works too usually. Safest is delete().neq or similar)
+            // Actually delete() requires a filter in Supabase client usually to prevent accidental deletes.
+            // Let's use greater than timestamp 0 or similar simple true condition.
+            .gt('created_at', '1970-01-01')
+
+        if (error) throw error
 
         revalidatePath('/dashboard/materials')
         return { success: true }

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getMaterials, getProjectMaterialSummary, updateMaterialRequirement } from '@/app/actions/material-actions'
+import { getMaterials, getProjectMaterialSummary, updateMaterialRequirement, deleteAllMaterials } from '@/app/actions/material-actions'
 import { getProjects } from '@/app/actions/get-projects'
 import BulkImportModal from '@/components/dashboard/materials/BulkImportModal'
-import { Plus, Minus, Package, Search, Filter, Upload, Layers } from 'lucide-react'
+import { Plus, Minus, Package, Search, Filter, Upload, Layers, Trash2 } from 'lucide-react'
 import AddMaterialModal from '@/components/dashboard/materials/AddMaterialModal'
 import UpdateStockModal from '@/components/dashboard/materials/UpdateStockModal'
 import { useRouter } from 'next/navigation'
@@ -65,6 +65,16 @@ export default function MaterialsPage() {
         loadProjectSpecificData(selectedProjectId)
     }
 
+    async function handleDeleteAll() {
+        if (confirm('ARE YOU SURE? This will delete ALL materials and transactions permanently!')) {
+            if (confirm('Really? This action cannot be undone.')) {
+                setLoading(true)
+                await deleteAllMaterials()
+                loadData()
+            }
+        }
+    }
+
     const filteredMaterials = (selectedProjectId ? projectMaterials : materials).filter(m =>
         m.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -78,6 +88,13 @@ export default function MaterialsPage() {
                     <p className="text-gray-400">Track inventory, usage, and project allocation.</p>
                 </div>
                 <div className="flex gap-3">
+                    <button
+                        onClick={handleDeleteAll}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/20 transition-all shadow-sm text-sm"
+                    >
+                        <Trash2 size={16} />
+                        Reset All
+                    </button>
                     <button
                         onClick={() => setShowBulkModal(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-800 transition-all shadow-sm text-sm"
