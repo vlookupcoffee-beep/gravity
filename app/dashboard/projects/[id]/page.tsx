@@ -10,6 +10,7 @@ import StatsCard from '@/components/dashboard/StatsCard'
 import ProjectBOQ from '@/components/dashboard/ProjectBOQ'
 import ProjectPoW from '@/components/dashboard/ProjectPoW'
 import EditProjectModal from '@/components/dashboard/EditProjectModal'
+import DailyReportHistory from '@/components/dashboard/DailyReportHistory'
 import { HardDrive, Map as MapIcon } from 'lucide-react'
 
 // Reuse map component dynamically
@@ -120,6 +121,9 @@ export default function ProjectDetailPage() {
 
                     {/* Work Items / BOQ Section */}
                     <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
+
+                    {/* Telegram Daily Reports History */}
+                    <DailyReportHistory projectId={project.id} />
                 </div>
 
 
@@ -147,18 +151,18 @@ export default function ProjectDetailPage() {
                     </div>
 
                     <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
-                        <h2 className="font-bold text-white mb-4">Activity Log</h2>
-                        <div className="space-y-6 relative before:absolute before:left-2 before:top-10 before:bottom-0 before:w-0.5 before:bg-gray-700">
-                            {/* Mock Activity - In real app, fetch from logs */}
-                            <div className="relative pl-8">
-                                <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-blue-500 border-4 border-[#1E293B]"></div>
-                                <p className="text-sm font-medium text-white">Project data updated</p>
-                                <p className="text-xs text-gray-500">Just now</p>
+                        <h2 className="font-bold text-white mb-4">Project Status</h2>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-lg border border-gray-700">
+                                <span className="text-sm text-gray-500">Status</span>
+                                <span className={`text-xs font-bold uppercase ${project.status === 'completed' ? 'text-green-400' :
+                                        project.status === 'in-progress' ? 'text-blue-400' :
+                                            'text-gray-400'
+                                    }`}>{project.status || 'Planning'}</span>
                             </div>
-                            <div className="relative pl-8">
-                                <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-gray-600 border-4 border-[#1E293B]"></div>
-                                <p className="text-sm font-medium text-white">Project created</p>
-                                <p className="text-xs text-gray-500">{new Date(project.created_at).toLocaleDateString()}</p>
+                            <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-lg border border-gray-700">
+                                <span className="text-sm text-gray-500">Last Update</span>
+                                <span className="text-xs text-white">{new Date(project.created_at).toLocaleDateString()}</span>
                             </div>
                         </div>
                     </div>
