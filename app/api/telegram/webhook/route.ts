@@ -5,6 +5,29 @@ import { parseTelegramMessage } from '@/utils/telegram-parser'
 // Prevent caching for webhooks
 export const dynamic = 'force-dynamic'
 
+// Helper to send message back to Telegram
+async function sendTelegramReply(chatId: number, text: string) {
+    const token = process.env.BOT_TELEGRAM_TOKEN
+    if (!token) {
+        console.error('BOT_TELEGRAM_TOKEN not set')
+        return
+    }
+
+    try {
+        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: text,
+                parse_mode: 'Markdown'
+            })
+        })
+    } catch (e) {
+        console.error('Failed to send Telegram reply:', e)
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         const update = await request.json()
@@ -26,8 +49,7 @@ export async function POST(request: NextRequest) {
         const reportData = parseTelegramMessage(text)
 
         if (!reportData.siteName) {
-            // Could reply to user here if we had the mechanism, for now just log
-            console.error('No Site Name found in report')
+            await sendTelegramReply(chatId, '❌ **Gagal Parse**: Site Name tidak ditemukan. Pastikan format benar:\n`Site Name : NAMA PROJECT`')
             return NextResponse.json({ message: 'No Site Name found' }, { status: 200 })
         }
 
@@ -64,11 +86,12 @@ export async function POST(request: NextRequest) {
 
         if (reportError) {
             console.error('Error creating report:', reportError)
+            await sendTelegramReply(chatId, `❌ **System Error**: Gagal menyimpan laporan. \n${reportError.message}`)
             return NextResponse.json({ error: reportError.message }, { status: 500 })
         }
 
         // 3. Process Items
-        const processedItems = []
+        let updatedItemsCount = 0
         for (const item of reportData.items) {
             // Find Material ID
             // Try simplified name matching (e.g. "NP-7.0-140-3S" from "NP-7.0-140-3S (TIANG 3S)")
@@ -119,13 +142,22 @@ export async function POST(request: NextRequest) {
                         current_stock: (currentMat.current_stock || 0) - item.todayDone
                     }).eq('id', materialId)
                 }
+                updatedItemsCount++
             }
         }
+
+        // Success Reply
+        const projectStatus = projectId ? `✅ Project Found: *${projects?.[0]?.name}*` : `⚠️ Project Not Found (Saved as General Report)`
+        await sendTelegramReply(chatId, `✅ **Laporan Diterima!**\n\n${projectStatus}\n\n📊 Items Processed: ${reportData.items.length}\n📉 Stock Updates: ${updatedItemsCount} Items deducted.\n\nTerima kasih, laporan tersimpan.`)
 
         return NextResponse.json({ success: true, reportId: report.id }, { status: 200 })
 
     } catch (e: any) {
         console.error('Webhook Error:', e)
+        // Try to reply error if possible
+        try {
+            // Need to get chatId from request if possible, but parsing failed maybe?
+        } catch { }
         return NextResponse.json({ error: e.message }, { status: 500 })
     }
 }
