@@ -136,3 +136,28 @@ export async function updateProject(projectId: string, formData: FormData) {
         return { success: false, error: e.message }
     }
 }
+
+export async function renameProject(projectId: string, newName: string) {
+    const supabase = await createClient()
+
+    try {
+        await checkOwnerRole()
+
+        const { error } = await supabase
+            .from('projects')
+            .update({ name: newName })
+            .eq('id', projectId)
+
+        if (error) {
+            console.error('Error renaming project:', error)
+            return { success: false, error: error.message }
+        }
+
+        revalidatePath(`/dashboard/projects/${projectId}`)
+        revalidatePath('/dashboard/projects')
+
+        return { success: true }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
+}
