@@ -277,8 +277,8 @@ export async function getProjectMaterials(projectId: string) {
 export async function getProjectMaterialSummary(projectId: string) {
     const supabase = await createClient()
 
-    // Get all transactions for this project
-    const { data: transactions, error } = await supabase
+    // 1. Get Transactions
+    const { data: transactions, error: txError } = await supabase
         .from('material_transactions')
         .select(`
             transaction_type,
@@ -291,42 +291,112 @@ export async function getProjectMaterialSummary(projectId: string) {
         `)
         .eq('project_id', projectId)
 
-    if (error) {
-        console.error('Error getting project material summary:', error)
+    if (txError) {
+        console.error('Error getting project material transactions:', txError)
         return []
     }
 
-    const summaryMap = new Map<string, { id: string, name: string, unit: string, total_in: number, total_out: number }>()
+    // 2. Get Requirements
+    const { data: requirements, error: reqError } = await supabase
+        .from('project_material_requirements')
+        .select(`
+            material_id,
+            quantity_needed,
+            materials (
+                id,
+                name,
+                unit
+            )
+        `)
+        .eq('project_id', projectId)
 
-    transactions.forEach((t: any) => {
-        const mat = t.materials
-        // @ts-ignore
-        if (!mat) return
+    if (reqError) {
+        console.error('Error getting project requirements:', reqError)
+    }
 
-        // @ts-ignore
-        if (!summaryMap.has(mat.id)) {
+    const summaryMap = new Map<string, { id: string, name: string, unit: string, total_in: number, total_out: number, quantity_needed: number }>()
+
+    // Process Transactions
+    if (transactions) {
+        transactions.forEach((t: any) => {
+            const mat = t.materials
             // @ts-ignore
-            summaryMap.set(mat.id, {
-                // @ts-ignore
-                id: mat.id,
-                // @ts-ignore
-                name: mat.name,
-                // @ts-ignore
-                unit: mat.unit,
-                total_in: 0,
-                total_out: 0
-            })
-        }
+            if (!mat) return
 
-        // @ts-ignore
-        const current = summaryMap.get(mat.id)!
+            // @ts-ignore
+            if (!summaryMap.has(mat.id)) {
+                // @ts-ignore
+                summaryMap.set(mat.id, {
+                    // @ts-ignore
+                    id: mat.id,
+                    // @ts-ignore
+                    name: mat.name,
+                    // @ts-ignore
+                    unit: mat.unit,
+                    total_in: 0,
+                    total_out: 0,
+                    quantity_needed: 0
+                })
+            }
 
-        if (t.transaction_type === 'IN') {
-            current.total_in += t.quantity
-        } else if (t.transaction_type === 'OUT') {
-            current.total_out += t.quantity
-        }
-    })
+            // @ts-ignore
+            const current = summaryMap.get(mat.id)!
+
+            if (t.transaction_type === 'IN') {
+                current.total_in += t.quantity
+            } else if (t.transaction_type === 'OUT') {
+                current.total_out += t.quantity
+            }
+        })
+    }
+
+    // Process Requirements
+    if (requirements) {
+        requirements.forEach((req: any) => {
+            const mat = req.materials
+            if (summaryMap.has(req.material_id)) {
+                // Update existing
+                const current = summaryMap.get(req.material_id)!
+                current.quantity_needed = req.quantity_needed
+            } else if (mat) {
+                // Add new (no transactions yet)
+                // @ts-ignore
+                summaryMap.set(req.material_id, {
+                    id: req.material_id,
+                    // @ts-ignore
+                    name: mat.name,
+                    // @ts-ignore
+                    unit: mat.unit,
+                    total_in: 0,
+                    total_out: 0,
+                    quantity_needed: req.quantity_needed
+                })
+            }
+        })
+    }
 
     return Array.from(summaryMap.values())
+}
+
+export async function updateMaterialRequirement(projectId: string, materialId: string, quantity: number) {
+    const supabase = await createClient()
+
+    try {
+        const { error } = await supabase
+            .from('project_material_requirements')
+            .upsert({
+                project_id: projectId,
+                material_id: materialId,
+                quantity_needed: quantity,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'project_id, material_id' })
+
+        if (error) throw error
+
+        revalidatePath(`/dashboard/projects/${projectId}`)
+        revalidatePath('/dashboard/materials')
+        return { success: true }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
 }

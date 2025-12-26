@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getMaterials, getProjectMaterialSummary } from '@/app/actions/material-actions'
+import { getMaterials, getProjectMaterialSummary, updateMaterialRequirement } from '@/app/actions/material-actions'
 import { getProjects } from '@/app/actions/get-projects'
 import BulkImportModal from '@/components/dashboard/materials/BulkImportModal'
 import { Plus, Minus, Package, Search, Filter, Upload, Layers } from 'lucide-react'
@@ -54,6 +54,15 @@ export default function MaterialsPage() {
         const data = await getProjectMaterialSummary(id)
         setProjectMaterials(data)
         setLoading(false)
+    }
+
+    async function handleUpdateRequirement(materialId: string, value: string) {
+        const quantity = parseFloat(value)
+        if (isNaN(quantity) || quantity < 0) return
+
+        await updateMaterialRequirement(selectedProjectId, materialId, quantity)
+        // Optimistic update or reload
+        loadProjectSpecificData(selectedProjectId)
     }
 
     const filteredMaterials = (selectedProjectId ? projectMaterials : materials).filter(m =>
@@ -153,9 +162,10 @@ export default function MaterialsPage() {
 
                                 {selectedProjectId ? (
                                     <>
-                                        <th className="px-6 py-4 font-semibold text-right text-blue-400 w-32">Total In</th>
-                                        <th className="px-6 py-4 font-semibold text-right text-orange-400 w-32">Used</th>
-                                        <th className="px-6 py-4 font-semibold text-right w-32">Remaining</th>
+                                        <th className="px-6 py-4 font-semibold text-right text-purple-400 w-32">Kebutuhan</th>
+                                        <th className="px-6 py-4 font-semibold text-right text-blue-400 w-32">Masuk</th>
+                                        <th className="px-6 py-4 font-semibold text-right text-orange-400 w-32">Terpakai</th>
+                                        <th className="px-6 py-4 font-semibold text-right w-32">Sisa</th>
                                     </>
                                 ) : (
                                     <>
@@ -168,13 +178,13 @@ export default function MaterialsPage() {
                         <tbody className="divide-y divide-gray-700">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500 animate-pulse">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500 animate-pulse">
                                         Loading inventory data...
                                     </td>
                                 </tr>
                             ) : filteredMaterials.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                                         No materials found.
                                     </td>
                                 </tr>
@@ -193,6 +203,20 @@ export default function MaterialsPage() {
 
                                         {selectedProjectId ? (
                                             <>
+                                                <td className="px-6 py-4 text-right font-medium text-purple-400">
+                                                    <input
+                                                        type="number"
+                                                        defaultValue={m.quantity_needed || 0}
+                                                        className="w-20 bg-transparent border-b border-gray-700 text-right focus:border-purple-500 focus:outline-none"
+                                                        onBlur={(e) => handleUpdateRequirement(m.id, e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                handleUpdateRequirement(m.id, (e.target as HTMLInputElement).value)
+                                                                    ; (e.target as HTMLInputElement).blur()
+                                                            }
+                                                        }}
+                                                    />
+                                                </td>
                                                 <td className="px-6 py-4 text-right font-medium text-blue-400">
                                                     {m.total_in > 0 ? `+${m.total_in}` : '-'}
                                                 </td>
