@@ -68,6 +68,11 @@ export async function POST(request: NextRequest) {
             projectId = projects[0].id
         }
 
+        if (!projectId) {
+            await sendTelegramReply(chatId, `❌ **Gagal**: Project dengan nama "*${reportData.siteName}*" tidak ditemukan di database.\n\nPastikan nama di laporan sama dengan nama di web.`)
+            return NextResponse.json({ message: 'Project not found' }, { status: 200 })
+        }
+
         // 2. Create Daily Report
         const { data: report, error: reportError } = await supabase
             .from('daily_reports')
