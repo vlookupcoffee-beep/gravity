@@ -16,6 +16,9 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
     const [parsedData, setParsedData] = useState<any[]>([])
     const [error, setError] = useState('')
 
+    // Import Type
+    const [importType, setImportType] = useState<'STOCK' | 'REQUIREMENT'>('STOCK')
+
     // Global Project Selection
     const [globalProjectId, setGlobalProjectId] = useState<string>('')
     const [projects, setProjects] = useState<any[]>([])
@@ -72,6 +75,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                     } else {
                         // Name | Desc | Unit (Stock 0)
                         unit = cols[2]
+                        stock = 0
                     }
                 }
             } else if (cols.length === 2) {
@@ -80,6 +84,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                     stock = parseFloat(cols[1])
                 } else {
                     unit = cols[1]
+                    stock = 0
                 }
             }
 
@@ -105,11 +110,17 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
     }
 
     async function handleSubmit() {
+        if (importType === 'REQUIREMENT' && !globalProjectId) {
+            setError('Please select a project for Requirements import.')
+            return
+        }
+
         setLoading(true)
         // Ensure project ID is applied if it wasn't during parse (e.g. user changed selection after parse)
         const finalData = parsedData.map(d => ({
             ...d,
-            project_id: globalProjectId || undefined
+            project_id: globalProjectId || undefined,
+            import_type: importType
         }))
 
         const result = await bulkCreateMaterials(finalData)
@@ -145,17 +156,35 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                 </div>
 
                 <div className="p-4 bg-gray-50/80 border-b border-gray-100 grid md:grid-cols-2 gap-4">
-                    {/* Global Project Selector */}
+                    {/* Import Type Selector */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Assign Import to Project <span className="text-gray-400 font-normal">(Optional)</span>
+                            Import As
                         </label>
                         <select
                             className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all"
+                            value={importType}
+                            onChange={e => setImportType(e.target.value as 'STOCK' | 'REQUIREMENT')}
+                        >
+                            <option value="STOCK">Stock / Material Masuk</option>
+                            <option value="REQUIREMENT">Kebutuhan Project (Requirements)</option>
+                        </select>
+                    </div>
+
+                    {/* Global Project Selector */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            {importType === 'REQUIREMENT' ? 'Assign to Project (Required)' : 'Assign to Project (Optional)'}
+                        </label>
+                        <select
+                            className={`w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all
+                                ${importType === 'REQUIREMENT' && !globalProjectId ? 'border-red-300 ring-2 ring-red-100' : 'border-gray-300'}
+                            `}
                             value={globalProjectId}
                             onChange={e => setGlobalProjectId(e.target.value)}
+                            required={importType === 'REQUIREMENT'}
                         >
-                            <option value="">-- General / Central Stock --</option>
+                            <option value="">{importType === 'REQUIREMENT' ? '-- Select Project (Required) --' : '-- General / Central Stock --'}</option>
                             {projects.map(p => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
                             ))}
@@ -173,12 +202,15 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
 
                     {step === 'input' ? (
                         <div className="space-y-4">
-                            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-800">
-                                <p className="font-semibold mb-1">Instructions:</p>
+                            <div className={`border rounded-lg p-4 text-sm ${importType === 'REQUIREMENT' ? 'bg-purple-50 border-purple-100 text-purple-900' : 'bg-blue-50 border-blue-100 text-blue-800'}`}>
+                                <p className="font-semibold mb-1">Instructions ({importType === 'REQUIREMENT' ? 'Requirements' : 'Stock'}):</p>
                                 <p>1. Copy columns from your spreadsheet (Excel/Google Sheets).</p>
                                 <p>2. Paste them below.</p>
-                                <p className="mt-2 text-xs opacity-75">Supported Columns Order: <strong>Name | Description | Unit | Stock</strong></p>
-                                <p className="text-xs opacity-75">Or simplified: <strong>Name | Unit | Stock</strong></p>
+                                <p className="mt-2 text-xs opacity-75">Supported Columns Order: <strong>Name | Description | Unit | Quantity</strong></p>
+                                <p className="text-xs opacity-75">Or simplified: <strong>Name | Unit | Quantity</strong></p>
+                                {importType === 'REQUIREMENT' && (
+                                    <p className="mt-2 font-bold text-xs">Note: This will set the required quantity for the selected project.</p>
+                                )}
                             </div>
 
                             <textarea
@@ -198,7 +230,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                                             <th className="px-4 py-2">Name</th>
                                             <th className="px-4 py-2">Description</th>
                                             <th className="px-4 py-2">Unit</th>
-                                            <th className="px-4 py-2 text-right">Stock</th>
+                                            <th className="px-4 py-2 text-right">{importType === 'REQUIREMENT' ? 'Needs' : 'Stock'}</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -215,7 +247,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                             </div>
                             <div className="flex justify-between text-xs text-gray-500">
                                 <span>Found <strong>{parsedData.length}</strong> items to import.</span>
-                                <span>Project: <strong>{projects.find(p => p.id === globalProjectId)?.name || 'None (General Stock)'}</strong></span>
+                                <span>Type: <strong>{importType}</strong> | Project: <strong>{projects.find(p => p.id === globalProjectId)?.name || 'None'}</strong></span>
                             </div>
                         </div>
                     )}
