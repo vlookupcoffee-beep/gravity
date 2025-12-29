@@ -22,6 +22,7 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
     const [selectedKHSItem, setSelectedKHSItem] = useState<any>(null)
     const [quantity, setQuantity] = useState(1)
     const [adding, setAdding] = useState(false)
+    const [rowSelectionType, setRowSelectionType] = useState<'vendor' | 'mandor'>('vendor')
 
     // Upload & Recalculate State
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
@@ -57,7 +58,9 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
     async function handleAddItem() {
         if (!selectedKHSItem) return
         setAdding(true)
-        const result = await addProjectItem(projectId, selectedKHSItem, Number(quantity))
+        // Pass the rowSelectionType as part of the item metadata
+        const itemWithSelection = { ...selectedKHSItem, uploadType: rowSelectionType }
+        const result = await addProjectItem(projectId, itemWithSelection, Number(quantity))
         setAdding(false)
 
         if (result.success) {
@@ -120,6 +123,7 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
 
         const { uploadProjectItems } = await import('@/app/actions/boq-actions')
 
+        formData.append('uploadType', rowSelectionType) // Use the same selection type for bulk upload
         const result = await uploadProjectItems(projectId, selectedProvider, formData)
         setUploading(false)
 
@@ -138,16 +142,18 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
 
-    const totalValue = items.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0)
+    const totalValueVendor = items.reduce((acc, item) => acc + (item.unit_price * (item.quantity || 0)), 0)
+    const totalValueMandor = items.reduce((acc, item) => acc + (item.unit_price_mandor * (item.quantity_mandor || 0)), 0)
 
     return (
         <div className="bg-[#1E293B] rounded-xl border border-gray-700 overflow-hidden">
             <div className="p-6 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <h3 className="font-bold text-white">Work Items (BOQ)</h3>
-                    <div className="flex items-center gap-4">
-                        <p className="text-sm text-gray-400">Total Est. Value: <span className="text-green-400 font-mono">{formatCurrency(totalValue)}</span></p>
-                        <button onClick={handleRecalculate} className="text-xs text-blue-400 hover:text-blue-300 underline" title="Recalculate total value">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+                        <p className="text-sm text-gray-400">Total Vendor: <span className="text-green-400 font-mono">{formatCurrency(totalValueVendor)}</span></p>
+                        <p className="text-sm text-gray-400">Total Mandor: <span className="text-blue-400 font-mono">{formatCurrency(totalValueMandor)}</span></p>
+                        <button onClick={handleRecalculate} className="text-xs text-gray-500 hover:text-blue-400 underline" title="Recalculate total value">
                             Force Refresh
                         </button>
                     </div>
@@ -189,9 +195,10 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                             <tr>
                                 <th className="px-4 py-3">Item Code</th>
                                 <th className="px-4 py-3">Description</th>
-                                <th className="px-4 py-3 text-right">Unit Price</th>
-                                <th className="px-4 py-3 text-center">Qty</th>
-                                <th className="px-4 py-3 text-right">Total</th>
+                                <th className="px-4 py-3 text-right bg-green-500/5">Vendor Price</th>
+                                <th className="px-4 py-3 text-center bg-green-500/5">Qty Vendor</th>
+                                <th className="px-4 py-3 text-right bg-blue-500/5">Mandor Price</th>
+                                <th className="px-4 py-3 text-center bg-blue-500/5">Qty Mandor</th>
                                 <th className="px-4 py-3">Actions</th>
                             </tr>
                         </thead>
@@ -200,11 +207,19 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                 <tr key={item.id} className="hover:bg-gray-800/50">
                                     <td className="px-4 py-3 text-white font-mono text-xs">{item.item_code}</td>
                                     <td className="px-4 py-3 text-gray-300">{item.description}</td>
-                                    <td className="px-4 py-3 text-right text-gray-400">{formatCurrency(item.unit_price)}</td>
-                                    <td className="px-4 py-3 text-center text-white font-semibold">
-                                        {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity)} {item.unit}
+
+                                    {/* Vendor Columns */}
+                                    <td className="px-4 py-3 text-right text-gray-400 bg-green-500/5">{formatCurrency(item.unit_price)}</td>
+                                    <td className="px-4 py-3 text-center text-white font-semibold bg-green-500/5">
+                                        {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity || 0)} {item.unit}
                                     </td>
-                                    <td className="px-4 py-3 text-right text-green-400">{formatCurrency(item.unit_price * item.quantity)}</td>
+
+                                    {/* Mandor Columns */}
+                                    <td className="px-4 py-3 text-right text-gray-400 bg-blue-500/5">{formatCurrency(item.unit_price_mandor || 0)}</td>
+                                    <td className="px-4 py-3 text-center text-white font-semibold bg-blue-500/5">
+                                        {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity_mandor || 0)} {item.unit}
+                                    </td>
+
                                     <td className="px-4 py-3">
                                         <button
                                             onClick={() => handleDelete(item.id)}
@@ -266,27 +281,46 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-white font-medium text-sm">{formatCurrency(item.price)}</p>
-                                        <p className="text-xs text-gray-500">/{item.unit}</p>
+                                        <div className="flex flex-col items-end">
+                                            <p className="text-green-400 font-medium text-xs">V: {formatCurrency(item.price)}</p>
+                                            <p className="text-blue-400 font-medium text-xs">M: {formatCurrency(item.price_mandor || 0)}</p>
+                                        </div>
+                                        <p className="text-[10px] text-gray-500 mt-1">/{item.unit}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
                         <div className="p-4 border-t border-gray-700 bg-[#0F172A] flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <label className="text-sm text-gray-400">Volume / Qty:</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    className="bg-[#1E293B] border border-gray-700 text-white rounded-lg w-24 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(Number(e.target.value))}
-                                />
-                                <span className="text-sm text-gray-500">{selectedKHSItem?.unit}</span>
+                            <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-3">
+                                    <label className="text-sm text-gray-400">Qty:</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        className="bg-[#1E293B] border border-gray-700 text-white rounded-lg w-20 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(Number(e.target.value))}
+                                    />
+                                    <span className="text-xs text-gray-500">{selectedKHSItem?.unit}</span>
+                                </div>
+                                <div className="flex bg-[#1E293B] p-1 rounded-lg border border-gray-700">
+                                    <button
+                                        onClick={() => setRowSelectionType('vendor')}
+                                        className={`px-3 py-1 text-xs rounded-md transition ${rowSelectionType === 'vendor' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                                    >
+                                        Vendor
+                                    </button>
+                                    <button
+                                        onClick={() => setRowSelectionType('mandor')}
+                                        className={`px-3 py-1 text-xs rounded-md transition ${rowSelectionType === 'mandor' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                                    >
+                                        Mandor
+                                    </button>
+                                </div>
                             </div>
                             <button
-                                onClick={handleAddItem}
+                                onClick={() => handleAddItem()}
                                 disabled={!selectedKHSItem || adding}
                                 className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition"
                             >
@@ -318,6 +352,24 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                 </select>
                             </div>
 
+                            <div>
+                                <label className="text-sm text-gray-400 mb-1 block">Import Side (Destination)</label>
+                                <div className="flex bg-[#0F172A] p-1 rounded-lg border border-gray-600">
+                                    <button
+                                        onClick={() => setRowSelectionType('vendor')}
+                                        className={`flex-1 py-2 text-sm rounded-md transition ${rowSelectionType === 'vendor' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                                    >
+                                        Vendor
+                                    </button>
+                                    <button
+                                        onClick={() => setRowSelectionType('mandor')}
+                                        className={`flex-1 py-2 text-sm rounded-md transition ${rowSelectionType === 'mandor' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                                    >
+                                        Mandor
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="p-4 border border-dashed border-gray-600 rounded-lg bg-[#0F172A]/50 text-center">
                                 <p className="text-sm text-gray-400 mb-2">Upload CSV with format:</p>
                                 <code className="block bg-black/30 p-2 rounded text-xs text-blue-300 mb-4">Item Code; Quantity</code>
@@ -337,7 +389,7 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                     {uploading ? 'Importing...' : 'Select CSV File'}
                                 </label>
                             </div>
-                            <p className="text-xs text-gray-500 text-center">Delimiter: Semicolon (;) or Comma (,)</p>
+                            <p className="text-xs text-gray-500 text-center">Data will be added only to the selected side.</p>
                         </div>
                     </div>
                 </div>

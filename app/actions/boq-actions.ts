@@ -7,24 +7,28 @@ import { revalidatePath } from 'next/cache'
 async function updateProjectValue(projectId: string) {
     const supabase = await createClient()
 
-    // 1. Calculate Sum
+    // 1. Calculate Sums
     const { data: items } = await supabase
         .from('project_items')
-        .select('unit_price, quantity')
+        .select('unit_price, quantity, unit_price_mandor, quantity_mandor')
         .eq('project_id', projectId)
 
-    const totalValue = items?.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0) || 0
+    const totalValueVendor = items?.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0) || 0
+    const totalValueMandor = items?.reduce((acc, item) => acc + (item.unit_price_mandor * (item.quantity_mandor || 0)), 0) || 0
 
     // 2. Update Project
     const { error } = await supabase
         .from('projects')
-        .update({ value: totalValue })
+        .update({
+            value: totalValueVendor,
+            value_mandor: totalValueMandor
+        })
         .eq('id', projectId)
 
     if (error) {
         console.error('FAILED to update project value:', error)
     } else {
-        console.log(`Successfully updated project ${projectId} value to ${totalValue}`)
+        console.log(`Successfully updated project ${projectId} values: Vendor=${totalValueVendor}, Mandor=${totalValueMandor}`)
     }
 }
 
@@ -102,6 +106,8 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
 
         const khsItem = khsMap.get(code)
         if (khsItem) {
+            const uploadType = formData.get('uploadType') as string || 'vendor'
+
             itemsToInsert.push({
                 project_id: projectId,
                 khs_item_id: khsItem.id,
@@ -109,7 +115,9 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
                 description: khsItem.description,
                 unit: khsItem.unit,
                 unit_price: khsItem.price,
-                quantity: quantity,
+                unit_price_mandor: khsItem.price_mandor || 0,
+                quantity: uploadType === 'vendor' ? quantity : 0,
+                quantity_mandor: uploadType === 'mandor' ? quantity : 0,
                 progress: 0
             })
         } else {
@@ -141,6 +149,8 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
 export async function addProjectItem(projectId: string, khsItem: any, quantity: number) {
     const supabase = await createClient()
 
+    const uploadType = (khsItem as any).uploadType || 'vendor'
+
     const { error } = await supabase
         .from('project_items')
         .insert({
@@ -150,7 +160,9 @@ export async function addProjectItem(projectId: string, khsItem: any, quantity: 
             description: khsItem.description,
             unit: khsItem.unit,
             unit_price: khsItem.price,
-            quantity: quantity,
+            unit_price_mandor: khsItem.price_mandor || 0,
+            quantity: uploadType === 'vendor' ? quantity : 0,
+            quantity_mandor: uploadType === 'mandor' ? quantity : 0,
             progress: 0
         })
 

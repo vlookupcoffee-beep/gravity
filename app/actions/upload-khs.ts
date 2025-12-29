@@ -46,6 +46,8 @@ export async function uploadKHS(formData: FormData) {
     // Line 2: ;;;;
     // Start from index 2
 
+    const priceType = formData.get('priceType') as string || 'vendor'
+
     for (let i = 2; i < lines.length; i++) {
         const line = lines[i].trim()
         if (!line) continue
@@ -54,27 +56,42 @@ export async function uploadKHS(formData: FormData) {
         const cols = line.split(';')
         if (cols.length < 5) continue
 
-        // Columns: 0:NO, 1:ITEM DESIGN, 2:URAIAN DESIGN, 3:SATUAN, 4:HARGA
+        // Columns: 0:NO, 1:ITEM DESIGN, 2:URAIAN DESIGN, 3:SATUAN, 4:HARGA (VENDOR/MANDOR)
         const itemCode = cols[1]?.trim()
         const description = cols[2]?.trim()
         const unit = cols[3]?.trim()
         const priceStr = cols[4]?.trim()
+        const mandorPriceStr = cols[5]?.trim() // Potential 6th column
 
         if (!itemCode || !priceStr) continue
 
-        // Clean Price: " Rp4.200 " -> 4200
-        const priceClean = priceStr.replace(/[^0-9]/g, '')
-        const price = parseInt(priceClean)
+        // Clean values
+        const priceVal = parseInt(priceStr.replace(/[^0-9]/g, ''))
+        let mandorPriceVal = mandorPriceStr ? parseInt(mandorPriceStr.replace(/[^0-9]/g, '')) : 0
 
-        if (isNaN(price)) continue
+        if (isNaN(priceVal)) continue
 
-        itemsToInsert.push({
+        const item: any = {
             provider_id: providerId,
             item_code: itemCode,
             description: description,
-            unit: unit,
-            price: price
-        })
+            unit: unit
+        }
+
+        // Logic: 
+        // If uploading as 'vendor', set 'price'. 
+        // If uploading as 'mandor', set 'price_mandor'.
+        // If 6th column exists, we can use it to set both if we want, but let's stick to the toggle for safety.
+        if (priceType === 'mandor') {
+            item.price_mandor = priceVal
+        } else {
+            item.price = priceVal
+            if (!isNaN(mandorPriceVal) && mandorPriceVal > 0) {
+                item.price_mandor = mandorPriceVal
+            }
+        }
+
+        itemsToInsert.push(item)
     }
 
     if (itemsToInsert.length === 0) {

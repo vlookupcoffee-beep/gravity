@@ -10,6 +10,7 @@ export default function KHSPage() {
     const [uploadResult, setUploadResult] = useState<any>(null)
     const [providers, setProviders] = useState<any[]>([])
     const [loadingData, setLoadingData] = useState(true)
+    const [priceType, setPriceType] = useState<'vendor' | 'mandor'>('vendor')
 
     useEffect(() => {
         loadProviders()
@@ -32,6 +33,7 @@ export default function KHSPage() {
         const formData = new FormData()
         formData.append('file', file)
         formData.append('providerName', 'PT INTERNUSA DUTA MAKMUR (IDNET)')
+        formData.append('priceType', priceType)
 
         try {
             const result = await uploadKHS(formData)
@@ -73,11 +75,27 @@ export default function KHSPage() {
                     <h1 className="text-2xl font-bold text-white">Price Lists (KHS)</h1>
                     <p className="text-gray-400">Manage standard unit prices from different providers.</p>
                 </div>
-                <label className={`bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20 cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                    {isUploading ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
-                    <span>{isUploading ? 'Importing...' : 'Import KHS (CSV)'}</span>
-                    <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isUploading} />
-                </label>
+                <div className="flex items-center gap-4">
+                    <div className="flex bg-[#1E293B] p-1 rounded-lg border border-gray-700">
+                        <button
+                            onClick={() => setPriceType('vendor')}
+                            className={`px-4 py-2 text-sm rounded-md transition ${priceType === 'vendor' ? 'bg-green-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            Vendor Prices
+                        </button>
+                        <button
+                            onClick={() => setPriceType('mandor')}
+                            className={`px-4 py-2 text-sm rounded-md transition ${priceType === 'mandor' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                        >
+                            Mandor Prices
+                        </button>
+                    </div>
+                    <label className={`bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20 cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                        {isUploading ? <Loader2 size={20} className="animate-spin" /> : <Upload size={20} />}
+                        <span>{isUploading ? 'Importing...' : 'Import KHS (CSV)'}</span>
+                        <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isUploading} />
+                    </label>
+                </div>
             </div>
 
             {uploadResult && (
