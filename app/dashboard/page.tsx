@@ -5,8 +5,9 @@ import { getProjects } from '@/app/actions/get-projects'
 import { getAllPowTasks } from '@/app/actions/pow-actions'
 import { renameProject } from '@/app/actions/project-actions'
 import StatsCard from '@/components/dashboard/StatsCard'
-import { Activity, CheckCircle, Clock, Database, Plus, TrendingUp, CheckCircle2, AlertCircle, Pencil } from 'lucide-react'
+import { Activity, CheckCircle, Clock, Database, Plus, TrendingUp, CheckCircle2, AlertCircle, Pencil, FileText } from 'lucide-react'
 import Link from 'next/link'
+import ProjectReportModal from '@/components/dashboard/ProjectReportModal'
 
 export default function DashboardPage() {
     const [projects, setProjects] = useState<any[]>([])
@@ -15,6 +16,7 @@ export default function DashboardPage() {
     const [renamingId, setRenamingId] = useState<string | null>(null)
     const [newName, setNewName] = useState('')
     const [isRenaming, setIsRenaming] = useState(false)
+    const [showReport, setShowReport] = useState(false)
 
     const load = async () => {
         setLoading(true)
@@ -68,13 +70,22 @@ export default function DashboardPage() {
                     <h1 className="text-2xl font-bold text-white">Dashboard Overview</h1>
                     <p className="text-gray-400">Welcome back! Here's what's happening today.</p>
                 </div>
-                <Link
-                    href="/dashboard/projects/new"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
-                >
-                    <Plus size={20} />
-                    <span>New Project</span>
-                </Link>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setShowReport(true)}
+                        className="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-700 transition border border-gray-700 shadow-sm"
+                    >
+                        <FileText size={20} />
+                        <span>Global Report</span>
+                    </button>
+                    <Link
+                        href="/dashboard/projects/new"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
+                    >
+                        <Plus size={20} />
+                        <span>New Project</span>
+                    </Link>
+                </div>
             </div>
 
             {/* Stats Cards */}
@@ -343,6 +354,15 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Report Modal */}
+            {showReport && (
+                <ProjectReportModal
+                    mode="global"
+                    data={projects}
+                    onClose={() => setShowReport(false)}
+                />
             )}
         </div>
     )

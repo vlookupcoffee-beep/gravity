@@ -11,7 +11,8 @@ import ProjectBOQ from '@/components/dashboard/ProjectBOQ'
 import ProjectPoW from '@/components/dashboard/ProjectPoW'
 import EditProjectModal from '@/components/dashboard/EditProjectModal'
 import DailyReportHistory from '@/components/dashboard/DailyReportHistory'
-import { HardDrive, Map as MapIcon } from 'lucide-react'
+import ProjectReportModal from '@/components/dashboard/ProjectReportModal'
+import { HardDrive, Map as MapIcon, FileBarChart } from 'lucide-react'
 
 // Reuse map component dynamically
 import dynamic from 'next/dynamic'
@@ -25,6 +26,7 @@ export default function ProjectDetailPage() {
     const [project, setProject] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [showReport, setShowReport] = useState(false)
 
     useEffect(() => {
         if (params.id) {
@@ -82,12 +84,20 @@ export default function ProjectDetailPage() {
                         <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
                     </div>
                 </div>
-                <button
-                    onClick={() => setIsEditModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
-                >
-                    <Edit size={16} /> Edit Project
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setShowReport(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-800 transition shadow-sm"
+                    >
+                        <FileBarChart size={16} /> Report
+                    </button>
+                    <button
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
+                    >
+                        <Edit size={16} /> Edit Project
+                    </button>
+                </div>
             </div>
 
             {/* Top Row: Stats (Full Width) */}
@@ -156,8 +166,8 @@ export default function ProjectDetailPage() {
                             <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-lg border border-gray-700">
                                 <span className="text-sm text-gray-500">Status</span>
                                 <span className={`text-xs font-bold uppercase ${project.status === 'completed' ? 'text-green-400' :
-                                        project.status === 'in-progress' ? 'text-blue-400' :
-                                            'text-gray-400'
+                                    project.status === 'in-progress' ? 'text-blue-400' :
+                                        'text-gray-400'
                                     }`}>{project.status || 'Planning'}</span>
                             </div>
                             <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-lg border border-gray-700">
@@ -175,6 +185,14 @@ export default function ProjectDetailPage() {
                     project={project}
                     onClose={() => setIsEditModalOpen(false)}
                     onUpdate={() => loadProject(project.id)}
+                />
+            )}
+
+            {showReport && (
+                <ProjectReportModal
+                    mode="single"
+                    data={project}
+                    onClose={() => setShowReport(false)}
                 />
             )}
         </div>
