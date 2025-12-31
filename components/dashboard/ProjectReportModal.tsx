@@ -20,14 +20,34 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
     const handleDownloadCSV = () => {
         if (mode === 'single') {
             const exportData = [{
+                Type: 'PROJECT_INFO',
                 Name: data.name,
                 Status: data.status,
                 Value: data.value,
                 Progress: `${data.progress || 0}%`,
                 StartDate: data.start_date || '-',
                 EndDate: data.end_date || '-',
-                Description: data.description || ''
+                Description: (data.description || '').replace(/\n/g, ' ')
             }]
+
+            // Add material details if available
+            if (data.materialSummary?.some((m: any) => m.total_out > 0)) {
+                data.materialSummary
+                    .filter((m: any) => m.total_out > 0)
+                    .forEach((m: any) => {
+                        exportData.push({
+                            Type: 'MATERIAL_USAGE',
+                            Name: m.name,
+                            Status: `Unit: ${m.unit}`,
+                            Value: `Released: ${m.total_out}`,
+                            Progress: `Remaining: ${Math.max(0, (m.quantity_needed || 0) - m.total_out)}`,
+                            StartDate: '',
+                            EndDate: '',
+                            Description: ''
+                        } as any)
+                    })
+            }
+
             downloadCSV(exportData, `Report_${data.name.replace(/\s+/g, '_')}.csv`)
         } else {
             const exportData = (data as any[]).map(p => ({
@@ -132,6 +152,38 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     {data.description || "No description provided for this project."}
                                 </p>
                             </div>
+
+                            {/* Material Usage Section */}
+                            {data.materialSummary?.some((m: any) => m.total_out > 0) && (
+                                <div>
+                                    <h3 className="text-lg font-bold border-b border-gray-200 pb-2 mb-4">Material Usage Detail</h3>
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold">
+                                                <th className="px-4 py-2 border border-gray-200">Material Name</th>
+                                                <th className="px-4 py-2 border border-gray-200 text-center">Unit</th>
+                                                <th className="px-4 py-2 border border-gray-200 text-right">Released (Keluar)</th>
+                                                <th className="px-4 py-2 border border-gray-200 text-right">Remaining (Sisa)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.materialSummary
+                                                .filter((m: any) => m.total_out > 0)
+                                                .map((m: any) => (
+                                                    <tr key={m.id} className="text-sm">
+                                                        <td className="px-4 py-2 border border-gray-200 font-medium">{m.name}</td>
+                                                        <td className="px-4 py-2 border border-gray-200 text-center text-gray-500">{m.unit}</td>
+                                                        <td className="px-4 py-2 border border-gray-200 text-right font-bold text-blue-600">{m.total_out}</td>
+                                                        <td className="px-4 py-2 border border-gray-200 text-right font-bold text-gray-400">
+                                                            {Math.max(0, (m.quantity_needed || 0) - m.total_out)}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                        </tbody>
+                                    </table>
+                                    <p className="text-[10px] text-gray-400 mt-2 italic">* Only showing materials with active usage (released).</p>
+                                </div>
+                            )}
 
                             {/* Summary Stats */}
                             <div className="grid grid-cols-2 gap-4">

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { getProjectMaterialSummary } from './material-actions'
 
 // Haversine formula untuk menghitung jarak antara 2 koordinat (dalam km)
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -92,11 +93,15 @@ export async function getProjectDetails(projectId: string) {
         })
     }
 
+    // Fetch material summary
+    const materialSummary = await getProjectMaterialSummary(projectId)
+
     return {
         ...project,
         progress: calculatedProgress,
         structures: structureBreakdown,
         routes: routeBreakdown,
-        files: files || []
+        files: files || [],
+        materialSummary: materialSummary || []
     }
 }
