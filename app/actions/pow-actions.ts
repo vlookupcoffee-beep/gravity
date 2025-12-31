@@ -51,6 +51,9 @@ export async function createPowTask(projectId: string, taskData: any) {
             return { success: false, error: error.message }
         }
 
+        // Sync project overall progress
+        await syncProjectProgress(projectId)
+
         revalidatePath(`/dashboard/projects/${projectId}`)
         return { success: true, data }
     } catch (e: any) {
@@ -88,6 +91,9 @@ export async function updatePowTask(taskId: string, projectId: string, taskData:
             return { success: false, error: error.message }
         }
 
+        // Sync project overall progress
+        await syncProjectProgress(projectId)
+
         revalidatePath(`/dashboard/projects/${projectId}`)
         return { success: true, data }
     } catch (e: any) {
@@ -110,6 +116,9 @@ export async function deletePowTask(taskId: string, projectId: string) {
             console.error('Error deleting PoW task:', error)
             return { success: false, error: error.message }
         }
+
+        // Sync project overall progress
+        await syncProjectProgress(projectId)
 
         revalidatePath(`/dashboard/projects/${projectId}`)
         return { success: true }
@@ -146,10 +155,46 @@ export async function updateTaskProgress(taskId: string, projectId: string, prog
             return { success: false, error: error.message }
         }
 
+        // Sync project overall progress
+        await syncProjectProgress(projectId)
+
         revalidatePath(`/dashboard/projects/${projectId}`)
         return { success: true }
     } catch (e: any) {
         return { success: false, error: e.message }
+    }
+}
+
+// Helper function to sync project progress based on average of PoW tasks
+async function syncProjectProgress(projectId: string) {
+    const supabase = await createClient()
+
+    // 1. Get all tasks for this project
+    const { data: tasks, error: fetchError } = await supabase
+        .from('pow_tasks')
+        .select('progress')
+        .eq('project_id', projectId)
+
+    if (fetchError) {
+        console.error('Error fetching tasks for sync:', fetchError)
+        return
+    }
+
+    // 2. Calculate average
+    let overallProgress = 0
+    if (tasks && tasks.length > 0) {
+        const total = tasks.reduce((acc, t) => acc + (t.progress || 0), 0)
+        overallProgress = Math.round(total / tasks.length)
+    }
+
+    // 3. Update project
+    const { error: updateError } = await supabase
+        .from('projects')
+        .update({ progress: overallProgress })
+        .eq('id', projectId)
+
+    if (updateError) {
+        console.error('Error updating project progress during sync:', updateError)
     }
 }
 

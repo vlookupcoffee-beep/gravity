@@ -190,10 +190,9 @@ export default function DashboardPage() {
                                     // Get tasks for this project
                                     const projectTasks = powTasks.filter((t: any) => t.projects?.id === project.id)
 
-                                    // Calculate overall progress
-                                    const totalTasks = 14 // Total PoW tasks
-                                    const completedTasks = projectTasks.filter((t: any) => t.status === 'completed').length
-                                    const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+                                    // Calculate overall progress from average of task progress
+                                    const totalProgress = projectTasks.reduce((acc: number, t: any) => acc + (t.progress || 0), 0)
+                                    const overallProgress = projectTasks.length > 0 ? Math.round(totalProgress / projectTasks.length) : 0
 
                                     // Helper to get task status icon
                                     const getTaskIcon = (taskName: string) => {
