@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { parseTelegramMessage } from '@/utils/telegram-parser'
+import { syncPowProgressWithMaterials } from '@/app/actions/pow-sync-actions'
 
 // Prevent caching for webhooks
 export const dynamic = 'force-dynamic'
@@ -153,7 +154,13 @@ export async function POST(request: NextRequest) {
 
         // Success Reply
         const projectStatus = projectId ? `✅ Project Found: *${projects?.[0]?.name}*` : `⚠️ Project Not Found (Saved as General Report)`
-        await sendTelegramReply(chatId, `✅ **Laporan Diterima!**\n\n${projectStatus}\n\n📊 Items Processed: ${reportData.items.length}\n📉 Stock Updates: ${updatedItemsCount} Items deducted.\n\nTerima kasih, laporan tersimpan.`)
+
+        // 5. Trigger PoW Sync if project found
+        if (projectId) {
+            await syncPowProgressWithMaterials(projectId)
+        }
+
+        await sendTelegramReply(chatId, `✅ **Laporan Diterima!**\n\n${projectStatus}\n\n📊 Items Processed: ${reportData.items.length}\n📉 Stock Updates: ${updatedItemsCount} Items deducted.\n🔄 PoW Progress Updated.\n\nTerima kasih, laporan tersimpan.`)
 
         return NextResponse.json({ success: true, reportId: report.id }, { status: 200 })
 

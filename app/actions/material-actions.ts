@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { syncPowProgressWithMaterials } from './pow-sync-actions'
 
 export async function getMaterials() {
     const supabase = await createClient()
@@ -170,6 +171,10 @@ export async function useMaterial(formData: FormData) {
             .eq('id', materialId)
 
         if (updateError) throw updateError
+
+        if (projectId) {
+            await syncPowProgressWithMaterials(projectId)
+        }
 
         revalidatePath('/dashboard/materials')
         return { success: true }
