@@ -17,6 +17,16 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
         year: 'numeric'
     })
 
+    const allowedPowCategories = [
+        "3.3 Penanaman Tiang dan Pembuatan HH",
+        "3.4 Penarikan Kabel Duct",
+        "3.5 Joint dan Terminasi"
+    ]
+
+    const filteredPowTasks = mode === 'single' && data.powTasks
+        ? data.powTasks.filter((t: any) => allowedPowCategories.includes(t.task_name))
+        : []
+
     const handleDownloadCSV = () => {
         if (mode === 'single') {
             const exportData = [{
@@ -30,8 +40,8 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
             }]
 
             // Add POW tasks if available
-            if (data.powTasks && data.powTasks.length > 0) {
-                data.powTasks.forEach((t: any) => {
+            if (filteredPowTasks && filteredPowTasks.length > 0) {
+                filteredPowTasks.forEach((t: any) => {
                     exportData.push({
                         Type: 'POW_TASK',
                         Name: t.task_name,
@@ -200,7 +210,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {data.powTasks?.map((task: any) => (
+                                            {filteredPowTasks?.map((task: any) => (
                                                 <div key={task.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-200 transition-colors group">
                                                     <div className="flex justify-between items-start mb-4">
                                                         <div className="space-y-1">
