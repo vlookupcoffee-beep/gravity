@@ -27,6 +27,35 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
         ? data.powTasks.filter((t: any) => allowedPowCategories.includes(t.task_name))
         : []
 
+    const handleDownloadPDF = async () => {
+        const element = document.getElementById('report-content')
+        if (!element) return
+
+        // Dynamic import to avoid SSR issues
+        const html2pdf = (await import('html2pdf.js')).default
+
+        const opt = {
+            margin: 0,
+            filename: `Report_${data.name.replace(/\s+/g, '_')}.pdf`,
+            image: { type: 'jpeg' as const, quality: 0.98 },
+            html2canvas: {
+                scale: 2,
+                useCORS: true,
+                letterRendering: true
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
+        }
+
+        // Add a temporary class to force the layout for PDF
+        element.classList.add('print-mode')
+
+        try {
+            await html2pdf().set(opt).from(element).save()
+        } finally {
+            element.classList.remove('print-mode')
+        }
+    }
+
     const handleDownloadCSV = () => {
         if (mode === 'single') {
             const exportData = [{
@@ -92,6 +121,13 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                         <span className="text-xs font-black text-slate-800 uppercase tracking-[0.15em]">Project Analytical Engine v2.1</span>
                     </div>
                     <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all text-[10px] font-black uppercase shadow-lg shadow-indigo-600/20"
+                        >
+                            <Download size={14} />
+                            PDF
+                        </button>
                         <button onClick={handleDownloadCSV} className="p-2 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors">
                             <Download size={18} />
                         </button>
@@ -107,7 +143,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                 </div>
 
                 {/* Dashboard Main Container */}
-                <div className="flex-1 overflow-y-auto print:overflow-visible bg-[#F8FAFC] p-4 sm:p-6 space-y-5">
+                <div id="report-content" className="flex-1 overflow-y-auto print:overflow-visible bg-[#F8FAFC] p-4 sm:p-6 space-y-5">
                     {mode === 'single' ? (
                         <div className="space-y-5">
                             {/* High-Contrast Header Section */}
