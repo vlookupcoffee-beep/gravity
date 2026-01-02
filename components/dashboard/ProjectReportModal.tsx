@@ -40,19 +40,23 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
         try {
             setIsDownloading(true)
 
-            // @ts-ignore - html2pdf uses a non-standard export structure
+            // Wait for UI to show loading state
+            await new Promise(r => setTimeout(r, 400))
+
+            // @ts-ignore
             const html2pdfModule = await import('html2pdf.js')
             const html2pdf = html2pdfModule.default || html2pdfModule
 
             const opt = {
-                margin: 5, // Add a small margin for better PDF look
+                margin: 5,
                 filename: `Report_${data.name.replace(/\s+/g, '_')}.pdf`,
-                image: { type: 'jpeg' as const, quality: 0.98 },
+                image: { type: 'jpeg' as const, quality: 0.95 },
                 html2canvas: {
-                    scale: 2,
+                    scale: 1.5, // Lower scale to prevent out-of-memory or freeze
                     useCORS: true,
                     letterRendering: true,
-                    // Fix for backdrop-blur issues - ignore parent element styles
+                    // Disable heavy effects
+                    allowTaint: true,
                     scrollX: 0,
                     scrollY: 0,
                     windowWidth: 1440
@@ -60,10 +64,11 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
             }
 
-            // Temporarily hide things that shouldn't be in PDF if any
-            await html2pdf().set(opt).from(element).save()
+            const worker = html2pdf().set(opt).from(element)
+            await worker.save()
         } catch (error) {
             console.error("PDF Generation Error:", error)
+            alert("Terjadi kesalahan saat membuat PDF. Silakan coba lagi atau gunakan tombol Cetak (Print).")
         } finally {
             setIsDownloading(false)
         }
