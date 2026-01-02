@@ -80,99 +80,101 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
     }
 
     return (
-        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] flex justify-center items-center overflow-hidden p-0 sm:p-4 print:p-0 print:bg-white print:block">
+        <div className="fixed inset-0 bg-slate-900/98 backdrop-blur-xl z-[100] flex justify-center items-center overflow-hidden p-0 sm:p-4 print:p-0 print:bg-white print:block">
             <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-[1440px] h-full sm:h-auto max-h-[98vh] flex flex-col overflow-hidden print:max-h-none print:h-auto print:shadow-none print:rounded-none">
 
-                {/* Top Action Bar - Hidden on Print */}
-                <div className="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-white print:hidden">
-                    <div className="flex items-center gap-2">
+                {/* Top Action Bar */}
+                <div className="px-4 py-2.5 border-b border-slate-200 flex justify-between items-center bg-white print:hidden">
+                    <div className="flex items-center gap-2.5">
                         <div className="bg-blue-600 p-1.5 rounded-lg">
                             <TrendingUp className="text-white" size={14} />
                         </div>
-                        <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Protocol Engine v2.1</span>
+                        <span className="text-xs font-black text-slate-800 uppercase tracking-[0.15em]">Project Analytical Engine v2.1</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button onClick={handleDownloadCSV} className="p-1.5 hover:bg-slate-50 text-slate-500 rounded-lg transition-colors">
-                            <Download size={16} />
+                        <button onClick={handleDownloadCSV} className="p-2 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors">
+                            <Download size={18} />
                         </button>
-                        <button onClick={triggerPrint} className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all text-[10px] font-black uppercase">
-                            <Printer size={12} />
-                            Print
+                        <button onClick={triggerPrint} className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all text-xs font-black uppercase tracking-wider">
+                            <Printer size={14} />
+                            Print Report
                         </button>
-                        <div className="w-px h-6 bg-slate-100 mx-1" />
-                        <button onClick={onClose} className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg">
-                            <X size={18} />
+                        <div className="w-px h-6 bg-slate-200 mx-2" />
+                        <button onClick={onClose} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors">
+                            <X size={20} />
                         </button>
                     </div>
                 </div>
 
                 {/* Dashboard Main Container */}
-                <div className="flex-1 overflow-y-auto print:overflow-visible bg-slate-50 p-4 sm:p-5 space-y-4">
+                <div className="flex-1 overflow-y-auto print:overflow-visible bg-[#F8FAFC] p-4 sm:p-6 space-y-5">
                     {mode === 'single' ? (
-                        <div className="space-y-4">
-                            {/* Slim Header Section */}
-                            <div className="bg-[#0F172A] text-white p-4 rounded-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -mr-10 -mt-10" />
+                        <div className="space-y-5">
+                            {/* High-Contrast Header Section */}
+                            <div className="bg-[#0F172A] text-white p-5 rounded-2xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8 border border-white/5 shadow-xl">
+                                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/15 rounded-full blur-[100px] -mr-16 -mt-16" />
 
-                                <div className="relative z-10 flex flex-col gap-0.5">
-                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-[0.2em] bg-blue-500/20 text-blue-400 border border-blue-500/30 w-fit">
-                                        Project System Overdrive
+                                <div className="relative z-10 flex flex-col gap-1.5">
+                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.25em] bg-blue-500/30 text-blue-300 border border-blue-400/30 w-fit">
+                                        Active Deployment
                                     </div>
-                                    <h1 className="text-xl font-black tracking-tighter leading-tight uppercase text-white truncate max-w-[600px]">
+                                    <h1 className="text-2xl sm:text-3xl font-black tracking-tighter leading-tight uppercase text-white truncate max-w-[700px] drop-shadow-md">
                                         {data.name}
                                     </h1>
-                                    <div className="flex items-center gap-3 text-slate-500 text-[9px] font-bold uppercase tracking-widest mt-0.5">
-                                        <div className="flex items-center gap-1">
-                                            <Clock size={10} />
+                                    <div className="flex items-center gap-4 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-0.5">
+                                        <div className="flex items-center gap-1.5">
+                                            <Clock size={12} className="text-blue-400" />
                                             <span>{data.status || 'ACTIVE'}</span>
                                         </div>
-                                        <span>•</span>
+                                        <span className="text-white/20">•</span>
                                         <span>{reportDate}</span>
                                     </div>
                                 </div>
 
-                                <div className="relative z-10 flex items-center gap-5 bg-white/5 backdrop-blur-sm p-3 px-4 rounded-xl border border-white/10 shrink-0">
+                                <div className="relative z-10 flex items-center gap-6 bg-white/5 backdrop-blur-md p-4 px-6 rounded-2xl border border-white/10 shadow-2xl shrink-0">
                                     <div className="text-center">
-                                        <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mb-0.5 leading-none">Coverage</p>
-                                        <p className="text-base font-black text-white leading-none">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 leading-none">Total Coverage</p>
+                                        <p className="text-2xl font-black text-white leading-none tracking-tighter">
                                             {(data.routes?.reduce((acc: number, r: any) => acc + r.length, 0) || 0).toFixed(2)}
-                                            <span className="text-[9px] ml-0.5 opacity-50 font-bold">KM</span>
+                                            <span className="text-[11px] ml-1 text-blue-400 font-black">KM</span>
                                         </p>
                                     </div>
-                                    <div className="h-6 w-px bg-white/10" />
-                                    <div className="w-28">
-                                        <div className="flex justify-between items-end mb-1">
-                                            <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest leading-none">Progress</span>
-                                            <span className="text-base font-black text-blue-400 leading-none">{data.progress || 0}%</span>
+                                    <div className="h-10 w-px bg-white/10" />
+                                    <div className="w-32">
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">Progress</span>
+                                            <span className="text-2xl font-black text-blue-400 leading-none">{data.progress || 0}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden border border-white/5">
-                                            <div className="bg-blue-500 h-full rounded-full transition-all duration-1000" style={{ width: `${data.progress || 0}%` }} />
+                                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-white/5 shadow-inner">
+                                            <div className="bg-blue-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(59,130,246,0.3)]" style={{ width: `${data.progress || 0}%` }} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* REORGANIZED CONTENT GRID */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            {/* MAIN CONTENT GRID */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
-                                {/* COLUMN 1 (LEFT, 1 SPAN): POW + DAILY REPORT STACKED */}
-                                <div className="lg:col-span-1 space-y-4">
+                                {/* LEFT COLUMN (POW + DAILY) */}
+                                <div className="lg:col-span-4 space-y-5">
                                     {/* Execution Timeline */}
-                                    <div className="space-y-2.5">
-                                        <div className="flex items-center gap-2 px-1">
-                                            <TrendingUp size={12} className="text-blue-600" />
-                                            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Execution Timeline</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2.5 px-1 border-l-4 border-blue-600 pl-3">
+                                            <div>
+                                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Execution Milestones</h3>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Priority Progression</p>
+                                            </div>
                                         </div>
-                                        <div className="space-y-1.5">
+                                        <div className="space-y-2">
                                             {filteredPowTasks?.map((task: any) => (
-                                                <div key={task.id} className="bg-white p-2.5 rounded-lg border border-slate-200/60 shadow-sm">
-                                                    <div className="flex justify-between items-start mb-1.5">
-                                                        <h4 className="font-bold text-slate-800 text-[10px] leading-tight flex-1 pr-2 uppercase truncate">
+                                                <div key={task.id} className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-all">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <h4 className="font-black text-slate-800 text-[11px] leading-tight flex-1 pr-3 uppercase">
                                                             {task.task_name}
                                                         </h4>
-                                                        <span className="text-[9px] font-black text-blue-600">{task.progress}%</span>
+                                                        <span className="text-[11px] font-black text-blue-700">{task.progress}%</span>
                                                     </div>
-                                                    <div className="w-full bg-slate-50 rounded-full h-1 overflow-hidden">
+                                                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                                                         <div className="bg-blue-600 h-full rounded-full" style={{ width: `${task.progress}%` }} />
                                                     </div>
                                                 </div>
@@ -180,86 +182,91 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                         </div>
                                     </div>
 
-                                    {/* Daily Execution Report (Stacked Below POW) */}
-                                    <div className="space-y-2.5">
-                                        <div className="flex items-center gap-2 px-1">
-                                            <AlertCircle size={12} className="text-indigo-600" />
-                                            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Daily Feedback</h3>
+                                    {/* Daily Feedback Section */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2.5 px-1 border-l-4 border-indigo-600 pl-3">
+                                            <div>
+                                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Daily Snapshot</h3>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Latest Site Feed</p>
+                                            </div>
                                         </div>
-                                        <div className="bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-sm">
+                                        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-md">
                                             {data.dailyReport ? (
                                                 <div className="flex flex-col">
-                                                    <div className="p-2.5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                                                        <span className="text-[8px] font-black text-slate-900 uppercase tracking-widest">Live Feed</span>
-                                                        <span className="text-[8px] font-black text-indigo-600 opacity-70">
+                                                    <div className="p-3 bg-slate-900 border-b border-slate-800 flex justify-between items-center px-4">
+                                                        <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Operational Pulse</span>
+                                                        <span className="text-[9px] font-black text-blue-400 tracking-wider">
                                                             {new Date(data.dailyReport.report_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()}
                                                         </span>
                                                     </div>
-                                                    <div className="p-3 space-y-3">
-                                                        <div className="space-y-0.5">
-                                                            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Today</p>
-                                                            <p className="text-[10px] font-bold text-slate-700 leading-tight border-l-2 border-indigo-400 pl-2">
+                                                    <div className="p-4 space-y-4">
+                                                        <div className="space-y-1.5">
+                                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.15em]">Today Activity</p>
+                                                            <p className="text-xs font-black text-slate-900 leading-normal border-l-3 border-blue-500 pl-3 bg-blue-50/30 py-1.5 rounded-r-lg">
                                                                 {data.dailyReport.today_activity}
                                                             </p>
                                                         </div>
-                                                        <div className="space-y-0.5">
-                                                            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Next</p>
-                                                            <p className="text-[10px] font-medium text-slate-500 italic leading-tight border-l-2 border-slate-200 pl-2 line-clamp-2">
+                                                        <div className="space-y-1.5">
+                                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.15em]">Next Plan</p>
+                                                            <p className="text-xs font-bold text-slate-600 italic leading-normal border-l-3 border-slate-300 pl-3">
                                                                 {data.dailyReport.tomorrow_plan}
                                                             </p>
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-50">
-                                                            <div className="bg-slate-50 p-1.5 rounded-lg text-center">
-                                                                <p className="text-[6px] font-black text-slate-400 uppercase mb-0.5 leading-none">Executor</p>
-                                                                <p className="text-[8px] font-black text-slate-700 uppercase truncate">{data.dailyReport.executor_name || 'System'}</p>
+                                                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                                                            <div className="bg-slate-50 p-2 rounded-xl text-center border border-slate-100">
+                                                                <p className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-tighter">Site Lead</p>
+                                                                <p className="text-[10px] font-black text-slate-800 uppercase truncate">{data.dailyReport.executor_name || 'System'}</p>
                                                             </div>
-                                                            <div className="bg-slate-50 p-1.5 rounded-lg text-center">
-                                                                <p className="text-[6px] font-black text-slate-400 uppercase mb-0.5 leading-none">Team</p>
-                                                                <p className="text-[8px] font-black text-slate-700">{data.dailyReport.manpower_count || 0}</p>
+                                                            <div className="bg-slate-50 p-2 rounded-xl text-center border border-slate-100">
+                                                                <p className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-tighter">Manpower</p>
+                                                                <p className="text-[10px] font-black text-slate-900">{data.dailyReport.manpower_count || 0}</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="p-6 text-center bg-slate-50/50">
-                                                    <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">No Active Feedback</p>
+                                                <div className="p-10 text-center bg-slate-50/80">
+                                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Awaiting Daily Sync</p>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* COLUMN 2 (RIGHT, 2 SPANS): MATERIAL INVENTORY (GRID) */}
-                                <div className="lg:col-span-2 space-y-2.5">
-                                    <div className="flex items-center gap-2 px-1">
-                                        <Package size={12} className="text-slate-700" />
-                                        <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Material Inventory - Strategic Analysis</h3>
+                                {/* RIGHT COLUMN (MATERIALS GRID) */}
+                                <div className="lg:col-span-8 space-y-3">
+                                    <div className="flex items-center gap-2.5 px-1 border-l-4 border-slate-800 pl-3">
+                                        <div>
+                                            <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Material Inventory Intelligence</h3>
+                                            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Live Stock & Scope Variance</p>
+                                        </div>
                                     </div>
-                                    <div className="bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-sm">
-                                        {/* Material Items Grid */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 divide-x divide-y divide-slate-50">
+                                    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-lg">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 divide-x divide-y divide-slate-100">
                                             {data.materialSummary.map((m: any) => (
-                                                <div key={m.id} className="p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                                                    <div className="flex-1 min-w-0 pr-3">
-                                                        <div className="font-bold text-slate-800 text-[10px] uppercase truncate group-hover:text-blue-600 transition-colors">{m.name}</div>
-                                                        <div className="text-[8px] font-medium text-slate-400 uppercase tracking-tight">{m.unit}</div>
+                                                <div key={m.id} className="p-4 flex items-center justify-between hover:bg-blue-50/20 transition-all group">
+                                                    <div className="flex-1 min-w-0 pr-4">
+                                                        <div className="font-black text-slate-900 text-[11px] uppercase tracking-tight truncate leading-tight group-hover:text-blue-600 transition-colors">{m.name}</div>
+                                                        <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">{m.unit}</div>
                                                     </div>
                                                     <div className="flex flex-col items-end shrink-0">
-                                                        <div className="flex items-center gap-1.5 text-[9px] font-bold">
-                                                            <span className="text-slate-300">{m.quantity_needed || 0}</span>
-                                                            <span className="text-slate-200">/</span>
-                                                            <span className="text-blue-500">{m.total_out || 0}</span>
+                                                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-300 mb-1">
+                                                            <span className="opacity-60">{m.quantity_needed || 0}</span>
+                                                            <span className="opacity-20">/</span>
+                                                            <span className="text-blue-600">{m.total_out || 0}</span>
                                                         </div>
-                                                        <div className={`text-[10px] font-black px-2 py-0.5 mt-1 rounded-lg ${((m.quantity_needed || 0) - (m.total_out || 0)) <= 0 ? 'text-red-600 bg-red-50' : 'text-slate-900 bg-slate-100 font-black'}`}>
-                                                            {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))} SISA
+                                                        <div className={`text-[12px] font-black px-2.5 py-1 rounded-lg flex items-center gap-2 ${((m.quantity_needed || 0) - (m.total_out || 0)) <= 0 ? 'text-red-700 bg-red-100 shadow-[inset_0_0_10px_rgba(220,38,38,0.1)]' : 'text-slate-900 bg-slate-200 shadow-sm'}`}>
+                                                            {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}
+                                                            <span className="text-[8px] tracking-widest opacity-60">SISA</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                         {data.materialSummary.length === 0 && (
-                                            <div className="p-10 text-center">
-                                                <p className="text-[10px] font-bold text-slate-300 uppercase">Inventory records cleared</p>
+                                            <div className="p-12 text-center bg-slate-50/50">
+                                                <Package className="mx-auto text-slate-200 mb-3" size={32} />
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Inventory Database Null</p>
                                             </div>
                                         )}
                                     </div>
@@ -268,41 +275,42 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                             </div>
                         </div>
                     ) : (
-                        /* Global Report View - Fixed for vertical space */
-                        <div className="p-2 space-y-4">
-                            <div className="flex justify-between items-end border-b border-slate-200 pb-4">
-                                <div>
-                                    <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none mb-1">Portfolio Matrix</h1>
-                                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[8px]">Global Deployment Status</p>
+                        /* Global Portfolio Analysis */
+                        <div className="p-4 space-y-6">
+                            <div className="flex justify-between items-end border-b-2 border-slate-900 pb-6 mb-4">
+                                <div className="space-y-1">
+                                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">Portfolio Matrix</h1>
+                                    <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-[9px]">Consolidated Tactical Engine</p>
                                 </div>
-                                <div className="text-right p-3 bg-slate-900 text-white rounded-lg">
-                                    <p className="text-[8px] uppercase font-black text-slate-500 mb-0.5">Active</p>
-                                    <p className="text-lg font-black leading-none">{(data as any[]).length}</p>
+                                <div className="text-right p-4 px-6 bg-slate-900 text-white rounded-2xl shadow-xl border border-white/5">
+                                    <p className="text-[9px] uppercase font-black text-slate-500 mb-1 tracking-widest text-center">Active Nodes</p>
+                                    <p className="text-3xl font-black leading-none text-center">{(data as any[]).length}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="bg-white rounded-[1.5rem] border border-slate-200 shadow-2xl overflow-hidden">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest opacity-60">
-                                            <th className="px-5 py-2.5">№</th>
-                                            <th className="px-5 py-2.5">Project Designation</th>
-                                            <th className="px-5 py-2.5 text-right">Execution Status</th>
+                                        <tr className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.15em]">
+                                            <th className="px-8 py-5 opacity-50">#</th>
+                                            <th className="px-8 py-5">Global Designation</th>
+                                            <th className="px-8 py-5 text-right opacity-80">Execution Progress</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {(data as any[]).map((p, i) => (
-                                            <tr key={p.id} className="hover:bg-slate-50">
-                                                <td className="px-5 py-3 text-[10px] font-black text-slate-300">{i + 1}</td>
-                                                <td className="px-5 py-3">
-                                                    <div className="font-black text-slate-900 text-xs uppercase tracking-tight truncate max-w-[400px]">{p.name}</div>
+                                            <tr key={p.id} className="hover:bg-blue-50/20 transition-all group">
+                                                <td className="px-8 py-5 text-xs font-black text-slate-300 group-hover:text-blue-200">{String(i + 1).padStart(2, '0')}</td>
+                                                <td className="px-8 py-5">
+                                                    <div className="font-black text-slate-900 text-base uppercase tracking-tight truncate max-w-[500px] group-hover:text-blue-700 transition-colors">{p.name}</div>
+                                                    <div className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">{p.status || 'OPERATIONAL'}</div>
                                                 </td>
-                                                <td className="px-5 py-3 text-right">
-                                                    <div className="flex items-center justify-end gap-3">
-                                                        <div className="w-20 bg-slate-100 rounded-full h-1 overflow-hidden">
-                                                            <div className="bg-blue-600 h-full rounded-full" style={{ width: `${p.progress || 0}%` }} />
+                                                <td className="px-8 py-5 text-right">
+                                                    <div className="flex items-center justify-end gap-6 text-right">
+                                                        <div className="w-40 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200 group-hover:border-blue-200 transition-all">
+                                                            <div className="bg-blue-600 h-full rounded-full group-hover:bg-blue-500 transition-all" style={{ width: `${p.progress || 0}%` }} />
                                                         </div>
-                                                        <span className="font-black text-blue-600 text-[10px] w-8">{p.progress || 0}%</span>
+                                                        <span className="font-black text-blue-700 text-2xl w-14 leading-none tracking-tighter">{p.progress || 0}%</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -314,14 +322,14 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                     )}
                 </div>
 
-                {/* Horizontal Action Bar / Footer */}
-                <div className="px-5 py-2 bg-[#0F172A] text-white flex justify-between items-center text-[7px] tracking-[0.2em] uppercase font-black shrink-0">
-                    <div className="flex items-center gap-2">
-                        <CheckCircle2 size={10} className="text-blue-400" />
-                        <span>Analytical Snapshot // Gravity Network Protocol</span>
+                {/* Cyberdeck Footer Bar */}
+                <div className="px-6 py-2.5 bg-[#0F172A] text-white flex justify-between items-center text-[8px] tracking-[0.25em] uppercase font-black shrink-0 border-t border-white/5">
+                    <div className="flex items-center gap-3">
+                        <CheckCircle2 size={12} className="text-blue-400" />
+                        <span className="opacity-90">Analytical State // Gravity Network Protocol 4.0</span>
                     </div>
                     <div className="opacity-40">
-                        &copy; {new Date().getFullYear()} &bull; Operational Data Sync
+                        &copy; {new Date().getFullYear()} &bull; Operational Data Record Sync
                     </div>
                 </div>
             </div>
