@@ -1,7 +1,8 @@
 
 'use client'
 
-import { X, Printer, Download, CheckCircle2, TrendingUp, AlertCircle, Clock, Package } from 'lucide-react'
+import { useState } from 'react'
+import { X, Printer, Download, CheckCircle2, TrendingUp, AlertCircle, Clock, Package, Loader2 } from 'lucide-react'
 import { downloadCSV, triggerPrint } from '@/utils/export-utils'
 
 interface ProjectReportModalProps {
@@ -11,6 +12,8 @@ interface ProjectReportModalProps {
 }
 
 export default function ProjectReportModal({ mode, data, onClose }: ProjectReportModalProps) {
+    const [isDownloading, setIsDownloading] = useState(false)
+
     const reportDate = new Date().toLocaleDateString('id-ID', {
         day: '2-digit',
         month: 'long',
@@ -29,30 +32,40 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
 
     const handleDownloadPDF = async () => {
         const element = document.getElementById('report-content')
-        if (!element) return
-
-        // Dynamic import to avoid SSR issues
-        const html2pdf = (await import('html2pdf.js')).default
-
-        const opt = {
-            margin: 0,
-            filename: `Report_${data.name.replace(/\s+/g, '_')}.pdf`,
-            image: { type: 'jpeg' as const, quality: 0.98 },
-            html2canvas: {
-                scale: 2,
-                useCORS: true,
-                letterRendering: true
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
+        if (!element) {
+            console.error("Report content element not found")
+            return
         }
 
-        // Add a temporary class to force the layout for PDF
-        element.classList.add('print-mode')
-
         try {
+            setIsDownloading(true)
+
+            // @ts-ignore - html2pdf uses a non-standard export structure
+            const html2pdfModule = await import('html2pdf.js')
+            const html2pdf = html2pdfModule.default || html2pdfModule
+
+            const opt = {
+                margin: 5, // Add a small margin for better PDF look
+                filename: `Report_${data.name.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg' as const, quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    // Fix for backdrop-blur issues - ignore parent element styles
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: 1440
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
+            }
+
+            // Temporarily hide things that shouldn't be in PDF if any
             await html2pdf().set(opt).from(element).save()
+        } catch (error) {
+            console.error("PDF Generation Error:", error)
         } finally {
-            element.classList.remove('print-mode')
+            setIsDownloading(false)
         }
     }
 
@@ -123,10 +136,15 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleDownloadPDF}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all text-[10px] font-black uppercase shadow-lg shadow-indigo-600/20"
+                            disabled={isDownloading}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all text-[10px] font-black uppercase shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Download size={14} />
-                            PDF
+                            {isDownloading ? (
+                                <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                                <Download size={14} />
+                            )}
+                            {isDownloading ? 'Processing...' : 'PDF'}
                         </button>
                         <button onClick={handleDownloadCSV} className="p-2 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors">
                             <Download size={18} />
