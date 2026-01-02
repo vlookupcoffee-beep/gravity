@@ -81,7 +81,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
 
     return (
         <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] flex justify-center items-center overflow-hidden p-0 sm:p-4 print:p-0 print:bg-white print:block">
-            <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-[1400px] h-full sm:h-auto max-h-[95vh] flex flex-col overflow-hidden print:max-h-none print:h-auto print:shadow-none print:rounded-none">
+            <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-[1440px] h-full sm:h-auto max-h-[98vh] flex flex-col overflow-hidden print:max-h-none print:h-auto print:shadow-none print:rounded-none">
 
                 {/* Top Action Bar - Hidden on Print */}
                 <div className="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-white print:hidden">
@@ -89,7 +89,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                         <div className="bg-blue-600 p-1.5 rounded-lg">
                             <TrendingUp className="text-white" size={14} />
                         </div>
-                        <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Protocol Engine v2.0</span>
+                        <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Protocol Engine v2.1</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={handleDownloadCSV} className="p-1.5 hover:bg-slate-50 text-slate-500 rounded-lg transition-colors">
@@ -107,21 +107,21 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                 </div>
 
                 {/* Dashboard Main Container */}
-                <div className="flex-1 overflow-y-auto print:overflow-visible bg-slate-50 p-4 sm:p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto print:overflow-visible bg-slate-50 p-4 sm:p-5 space-y-4">
                     {mode === 'single' ? (
                         <div className="space-y-4">
-                            {/* NEW Slimmed Header Section */}
-                            <div className="bg-[#0F172A] text-white p-5 rounded-2xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6">
+                            {/* Slim Header Section */}
+                            <div className="bg-[#0F172A] text-white p-4 rounded-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -mr-10 -mt-10" />
 
-                                <div className="relative z-10 flex flex-col gap-1">
-                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] bg-blue-500/20 text-blue-400 border border-blue-500/30 w-fit">
+                                <div className="relative z-10 flex flex-col gap-0.5">
+                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-[0.2em] bg-blue-500/20 text-blue-400 border border-blue-500/30 w-fit">
                                         Project System Overdrive
                                     </div>
-                                    <h1 className="text-xl sm:text-2xl font-black tracking-tighter leading-none uppercase text-white truncate max-w-[600px]">
+                                    <h1 className="text-xl font-black tracking-tighter leading-tight uppercase text-white truncate max-w-[600px]">
                                         {data.name}
                                     </h1>
-                                    <div className="flex items-center gap-3 text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+                                    <div className="flex items-center gap-3 text-slate-500 text-[9px] font-bold uppercase tracking-widest mt-0.5">
                                         <div className="flex items-center gap-1">
                                             <Clock size={10} />
                                             <span>{data.status || 'ACTIVE'}</span>
@@ -131,184 +131,178 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     </div>
                                 </div>
 
-                                <div className="relative z-10 flex items-center gap-6 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 shrink-0">
+                                <div className="relative z-10 flex items-center gap-5 bg-white/5 backdrop-blur-sm p-3 px-4 rounded-xl border border-white/10 shrink-0">
                                     <div className="text-center">
-                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Coverage</p>
-                                        <p className="text-lg font-black text-white leading-none">
+                                        <p className="text-[7px] font-black text-slate-500 uppercase tracking-widest mb-0.5 leading-none">Coverage</p>
+                                        <p className="text-base font-black text-white leading-none">
                                             {(data.routes?.reduce((acc: number, r: any) => acc + r.length, 0) || 0).toFixed(2)}
-                                            <span className="text-[10px] ml-0.5 opacity-50 font-bold">KM</span>
+                                            <span className="text-[9px] ml-0.5 opacity-50 font-bold">KM</span>
                                         </p>
                                     </div>
-                                    <div className="h-8 w-px bg-white/10" />
-                                    <div className="w-32">
+                                    <div className="h-6 w-px bg-white/10" />
+                                    <div className="w-28">
                                         <div className="flex justify-between items-end mb-1">
-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">Progress</span>
-                                            <span className="text-lg font-black text-blue-400 leading-none">{data.progress || 0}%</span>
+                                            <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest leading-none">Progress</span>
+                                            <span className="text-base font-black text-blue-400 leading-none">{data.progress || 0}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden border border-white/5">
+                                        <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden border border-white/5">
                                             <div className="bg-blue-500 h-full rounded-full transition-all duration-1000" style={{ width: `${data.progress || 0}%` }} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* 3-COLUMN GRID LAYOUT */}
+                            {/* REORGANIZED CONTENT GRID */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-                                {/* Section 1: Execution Timeline */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 px-1">
-                                        <TrendingUp size={14} className="text-blue-600" />
-                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Execution Timeline</h3>
+                                {/* COLUMN 1 (LEFT, 1 SPAN): POW + DAILY REPORT STACKED */}
+                                <div className="lg:col-span-1 space-y-4">
+                                    {/* Execution Timeline */}
+                                    <div className="space-y-2.5">
+                                        <div className="flex items-center gap-2 px-1">
+                                            <TrendingUp size={12} className="text-blue-600" />
+                                            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Execution Timeline</h3>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            {filteredPowTasks?.map((task: any) => (
+                                                <div key={task.id} className="bg-white p-2.5 rounded-lg border border-slate-200/60 shadow-sm">
+                                                    <div className="flex justify-between items-start mb-1.5">
+                                                        <h4 className="font-bold text-slate-800 text-[10px] leading-tight flex-1 pr-2 uppercase truncate">
+                                                            {task.task_name}
+                                                        </h4>
+                                                        <span className="text-[9px] font-black text-blue-600">{task.progress}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-slate-50 rounded-full h-1 overflow-hidden">
+                                                        <div className="bg-blue-600 h-full rounded-full" style={{ width: `${task.progress}%` }} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        {filteredPowTasks?.map((task: any) => (
-                                            <div key={task.id} className="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <h4 className="font-bold text-slate-800 text-[11px] leading-tight flex-1 pr-2 line-clamp-2 uppercase">
-                                                        {task.task_name}
-                                                    </h4>
-                                                    <span className="text-[10px] font-black text-blue-600">{task.progress}%</span>
+
+                                    {/* Daily Execution Report (Stacked Below POW) */}
+                                    <div className="space-y-2.5">
+                                        <div className="flex items-center gap-2 px-1">
+                                            <AlertCircle size={12} className="text-indigo-600" />
+                                            <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Daily Feedback</h3>
+                                        </div>
+                                        <div className="bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-sm">
+                                            {data.dailyReport ? (
+                                                <div className="flex flex-col">
+                                                    <div className="p-2.5 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                                                        <span className="text-[8px] font-black text-slate-900 uppercase tracking-widest">Live Feed</span>
+                                                        <span className="text-[8px] font-black text-indigo-600 opacity-70">
+                                                            {new Date(data.dailyReport.report_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="p-3 space-y-3">
+                                                        <div className="space-y-0.5">
+                                                            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Today</p>
+                                                            <p className="text-[10px] font-bold text-slate-700 leading-tight border-l-2 border-indigo-400 pl-2">
+                                                                {data.dailyReport.today_activity}
+                                                            </p>
+                                                        </div>
+                                                        <div className="space-y-0.5">
+                                                            <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Next</p>
+                                                            <p className="text-[10px] font-medium text-slate-500 italic leading-tight border-l-2 border-slate-200 pl-2 line-clamp-2">
+                                                                {data.dailyReport.tomorrow_plan}
+                                                            </p>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-50">
+                                                            <div className="bg-slate-50 p-1.5 rounded-lg text-center">
+                                                                <p className="text-[6px] font-black text-slate-400 uppercase mb-0.5 leading-none">Executor</p>
+                                                                <p className="text-[8px] font-black text-slate-700 uppercase truncate">{data.dailyReport.executor_name || 'System'}</p>
+                                                            </div>
+                                                            <div className="bg-slate-50 p-1.5 rounded-lg text-center">
+                                                                <p className="text-[6px] font-black text-slate-400 uppercase mb-0.5 leading-none">Team</p>
+                                                                <p className="text-[8px] font-black text-slate-700">{data.dailyReport.manpower_count || 0}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="w-full bg-slate-50 rounded-full h-1 overflow-hidden">
-                                                    <div className="bg-blue-600 h-full rounded-full" style={{ width: `${task.progress}%` }} />
+                                            ) : (
+                                                <div className="p-6 text-center bg-slate-50/50">
+                                                    <p className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">No Active Feedback</p>
                                                 </div>
-                                                <div className="mt-2 flex justify-between items-center text-[8px] font-bold text-slate-400 uppercase tracking-widest">
-                                                    <span>Batch Priority</span>
-                                                    <span className={task.status === 'completed' ? 'text-emerald-500' : 'text-blue-500'}>{task.status.replace(/-/g, ' ')}</span>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Section 2: Daily Execution Report */}
-                                <div className="space-y-3">
+                                {/* COLUMN 2 (RIGHT, 2 SPANS): MATERIAL INVENTORY (GRID) */}
+                                <div className="lg:col-span-2 space-y-2.5">
                                     <div className="flex items-center gap-2 px-1">
-                                        <AlertCircle size={14} className="text-indigo-600" />
-                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Daily Execution Report</h3>
+                                        <Package size={12} className="text-slate-700" />
+                                        <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Material Inventory - Strategic Analysis</h3>
                                     </div>
                                     <div className="bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-sm">
-                                        {data.dailyReport ? (
-                                            <div className="flex flex-col">
-                                                <div className="p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Live Feed</span>
-                                                    <span className="text-[9px] font-black text-indigo-600 opacity-70">
-                                                        {new Date(data.dailyReport.report_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()}
-                                                    </span>
-                                                </div>
-                                                <div className="p-4 space-y-4">
-                                                    <div className="space-y-1">
-                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Work Activity Today</p>
-                                                        <p className="text-[11px] font-bold text-slate-700 leading-relaxed border-l-2 border-indigo-400 pl-3">
-                                                            {data.dailyReport.today_activity}
-                                                        </p>
+                                        {/* Material Items Grid */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 divide-x divide-y divide-slate-50">
+                                            {data.materialSummary.map((m: any) => (
+                                                <div key={m.id} className="p-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                                    <div className="flex-1 min-w-0 pr-3">
+                                                        <div className="font-bold text-slate-800 text-[10px] uppercase truncate group-hover:text-blue-600 transition-colors">{m.name}</div>
+                                                        <div className="text-[8px] font-medium text-slate-400 uppercase tracking-tight">{m.unit}</div>
                                                     </div>
-                                                    <div className="space-y-1">
-                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Strategic Next Plan</p>
-                                                        <p className="text-[11px] font-medium text-slate-500 italic leading-relaxed border-l-2 border-slate-200 pl-3">
-                                                            {data.dailyReport.tomorrow_plan}
-                                                        </p>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50">
-                                                        <div className="bg-slate-50 p-2 rounded-lg">
-                                                            <p className="text-[7px] font-black text-slate-400 uppercase leading-none mb-1">Executor</p>
-                                                            <p className="text-[9px] font-black text-slate-700 uppercase truncate">{data.dailyReport.executor_name || 'System'}</p>
+                                                    <div className="flex flex-col items-end shrink-0">
+                                                        <div className="flex items-center gap-1.5 text-[9px] font-bold">
+                                                            <span className="text-slate-300">{m.quantity_needed || 0}</span>
+                                                            <span className="text-slate-200">/</span>
+                                                            <span className="text-blue-500">{m.total_out || 0}</span>
                                                         </div>
-                                                        <div className="bg-slate-50 p-2 rounded-lg">
-                                                            <p className="text-[7px] font-black text-slate-400 uppercase leading-none mb-1">Manpower</p>
-                                                            <p className="text-[9px] font-black text-slate-700">{data.dailyReport.manpower_count || 0} People</p>
+                                                        <div className={`text-[10px] font-black px-2 py-0.5 mt-1 rounded-lg ${((m.quantity_needed || 0) - (m.total_out || 0)) <= 0 ? 'text-red-600 bg-red-50' : 'text-slate-900 bg-slate-100 font-black'}`}>
+                                                            {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))} SISA
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="p-8 text-center bg-slate-50/50">
-                                                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No Active Daily Feed</p>
+                                            ))}
+                                        </div>
+                                        {data.materialSummary.length === 0 && (
+                                            <div className="p-10 text-center">
+                                                <p className="text-[10px] font-bold text-slate-300 uppercase">Inventory records cleared</p>
                                             </div>
                                         )}
-                                    </div>
-                                </div>
-
-                                {/* Section 3: Material Inventory */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 px-1">
-                                        <Package size={14} className="text-slate-700" />
-                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Material Inventory</h3>
-                                    </div>
-                                    <div className="bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-sm">
-                                        <table className="w-full text-left border-collapse">
-                                            <thead>
-                                                <tr className="bg-slate-900 text-white">
-                                                    <th className="pl-3 py-2 text-[8px] font-black uppercase tracking-widest opacity-60">Item Designation</th>
-                                                    <th className="pr-3 py-2 text-[8px] font-black uppercase tracking-widest opacity-60 text-right">Qty Meta</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-50">
-                                                {data.materialSummary.map((m: any) => (
-                                                    <tr key={m.id} className="hover:bg-slate-50 transition-colors">
-                                                        <td className="pl-3 py-2">
-                                                            <div className="font-bold text-slate-800 text-[10px] truncate max-w-[150px] uppercase">{m.name}</div>
-                                                            <div className="text-[8px] font-medium text-slate-400 uppercase tracking-tight">{m.unit}</div>
-                                                        </td>
-                                                        <td className="pr-3 py-2 text-right">
-                                                            <div className="flex flex-col items-end">
-                                                                <div className="flex items-center gap-1.5 text-[10px] font-bold">
-                                                                    <span className="text-slate-300">{m.quantity_needed || 0}</span>
-                                                                    <span className="text-slate-200">/</span>
-                                                                    <span className="text-blue-500">{m.total_out || 0}</span>
-                                                                </div>
-                                                                <span className={`text-[11px] font-black px-1.5 py-0.5 mt-1 rounded ${((m.quantity_needed || 0) - (m.total_out || 0)) <= 0 ? 'text-red-600 bg-red-50' : 'text-slate-900 bg-slate-100'}`}>
-                                                                    {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
                                     </div>
                                 </div>
 
                             </div>
                         </div>
                     ) : (
-                        /* Global Report View - Simplified */
-                        <div className="p-4 space-y-6">
-                            <div className="flex justify-between items-end border-b-2 border-slate-900 pb-6 mb-4">
+                        /* Global Report View - Fixed for vertical space */
+                        <div className="p-2 space-y-4">
+                            <div className="flex justify-between items-end border-b border-slate-200 pb-4">
                                 <div>
-                                    <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900 leading-none mb-1">Portfolio Summary</h1>
-                                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">Active Project Matrix</p>
+                                    <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none mb-1">Portfolio Matrix</h1>
+                                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[8px]">Global Deployment Status</p>
                                 </div>
-                                <div className="text-right p-4 bg-slate-900 text-white rounded-xl">
-                                    <p className="text-[10px] uppercase font-black text-slate-500 mb-1">Total Active</p>
-                                    <p className="text-2xl font-black">{(data as any[]).length}</p>
+                                <div className="text-right p-3 bg-slate-900 text-white rounded-lg">
+                                    <p className="text-[8px] uppercase font-black text-slate-500 mb-0.5">Active</p>
+                                    <p className="text-lg font-black leading-none">{(data as any[]).length}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
+                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white">
-                                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-60">No</th>
-                                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-60">Designation</th>
-                                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-60 text-right">Progress</th>
+                                        <tr className="bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest opacity-60">
+                                            <th className="px-5 py-2.5">№</th>
+                                            <th className="px-5 py-2.5">Project Designation</th>
+                                            <th className="px-5 py-2.5 text-right">Execution Status</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {(data as any[]).map((p, i) => (
                                             <tr key={p.id} className="hover:bg-slate-50">
-                                                <td className="px-6 py-4 text-xs font-black text-slate-300">{i + 1}</td>
-                                                <td className="px-6 py-4">
-                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">{p.name}</div>
-                                                    <div className="text-[9px] font-bold text-slate-400 mt-0.5 uppercase">{p.status || 'ACTIVE'}</div>
+                                                <td className="px-5 py-3 text-[10px] font-black text-slate-300">{i + 1}</td>
+                                                <td className="px-5 py-3">
+                                                    <div className="font-black text-slate-900 text-xs uppercase tracking-tight truncate max-w-[400px]">{p.name}</div>
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-5 py-3 text-right">
                                                     <div className="flex items-center justify-end gap-3">
-                                                        <div className="w-24 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                                        <div className="w-20 bg-slate-100 rounded-full h-1 overflow-hidden">
                                                             <div className="bg-blue-600 h-full rounded-full" style={{ width: `${p.progress || 0}%` }} />
                                                         </div>
-                                                        <span className="font-black text-blue-600 text-sm w-10">{p.progress || 0}%</span>
+                                                        <span className="font-black text-blue-600 text-[10px] w-8">{p.progress || 0}%</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -320,14 +314,14 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                     )}
                 </div>
 
-                {/* Footer Bar */}
-                <div className="px-6 py-3 bg-[#0F172A] text-white flex flex-col sm:flex-row justify-between items-center gap-4 text-[8px] tracking-[0.2em] uppercase font-black">
+                {/* Horizontal Action Bar / Footer */}
+                <div className="px-5 py-2 bg-[#0F172A] text-white flex justify-between items-center text-[7px] tracking-[0.2em] uppercase font-black shrink-0">
                     <div className="flex items-center gap-2">
                         <CheckCircle2 size={10} className="text-blue-400" />
-                        <span>Analytical Snapshot // Gravity Network</span>
+                        <span>Analytical Snapshot // Gravity Network Protocol</span>
                     </div>
-                    <div className="text-slate-500">
-                        &copy; {new Date().getFullYear()} &bull; Operational Protocol
+                    <div className="opacity-40">
+                        &copy; {new Date().getFullYear()} &bull; Operational Data Sync
                     </div>
                 </div>
             </div>
