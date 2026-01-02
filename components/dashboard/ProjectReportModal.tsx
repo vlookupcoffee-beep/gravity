@@ -210,15 +210,56 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                             )}
                                         </div>
 
-                                        {/* Slim Description Area */}
+                                        {/* Daily Execution Report / Slim Description Area */}
                                         <div className="bg-white p-2.5 rounded-lg border border-slate-200 border-dashed">
-                                            <h4 className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
-                                                <AlertCircle size={8} />
-                                                Operational Context
-                                            </h4>
-                                            <p className="text-[9px] text-slate-500 leading-tight line-clamp-2">
-                                                {data.description || "No specific project description provided for this session."}
-                                            </p>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <h4 className="text-[7px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                                    <AlertCircle size={8} />
+                                                    {data.dailyReport ? 'Daily Execution Report' : 'Operational Context'}
+                                                </h4>
+                                                {data.dailyReport && (
+                                                    <span className="text-[7px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-1.5 py-0.5 rounded">
+                                                        {new Date(data.dailyReport.report_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {data.dailyReport ? (
+                                                <div className="space-y-2">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="shrink-0">
+                                                            <p className="text-[6px] font-black text-slate-400 uppercase tracking-tight">Activity</p>
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1" />
+                                                        </div>
+                                                        <p className="text-[9px] text-slate-600 leading-tight font-medium">
+                                                            {data.dailyReport.today_activity}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-start gap-3">
+                                                        <div className="shrink-0">
+                                                            <p className="text-[6px] font-black text-slate-400 uppercase tracking-tight">Next Plan</p>
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mt-1" />
+                                                        </div>
+                                                        <p className="text-[9px] text-slate-500 leading-tight italic">
+                                                            {data.dailyReport.tomorrow_plan}
+                                                        </p>
+                                                    </div>
+                                                    <div className="pt-1 mt-1 border-t border-slate-100 flex justify-between items-center">
+                                                        <div className="flex items-center gap-1">
+                                                            <p className="text-[7px] font-black text-slate-400 uppercase">Executor:</p>
+                                                            <p className="text-[7px] font-black text-slate-600 uppercase">{data.dailyReport.executor_name || 'System'}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-1">
+                                                            <p className="text-[7px] font-black text-slate-400 uppercase">Manpower:</p>
+                                                            <p className="text-[7px] font-black text-slate-600">{data.dailyReport.manpower_count || 0}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-[9px] text-slate-500 leading-tight line-clamp-2">
+                                                    {data.description || "No specific project description or daily reports available for this session."}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
 

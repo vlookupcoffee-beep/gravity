@@ -97,6 +97,15 @@ export async function getProjectDetails(projectId: string) {
     // Fetch material summary
     const materialSummary = await getProjectMaterialSummary(projectId)
 
+    // Fetch the latest daily report
+    const { data: dailyReport } = await supabase
+        .from('daily_reports')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('report_date', { ascending: false })
+        .limit(1)
+        .single()
+
     return {
         ...project,
         progress: calculatedProgress,
@@ -104,6 +113,7 @@ export async function getProjectDetails(projectId: string) {
         routes: routeBreakdown,
         files: files || [],
         materialSummary: materialSummary || [],
-        powTasks: powTasks || []
+        powTasks: powTasks || [],
+        dailyReport: dailyReport || null
     }
 }
