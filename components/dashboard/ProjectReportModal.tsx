@@ -46,18 +46,18 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                 })
             }
 
-            // Add structures breakdown if available
-            if (data.structures && Object.keys(data.structures).length > 0) {
-                Object.entries(data.structures).forEach(([name, count]) => {
+            // Add POW tasks if available
+            if (data.powTasks && data.powTasks.length > 0) {
+                data.powTasks.forEach((t: any) => {
                     exportData.push({
-                        Type: 'STRUCTURE',
-                        Name: name,
-                        Status: 'Count',
-                        Value: count as string,
+                        Type: 'POW_TASK',
+                        Name: t.task_name,
+                        Status: t.status,
+                        Value: `${t.progress}%`,
                         Progress: '',
-                        StartDate: '',
-                        EndDate: '',
-                        Description: ''
+                        StartDate: t.start_date || '',
+                        EndDate: t.end_date || '',
+                        Description: (t.description || '').replace(/\n/g, ' ')
                     } as any)
                 })
             }
@@ -167,15 +167,32 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                 </p>
                             </div>
 
-                            {/* Structures Breakdown Section */}
-                            {data.structures && Object.keys(data.structures).length > 0 && (
+                            {/* POW (Plan of Work) Breakdown Section */}
+                            {data.powTasks && data.powTasks.length > 0 && (
                                 <div>
-                                    <h3 className="text-lg font-bold border-b border-gray-200 pb-2 mb-4">Structures Breakdown</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                                        {Object.entries(data.structures).map(([name, count]: [string, any]) => (
-                                            <div key={name} className="bg-gray-50 p-2 sm:p-3 rounded-lg border border-gray-200">
-                                                <label className="text-[10px] uppercase font-bold text-gray-500 block mb-0.5 sm:mb-1">{name}</label>
-                                                <p className="text-lg sm:text-xl font-bold text-blue-900">{count}</p>
+                                    <h3 className="text-lg font-bold border-b border-gray-200 pb-2 mb-4">Plan of Work (POW) Progress</h3>
+                                    <div className="space-y-4">
+                                        {data.powTasks.map((task: any) => (
+                                            <div key={task.id} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h4 className="font-bold text-gray-900">{task.task_name}</h4>
+                                                        <p className="text-xs text-gray-500 capitalize">{task.status.replace(/-/g, ' ')}</p>
+                                                    </div>
+                                                    <span className="text-sm font-black text-blue-600">{task.progress}%</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div
+                                                        className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                                                        style={{ width: `${task.progress}%` }}
+                                                    />
+                                                </div>
+                                                {(task.start_date || task.end_date) && (
+                                                    <div className="mt-2 flex gap-4 text-[10px] text-gray-400 font-bold uppercase">
+                                                        <span>Start: {task.start_date ? new Date(task.start_date).toLocaleDateString() : '-'}</span>
+                                                        <span>End: {task.end_date ? new Date(task.end_date).toLocaleDateString() : '-'}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

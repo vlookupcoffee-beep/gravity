@@ -38,11 +38,12 @@ export async function getProjectDetails(projectId: string) {
         .eq('id', projectId)
         .single()
 
-    // Fetch PoW tasks to calculate dynamic progress
+    // Fetch PoW tasks to calculate dynamic progress and for the report breakdown
     const { data: powTasks } = await supabase
         .from('pow_tasks')
-        .select('progress')
+        .select('*')
         .eq('project_id', projectId)
+        .order('order_index', { ascending: true })
 
     let calculatedProgress = project?.progress || 0
     if (powTasks && powTasks.length > 0) {
@@ -102,6 +103,7 @@ export async function getProjectDetails(projectId: string) {
         structures: structureBreakdown,
         routes: routeBreakdown,
         files: files || [],
-        materialSummary: materialSummary || []
+        materialSummary: materialSummary || [],
+        powTasks: powTasks || []
     }
 }
