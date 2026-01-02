@@ -80,293 +80,235 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
     }
 
     return (
-        <div className="fixed inset-0 bg-[#0F172A]/98 backdrop-blur-xl z-[100] flex justify-center items-start overflow-y-auto p-0 sm:p-4 print:p-0 print:bg-white print:block">
-            <div className="bg-white rounded-none sm:rounded-3xl shadow-2xl w-full max-w-7xl my-0 sm:my-4 overflow-hidden print:my-0 print:border-none print:shadow-none print:bg-white print:w-full print:max-w-none">
+        <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-[100] flex justify-center items-center overflow-hidden p-0 sm:p-4 print:p-0 print:bg-white print:block">
+            <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-[1400px] h-full sm:h-auto max-h-[95vh] flex flex-col overflow-hidden print:max-h-none print:h-auto print:shadow-none print:rounded-none">
 
-                {/* Header - Hidden on Print */}
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10 print:hidden">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-600 p-2 rounded-xl">
-                            <TrendingUp className="text-white" size={20} />
+                {/* Top Action Bar - Hidden on Print */}
+                <div className="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-white print:hidden">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-blue-600 p-1.5 rounded-lg">
+                            <TrendingUp className="text-white" size={14} />
                         </div>
-                        <div>
-                            <h2 className="text-base font-black text-slate-900 tracking-tight">Project Dashboard</h2>
-                            <p className="text-[10px] uppercase tracking-[0.2em] text-blue-600 font-black">Live Analytics</p>
-                        </div>
+                        <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Protocol Engine v2.0</span>
                     </div>
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <button
-                            onClick={handleDownloadCSV}
-                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all text-xs font-bold"
-                        >
-                            <Download size={14} />
-                            CSV
+                    <div className="flex items-center gap-2">
+                        <button onClick={handleDownloadCSV} className="p-1.5 hover:bg-slate-50 text-slate-500 rounded-lg transition-colors">
+                            <Download size={16} />
                         </button>
-                        <button
-                            onClick={triggerPrint}
-                            className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all text-xs font-black shadow-lg shadow-blue-600/20"
-                        >
-                            <Printer size={14} />
-                            Print Report
+                        <button onClick={triggerPrint} className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all text-[10px] font-black uppercase">
+                            <Printer size={12} />
+                            Print
                         </button>
-                        <button
-                            onClick={onClose}
-                            className="p-2 text-slate-400 hover:text-slate-900 transition-colors bg-slate-50 rounded-xl"
-                        >
-                            <X size={20} />
+                        <div className="w-px h-6 bg-slate-100 mx-1" />
+                        <button onClick={onClose} className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg">
+                            <X size={18} />
                         </button>
                     </div>
                 </div>
 
-                {/* Report Content */}
-                <div className="bg-slate-50 text-slate-900 print:bg-white">
+                {/* Dashboard Main Container */}
+                <div className="flex-1 overflow-y-auto print:overflow-visible bg-slate-50 p-4 sm:p-6 space-y-4">
                     {mode === 'single' ? (
-                        <div className="flex flex-col">
-                            {/* Hero Section */}
-                            <div className="bg-[#0F172A] text-white p-8 sm:p-10 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -mr-20 -mt-20" />
+                        <div className="space-y-4">
+                            {/* NEW Slimmed Header Section */}
+                            <div className="bg-[#0F172A] text-white p-5 rounded-2xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -mr-10 -mt-10" />
 
-                                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-                                    <div className="flex flex-col gap-2 text-center lg:text-left">
-                                        <div className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.3em] bg-blue-500/20 text-blue-400 border border-blue-500/30 w-fit mx-auto lg:mx-0">
-                                            Project Protocol
-                                        </div>
-                                        <h1 className="text-3xl sm:text-5xl font-black tracking-tighter leading-tight uppercase max-w-3xl">
-                                            {data.name}
-                                        </h1>
-                                        <div className="flex items-center justify-center lg:justify-start gap-4 text-slate-400 text-xs font-bold uppercase tracking-widest">
-                                            <div className="flex items-center gap-1.5">
-                                                <Clock size={14} />
-                                                <span>{data.status || 'ACTIVE'}</span>
-                                            </div>
-                                            <span className="text-slate-700">•</span>
-                                            <span>{reportDate}</span>
-                                        </div>
+                                <div className="relative z-10 flex flex-col gap-1">
+                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] bg-blue-500/20 text-blue-400 border border-blue-500/30 w-fit">
+                                        Project System Overdrive
                                     </div>
-
-                                    <div className="flex items-center gap-6 bg-white/5 backdrop-blur-md p-6 rounded-3xl border border-white/10 min-w-[300px]">
-                                        <div className="text-center">
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Coverage</p>
-                                            <p className="text-2xl font-black text-white leading-none">{(data.routes?.reduce((acc: number, r: any) => acc + r.length, 0) || 0).toFixed(2)}<span className="text-xs ml-1 text-slate-400">KM</span></p>
+                                    <h1 className="text-xl sm:text-2xl font-black tracking-tighter leading-none uppercase text-white truncate max-w-[600px]">
+                                        {data.name}
+                                    </h1>
+                                    <div className="flex items-center gap-3 text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+                                        <div className="flex items-center gap-1">
+                                            <Clock size={10} />
+                                            <span>{data.status || 'ACTIVE'}</span>
                                         </div>
-                                        <div className="h-10 w-px bg-white/10" />
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-end mb-2">
-                                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Execution Progress</span>
-                                                <span className="text-3xl font-black text-blue-400 leading-none">{data.progress || 0}%</span>
-                                            </div>
-                                            <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">
-                                                <div
-                                                    className="bg-blue-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(59,130,246,0.5)]"
-                                                    style={{ width: `${data.progress || 0}%` }}
-                                                />
-                                            </div>
+                                        <span>•</span>
+                                        <span>{reportDate}</span>
+                                    </div>
+                                </div>
+
+                                <div className="relative z-10 flex items-center gap-6 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10 shrink-0">
+                                    <div className="text-center">
+                                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 leading-none">Coverage</p>
+                                        <p className="text-lg font-black text-white leading-none">
+                                            {(data.routes?.reduce((acc: number, r: any) => acc + r.length, 0) || 0).toFixed(2)}
+                                            <span className="text-[10px] ml-0.5 opacity-50 font-bold">KM</span>
+                                        </p>
+                                    </div>
+                                    <div className="h-8 w-px bg-white/10" />
+                                    <div className="w-32">
+                                        <div className="flex justify-between items-end mb-1">
+                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">Progress</span>
+                                            <span className="text-lg font-black text-blue-400 leading-none">{data.progress || 0}%</span>
+                                        </div>
+                                        <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden border border-white/5">
+                                            <div className="bg-blue-500 h-full rounded-full transition-all duration-1000" style={{ width: `${data.progress || 0}%` }} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Main Body */}
-                            <div className="p-6 sm:p-10 space-y-8">
-                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+                            {/* 3-COLUMN GRID LAYOUT */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-                                    {/* Column Left: Execution & Daily Report */}
-                                    <div className="space-y-8">
-                                        {/* Execution Timeline (POW) */}
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between border-l-4 border-blue-600 pl-4">
-                                                <div>
-                                                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Execution Timeline</h3>
-                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Priority Milestones</p>
-                                                </div>
-                                                <TrendingUp size={24} className="text-slate-200" />
-                                            </div>
-
-                                            <div className="grid grid-cols-1 gap-3">
-                                                {filteredPowTasks?.map((task: any) => (
-                                                    <div key={task.id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-6 group hover:border-blue-200 transition-all">
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <h4 className="font-black text-slate-900 text-sm group-hover:text-blue-600 transition-colors leading-tight truncate mr-4">
-                                                                    {task.task_name}
-                                                                </h4>
-                                                                <span className="text-sm font-black text-blue-600">{task.progress}%</span>
-                                                            </div>
-                                                            <div className="w-full bg-slate-50 rounded-full h-1.5 overflow-hidden">
-                                                                <div
-                                                                    className="bg-blue-600 h-full rounded-full transition-all duration-700"
-                                                                    style={{ width: `${task.progress}%` }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-right shrink-0 border-l border-slate-50 pl-6">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Status</p>
-                                                            <p className={`text-xs font-black uppercase ${task.status === 'completed' ? 'text-emerald-500' : 'text-blue-500'}`}>
-                                                                {task.status.replace(/-/g, ' ')}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Daily Execution Report (The Red Box Request) */}
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between border-l-4 border-indigo-600 pl-4">
-                                                <div>
-                                                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Daily Execution Report</h3>
-                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Latest Field Activity</p>
-                                                </div>
-                                                <AlertCircle size={24} className="text-slate-200" />
-                                            </div>
-
-                                            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
-                                                {data.dailyReport ? (
-                                                    <div className="space-y-6">
-                                                        <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-50">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="w-3 h-3 bg-blue-600 rounded-full animate-pulse" />
-                                                                <span className="text-xs font-black text-slate-900 uppercase tracking-widest">Live Report Session</span>
-                                                            </div>
-                                                            <span className="text-xs font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">
-                                                                {new Date(data.dailyReport.report_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                            <div className="space-y-1.5">
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Today Activity</p>
-                                                                <p className="text-sm font-bold text-slate-800 leading-relaxed bg-slate-50 p-4 rounded-2xl border-l-4 border-blue-500">
-                                                                    {data.dailyReport.today_activity}
-                                                                </p>
-                                                            </div>
-                                                            <div className="space-y-1.5">
-                                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Next Plan</p>
-                                                                <p className="text-sm font-medium text-slate-600 leading-relaxed italic bg-slate-50/50 p-4 rounded-2xl border-l-4 border-slate-300">
-                                                                    {data.dailyReport.tomorrow_plan}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex flex-wrap gap-4 pt-4 border-t border-slate-50">
-                                                            <div className="bg-slate-50 px-4 py-2 rounded-xl flex items-center gap-2">
-                                                                <p className="text-[10px] font-black text-slate-400 uppercase">Executor:</p>
-                                                                <p className="text-xs font-black text-slate-700 uppercase">{data.dailyReport.executor_name || 'System'}</p>
-                                                            </div>
-                                                            <div className="bg-slate-50 px-4 py-2 rounded-xl flex items-center gap-2">
-                                                                <p className="text-[10px] font-black text-slate-400 uppercase">Manpower:</p>
-                                                                <p className="text-xs font-black text-slate-700">{data.dailyReport.manpower_count || 0} People</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-center py-10">
-                                                        <AlertCircle className="mx-auto text-slate-200 mb-3" size={40} />
-                                                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">No Active Daily Report</p>
-                                                        <p className="text-xs text-slate-300 italic max-w-xs mx-auto">
-                                                            {data.description || "Project overview data is available in the operational context description."}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
+                                {/* Section 1: Execution Timeline */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-1">
+                                        <TrendingUp size={14} className="text-blue-600" />
+                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Execution Timeline</h3>
                                     </div>
-
-                                    {/* Column Right: Material Inventory */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between border-l-4 border-slate-900 pl-4">
-                                            <div>
-                                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Material Inventory</h3>
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Live Stock Analysis</p>
+                                    <div className="space-y-2">
+                                        {filteredPowTasks?.map((task: any) => (
+                                            <div key={task.id} className="bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <h4 className="font-bold text-slate-800 text-[11px] leading-tight flex-1 pr-2 line-clamp-2 uppercase">
+                                                        {task.task_name}
+                                                    </h4>
+                                                    <span className="text-[10px] font-black text-blue-600">{task.progress}%</span>
+                                                </div>
+                                                <div className="w-full bg-slate-50 rounded-full h-1 overflow-hidden">
+                                                    <div className="bg-blue-600 h-full rounded-full" style={{ width: `${task.progress}%` }} />
+                                                </div>
+                                                <div className="mt-2 flex justify-between items-center text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                                                    <span>Batch Priority</span>
+                                                    <span className={task.status === 'completed' ? 'text-emerald-500' : 'text-blue-500'}>{task.status.replace(/-/g, ' ')}</span>
+                                                </div>
                                             </div>
-                                            <Package size={24} className="text-slate-200" />
-                                        </div>
-
-                                        <div className="bg-white rounded-3xl border border-slate-100 shadow-md overflow-hidden">
-                                            <table className="w-full text-left border-collapse">
-                                                <thead>
-                                                    <tr className="bg-slate-900 text-white">
-                                                        <th className="pl-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-60">Inventory Item</th>
-                                                        <th className="pr-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-60 text-right">Req / Used / Sisa</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-slate-50">
-                                                    {data.materialSummary.map((m: any) => (
-                                                        <tr key={m.id} className="hover:bg-slate-50 transition-colors group">
-                                                            <td className="pl-6 py-4">
-                                                                <div className="font-black text-slate-900 text-sm truncate max-w-[200px]">{m.name}</div>
-                                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{m.unit}</div>
-                                                            </td>
-                                                            <td className="pr-6 py-4 text-right">
-                                                                <div className="flex items-center justify-end gap-3">
-                                                                    <div className="text-right">
-                                                                        <p className="text-[10px] font-bold text-slate-300 uppercase leading-none mb-1">Status</p>
-                                                                        <div className="flex items-center justify-end gap-2 text-xs font-black">
-                                                                            <span className="text-slate-400">{m.quantity_needed || 0}</span>
-                                                                            <span className="text-slate-200">/</span>
-                                                                            <span className="text-blue-600">{m.total_out || 0}</span>
-                                                                            <span className="text-slate-200">/</span>
-                                                                            <span className={`${((m.quantity_needed || 0) - (m.total_out || 0)) <= 0 ? 'text-red-500 bg-red-50' : 'text-slate-900 bg-slate-100'} px-2 py-0.5 rounded-lg`}>
-                                                                                {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                        ))}
                                     </div>
                                 </div>
+
+                                {/* Section 2: Daily Execution Report */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-1">
+                                        <AlertCircle size={14} className="text-indigo-600" />
+                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Daily Execution Report</h3>
+                                    </div>
+                                    <div className="bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-sm">
+                                        {data.dailyReport ? (
+                                            <div className="flex flex-col">
+                                                <div className="p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Live Feed</span>
+                                                    <span className="text-[9px] font-black text-indigo-600 opacity-70">
+                                                        {new Date(data.dailyReport.report_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <div className="p-4 space-y-4">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Work Activity Today</p>
+                                                        <p className="text-[11px] font-bold text-slate-700 leading-relaxed border-l-2 border-indigo-400 pl-3">
+                                                            {data.dailyReport.today_activity}
+                                                        </p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Strategic Next Plan</p>
+                                                        <p className="text-[11px] font-medium text-slate-500 italic leading-relaxed border-l-2 border-slate-200 pl-3">
+                                                            {data.dailyReport.tomorrow_plan}
+                                                        </p>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50">
+                                                        <div className="bg-slate-50 p-2 rounded-lg">
+                                                            <p className="text-[7px] font-black text-slate-400 uppercase leading-none mb-1">Executor</p>
+                                                            <p className="text-[9px] font-black text-slate-700 uppercase truncate">{data.dailyReport.executor_name || 'System'}</p>
+                                                        </div>
+                                                        <div className="bg-slate-50 p-2 rounded-lg">
+                                                            <p className="text-[7px] font-black text-slate-400 uppercase leading-none mb-1">Manpower</p>
+                                                            <p className="text-[9px] font-black text-slate-700">{data.dailyReport.manpower_count || 0} People</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="p-8 text-center bg-slate-50/50">
+                                                <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No Active Daily Feed</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Section 3: Material Inventory */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 px-1">
+                                        <Package size={14} className="text-slate-700" />
+                                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Material Inventory</h3>
+                                    </div>
+                                    <div className="bg-white border border-slate-200/60 rounded-xl overflow-hidden shadow-sm">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="bg-slate-900 text-white">
+                                                    <th className="pl-3 py-2 text-[8px] font-black uppercase tracking-widest opacity-60">Item Designation</th>
+                                                    <th className="pr-3 py-2 text-[8px] font-black uppercase tracking-widest opacity-60 text-right">Qty Meta</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {data.materialSummary.map((m: any) => (
+                                                    <tr key={m.id} className="hover:bg-slate-50 transition-colors">
+                                                        <td className="pl-3 py-2">
+                                                            <div className="font-bold text-slate-800 text-[10px] truncate max-w-[150px] uppercase">{m.name}</div>
+                                                            <div className="text-[8px] font-medium text-slate-400 uppercase tracking-tight">{m.unit}</div>
+                                                        </td>
+                                                        <td className="pr-3 py-2 text-right">
+                                                            <div className="flex flex-col items-end">
+                                                                <div className="flex items-center gap-1.5 text-[10px] font-bold">
+                                                                    <span className="text-slate-300">{m.quantity_needed || 0}</span>
+                                                                    <span className="text-slate-200">/</span>
+                                                                    <span className="text-blue-500">{m.total_out || 0}</span>
+                                                                </div>
+                                                                <span className={`text-[11px] font-black px-1.5 py-0.5 mt-1 rounded ${((m.quantity_needed || 0) - (m.total_out || 0)) <= 0 ? 'text-red-600 bg-red-50' : 'text-slate-900 bg-slate-100'}`}>
+                                                                    {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     ) : (
-                        /* Global Report View - Keep simple but clean */
-                        <div className="p-8 sm:p-12 space-y-10">
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b-4 border-slate-900 pb-10">
+                        /* Global Report View - Simplified */
+                        <div className="p-4 space-y-6">
+                            <div className="flex justify-between items-end border-b-2 border-slate-900 pb-6 mb-4">
                                 <div>
-                                    <h1 className="text-5xl font-black uppercase tracking-tighter text-slate-900 leading-none mb-3">Portfolio Analysis</h1>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 bg-blue-600 rounded-full" />
-                                        <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-xs">Global Project Status Overview</p>
-                                    </div>
+                                    <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900 leading-none mb-1">Portfolio Summary</h1>
+                                    <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">Active Project Matrix</p>
                                 </div>
-                                <div className="text-right w-full md:w-auto p-6 bg-slate-900 text-white rounded-3xl shadow-xl">
-                                    <p className="text-xs uppercase font-black text-slate-400 mb-2 tracking-widest">Active Projects</p>
-                                    <p className="text-4xl font-black">{(data as any[]).length}</p>
+                                <div className="text-right p-4 bg-slate-900 text-white rounded-xl">
+                                    <p className="text-[10px] uppercase font-black text-slate-500 mb-1">Total Active</p>
+                                    <p className="text-2xl font-black">{(data as any[]).length}</p>
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-2xl overflow-hidden">
+                            <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-slate-900 text-white">
-                                            <th className="px-8 py-6 text-[11px] font-black uppercase tracking-[0.2em] opacity-60">#</th>
-                                            <th className="px-8 py-6 text-[11px] font-black uppercase tracking-[0.2em] opacity-60">Designation</th>
-                                            <th className="px-8 py-6 text-[11px] font-black uppercase tracking-[0.2em] opacity-60 text-center">Progress</th>
+                                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-60">No</th>
+                                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-60">Designation</th>
+                                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-60 text-right">Progress</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-50">
+                                    <tbody className="divide-y divide-slate-100">
                                         {(data as any[]).map((p, i) => (
-                                            <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
-                                                <td className="px-8 py-6 text-xs font-black text-slate-300">{String(i + 1).padStart(2, '0')}</td>
-                                                <td className="px-8 py-6">
-                                                    <div className="font-black text-slate-900 group-hover:text-blue-600 transition-colors text-lg tracking-tight uppercase">{p.name}</div>
-                                                    <div className="flex items-center gap-3 mt-1.5">
-                                                        <span className="p-1 px-3 bg-slate-100 text-slate-500 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200">
-                                                            {p.status || 'ACTIVE'}
-                                                        </span>
-                                                        <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">REF: {p.id.slice(0, 8)}</span>
-                                                    </div>
+                                            <tr key={p.id} className="hover:bg-slate-50">
+                                                <td className="px-6 py-4 text-xs font-black text-slate-300">{i + 1}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="font-black text-slate-900 text-sm uppercase tracking-tight">{p.name}</div>
+                                                    <div className="text-[9px] font-bold text-slate-400 mt-0.5 uppercase">{p.status || 'ACTIVE'}</div>
                                                 </td>
-                                                <td className="px-8 py-6 min-w-[300px]">
-                                                    <div className="flex items-center gap-6">
-                                                        <div className="flex-1 bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                                                            <div className="bg-blue-600 h-full rounded-full transition-all duration-1000" style={{ width: `${p.progress || 0}%` }} />
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex items-center justify-end gap-3">
+                                                        <div className="w-24 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                                            <div className="bg-blue-600 h-full rounded-full" style={{ width: `${p.progress || 0}%` }} />
                                                         </div>
-                                                        <span className="font-black text-blue-600 text-xl w-14 text-right">{p.progress || 0}%</span>
+                                                        <span className="font-black text-blue-600 text-sm w-10">{p.progress || 0}%</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -376,17 +318,16 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                             </div>
                         </div>
                     )}
+                </div>
 
-                    {/* Footer */}
-                    <div className="p-10 bg-[#0F172A] text-white border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] tracking-[0.3em] uppercase font-black">
-                        <div className="flex items-center gap-3">
-                            <CheckCircle2 size={16} className="text-blue-400" />
-                            <span>System Generated Project Protocol</span>
-                        </div>
-                        <div className="text-slate-500">
-                            Gravity &bull; {new Date().getFullYear()} &bull; Operational Data Record
-                        </div>
-                        <div className="p-2 px-5 bg-white/5 rounded-full border border-white/10">Page 01 // 01</div>
+                {/* Footer Bar */}
+                <div className="px-6 py-3 bg-[#0F172A] text-white flex flex-col sm:flex-row justify-between items-center gap-4 text-[8px] tracking-[0.2em] uppercase font-black">
+                    <div className="flex items-center gap-2">
+                        <CheckCircle2 size={10} className="text-blue-400" />
+                        <span>Analytical Snapshot // Gravity Network</span>
+                    </div>
+                    <div className="text-slate-500">
+                        &copy; {new Date().getFullYear()} &bull; Operational Protocol
                     </div>
                 </div>
             </div>
