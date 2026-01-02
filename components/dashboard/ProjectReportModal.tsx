@@ -76,8 +76,8 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
     }
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto print:p-0 print:bg-white print:block">
-            <div className="bg-[#1E293B] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden print:border-none print:shadow-none print:bg-white print:w-full print:max-w-none">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex justify-center items-start overflow-y-auto p-4 sm:p-6 print:p-0 print:bg-white print:block">
+            <div className="bg-[#1E293B] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-5xl my-4 sm:my-10 overflow-hidden print:my-0 print:border-none print:shadow-none print:bg-white print:w-full print:max-w-none">
 
                 {/* Header - Hidden on Print */}
                 <div className="p-6 border-b border-gray-700 flex justify-between items-center bg-[#0F172A]/50 print:hidden">
@@ -110,32 +110,32 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                 </div>
 
                 {/* Report Content */}
-                <div className="p-8 md:p-12 bg-white text-gray-900 print:p-0 min-h-[600px]">
+                <div className="p-5 md:p-12 bg-white text-gray-900 print:p-0 min-h-[600px]">
                     {/* Report Letterhead */}
-                    <div className="border-b-2 border-gray-900 pb-6 mb-8 flex justify-between items-end">
+                    <div className="border-b-2 border-gray-900 pb-4 mb-6 sm:pb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                         <div>
-                            <h1 className="text-3xl font-black uppercase tracking-tighter text-blue-900">Project Progress Report</h1>
-                            <p className="text-gray-500 font-medium">Internal Project Documentation</p>
+                            <h1 className="text-xl sm:text-3xl font-black uppercase tracking-tighter text-blue-900">Project Progress Report</h1>
+                            <p className="text-sm sm:text-base text-gray-500 font-medium">Internal Project Documentation</p>
                         </div>
-                        <div className="text-right">
-                            <p className="text-xs uppercase font-bold text-gray-400">Generated On</p>
-                            <p className="font-bold">{reportDate}</p>
+                        <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0">
+                            <p className="text-[10px] uppercase font-bold text-gray-400">Generated On</p>
+                            <p className="font-bold text-sm sm:text-base">{reportDate}</p>
                         </div>
                     </div>
 
                     {mode === 'single' ? (
                         <div className="space-y-8">
                             {/* Single Project Detail */}
-                            <div className="grid grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                                 <div>
                                     <label className="text-xs uppercase font-bold text-gray-400 block mb-1">Project Name</label>
-                                    <h2 className="text-2xl font-bold text-gray-900">{data.name}</h2>
+                                    <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{data.name}</h2>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-left sm:text-right">
                                     <label className="text-xs uppercase font-bold text-gray-400 block mb-1">Overall Progress</label>
-                                    <div className="flex items-center justify-end gap-3">
-                                        <span className="text-3xl font-black text-blue-600">{data.progress || 0}%</span>
-                                        <div className="w-32 bg-gray-200 rounded-full h-3">
+                                    <div className="flex items-center justify-start sm:justify-end gap-3">
+                                        <span className="text-2xl sm:text-3xl font-black text-blue-600">{data.progress || 0}%</span>
+                                        <div className="flex-1 sm:flex-none sm:w-32 bg-gray-200 rounded-full h-3">
                                             <div
                                                 className="bg-blue-600 h-3 rounded-full"
                                                 style={{ width: `${data.progress || 0}%` }}
@@ -145,7 +145,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                                     <label className="text-[10px] uppercase font-bold text-gray-500 block mb-1">Status</label>
                                     <p className="font-bold capitalize text-blue-700">{data.status || 'Planning'}</p>
@@ -171,11 +171,11 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                             {data.structures && Object.keys(data.structures).length > 0 && (
                                 <div>
                                     <h3 className="text-lg font-bold border-b border-gray-200 pb-2 mb-4">Structures Breakdown</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                                         {Object.entries(data.structures).map(([name, count]: [string, any]) => (
-                                            <div key={name} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                                <label className="text-[10px] uppercase font-bold text-gray-500 block mb-1">{name}</label>
-                                                <p className="text-xl font-bold text-blue-900">{count}</p>
+                                            <div key={name} className="bg-gray-50 p-2 sm:p-3 rounded-lg border border-gray-200">
+                                                <label className="text-[10px] uppercase font-bold text-gray-500 block mb-0.5 sm:mb-1">{name}</label>
+                                                <p className="text-lg sm:text-xl font-bold text-blue-900">{count}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -186,36 +186,38 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                             {data.materialSummary?.length > 0 && (
                                 <div>
                                     <h3 className="text-lg font-bold border-b border-gray-200 pb-2 mb-4">Material Detail</h3>
-                                    <table className="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold">
-                                                <th className="px-4 py-2 border border-gray-200">Material Name</th>
-                                                <th className="px-4 py-2 border border-gray-200 text-center">Unit</th>
-                                                <th className="px-4 py-2 border border-gray-200 text-right">Requirement</th>
-                                                <th className="px-4 py-2 border border-gray-200 text-right">Used (Out)</th>
-                                                <th className="px-4 py-2 border border-gray-200 text-right">Remaining</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {data.materialSummary.map((m: any) => (
-                                                <tr key={m.id} className="text-sm">
-                                                    <td className="px-4 py-2 border border-gray-200 font-medium">{m.name}</td>
-                                                    <td className="px-4 py-2 border border-gray-200 text-center text-gray-500 font-mono text-xs">{m.unit}</td>
-                                                    <td className="px-4 py-2 border border-gray-200 text-right font-bold text-purple-600">{m.quantity_needed || 0}</td>
-                                                    <td className="px-4 py-2 border border-gray-200 text-right font-bold text-blue-600">{m.total_out || 0}</td>
-                                                    <td className="px-4 py-2 border border-gray-200 text-right font-bold text-gray-400">
-                                                        {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}
-                                                    </td>
+                                    <div className="overflow-x-auto -mx-5 sm:mx-0 px-5 sm:px-0">
+                                        <table className="w-full text-left border-collapse min-w-[500px]">
+                                            <thead>
+                                                <tr className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold">
+                                                    <th className="px-4 py-2 border border-gray-200">Material Name</th>
+                                                    <th className="px-4 py-2 border border-gray-200 text-center">Unit</th>
+                                                    <th className="px-4 py-2 border border-gray-200 text-right">Requirement</th>
+                                                    <th className="px-4 py-2 border border-gray-200 text-right">Used (Out)</th>
+                                                    <th className="px-4 py-2 border border-gray-200 text-right">Remaining</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody>
+                                                {data.materialSummary.map((m: any) => (
+                                                    <tr key={m.id} className="text-sm">
+                                                        <td className="px-4 py-2 border border-gray-200 font-medium">{m.name}</td>
+                                                        <td className="px-4 py-2 border border-gray-200 text-center text-gray-500 font-mono text-xs">{m.unit}</td>
+                                                        <td className="px-4 py-2 border border-gray-200 text-right font-bold text-purple-600">{m.quantity_needed || 0}</td>
+                                                        <td className="px-4 py-2 border border-gray-200 text-right font-bold text-blue-600">{m.total_out || 0}</td>
+                                                        <td className="px-4 py-2 border border-gray-200 text-right font-bold text-gray-400">
+                                                            {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                     <p className="text-[10px] text-gray-400 mt-2 italic">* Showing all materials associated with this project (requirements and usage).</p>
                                 </div>
                             )}
 
                             {/* Summary Stats */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="border border-gray-200 p-4 rounded-lg">
                                     <p className="text-sm text-gray-500">Total Project Value</p>
                                     <p className="text-xl font-bold">
