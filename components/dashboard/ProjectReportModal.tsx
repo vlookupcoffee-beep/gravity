@@ -5,6 +5,21 @@ import { useState } from 'react'
 import { X, Printer, Download, CheckCircle2, TrendingUp, AlertCircle, Clock, Package, Loader2 } from 'lucide-react'
 import { downloadCSV, triggerPrint } from '@/utils/export-utils'
 
+// Add global styles for PDF export to disable problematic CSS
+const pdfStyles = `
+  .pdf-export-active * {
+    transition: none !important;
+    animation: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .pdf-export-active .no-pdf {
+    display: none !important;
+  }
+`;
+
 interface ProjectReportModalProps {
     mode: 'single' | 'global'
     data: any | any[]
@@ -40,9 +55,16 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
         try {
             setIsDownloading(true)
 
-            // Wait for UI to show loading state
-            await new Promise(r => setTimeout(r, 400))
+            // 1. Add PDF-specific styles to document
+            const styleTag = document.createElement('style')
+            styleTag.innerHTML = pdfStyles
+            document.head.appendChild(styleTag)
+            document.body.classList.add('pdf-export-active')
 
+            // 2. Short delay to let styles apply and UI thread breathe
+            await new Promise(r => setTimeout(r, 500))
+
+            // 3. Import html2pdf
             // @ts-ignore
             const html2pdfModule = await import('html2pdf.js')
             const html2pdf = html2pdfModule.default || html2pdfModule
@@ -52,23 +74,34 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                 filename: `Report_${data.name.replace(/\s+/g, '_')}.pdf`,
                 image: { type: 'jpeg' as const, quality: 0.95 },
                 html2canvas: {
-                    scale: 1.5, // Lower scale to prevent out-of-memory or freeze
+                    scale: 1.2, // Conservative scale for stability
                     useCORS: true,
+                    logging: false,
                     letterRendering: true,
-                    // Disable heavy effects
-                    allowTaint: true,
-                    scrollX: 0,
-                    scrollY: 0,
                     windowWidth: 1440
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
             }
 
-            const worker = html2pdf().set(opt).from(element)
-            await worker.save()
+            // 4. Run the worker
+            await html2pdf().set(opt).from(element).save()
+
+            // 5. Cleanup
+            document.body.classList.remove('pdf-export-active')
+            document.head.removeChild(styleTag)
+
         } catch (error) {
             console.error("PDF Generation Error:", error)
-            alert("Terjadi kesalahan saat membuat PDF. Silakan coba lagi atau gunakan tombol Cetak (Print).")
+            alert("Maaf, proses PDF terhenti karena beban gambar terlalu berat. Silakan gunakan tombol 'Print Report' lalu pilih 'Save as PDF' sebagai alternatif paling stabil.")
+
+            // Full cleanup on error
+            document.body.classList.remove('pdf-export-active')
+            const styleIds = document.querySelectorAll('style')
+            styleIds.forEach(s => {
+                if (s.innerHTML.includes('pdf-export-active')) {
+                    try { document.head.removeChild(s) } catch (e) { }
+                }
+            })
         } finally {
             setIsDownloading(false)
         }
