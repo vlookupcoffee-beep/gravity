@@ -31,21 +31,35 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
             }]
 
             // Add material details if available
-            if (data.materialSummary?.some((m: any) => m.total_out > 0)) {
-                data.materialSummary
-                    .filter((m: any) => m.total_out > 0)
-                    .forEach((m: any) => {
-                        exportData.push({
-                            Type: 'MATERIAL_USAGE',
-                            Name: m.name,
-                            Status: `Unit: ${m.unit}`,
-                            Value: `Released: ${m.total_out}`,
-                            Progress: `Remaining: ${Math.max(0, (m.quantity_needed || 0) - m.total_out)}`,
-                            StartDate: '',
-                            EndDate: '',
-                            Description: ''
-                        } as any)
-                    })
+            if (data.materialSummary?.length > 0) {
+                data.materialSummary.forEach((m: any) => {
+                    exportData.push({
+                        Type: 'MATERIAL_USAGE',
+                        Name: m.name,
+                        Status: `Unit: ${m.unit}`,
+                        Value: `Requirement: ${m.quantity_needed || 0}`,
+                        Progress: `Used: ${m.total_out || 0}`,
+                        StartDate: `Sisa: ${Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}`,
+                        EndDate: '',
+                        Description: ''
+                    } as any)
+                })
+            }
+
+            // Add structures breakdown if available
+            if (data.structures && Object.keys(data.structures).length > 0) {
+                Object.entries(data.structures).forEach(([name, count]) => {
+                    exportData.push({
+                        Type: 'STRUCTURE',
+                        Name: name,
+                        Status: 'Count',
+                        Value: count as string,
+                        Progress: '',
+                        StartDate: '',
+                        EndDate: '',
+                        Description: ''
+                    } as any)
+                })
             }
 
             downloadCSV(exportData, `Report_${data.name.replace(/\s+/g, '_')}.csv`)
@@ -153,35 +167,50 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                 </p>
                             </div>
 
-                            {/* Material Usage Section */}
-                            {data.materialSummary?.some((m: any) => m.total_out > 0) && (
+                            {/* Structures Breakdown Section */}
+                            {data.structures && Object.keys(data.structures).length > 0 && (
                                 <div>
-                                    <h3 className="text-lg font-bold border-b border-gray-200 pb-2 mb-4">Material Usage Detail</h3>
+                                    <h3 className="text-lg font-bold border-b border-gray-200 pb-2 mb-4">Structures Breakdown</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {Object.entries(data.structures).map(([name, count]: [string, any]) => (
+                                            <div key={name} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                                <label className="text-[10px] uppercase font-bold text-gray-500 block mb-1">{name}</label>
+                                                <p className="text-xl font-bold text-blue-900">{count}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Material Usage Section */}
+                            {data.materialSummary?.length > 0 && (
+                                <div>
+                                    <h3 className="text-lg font-bold border-b border-gray-200 pb-2 mb-4">Material Detail</h3>
                                     <table className="w-full text-left border-collapse">
                                         <thead>
                                             <tr className="bg-gray-50 text-gray-500 uppercase text-[10px] font-bold">
                                                 <th className="px-4 py-2 border border-gray-200">Material Name</th>
                                                 <th className="px-4 py-2 border border-gray-200 text-center">Unit</th>
-                                                <th className="px-4 py-2 border border-gray-200 text-right">Released (Keluar)</th>
-                                                <th className="px-4 py-2 border border-gray-200 text-right">Remaining (Sisa)</th>
+                                                <th className="px-4 py-2 border border-gray-200 text-right">Requirement</th>
+                                                <th className="px-4 py-2 border border-gray-200 text-right">Used (Out)</th>
+                                                <th className="px-4 py-2 border border-gray-200 text-right">Remaining</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {data.materialSummary
-                                                .filter((m: any) => m.total_out > 0)
-                                                .map((m: any) => (
-                                                    <tr key={m.id} className="text-sm">
-                                                        <td className="px-4 py-2 border border-gray-200 font-medium">{m.name}</td>
-                                                        <td className="px-4 py-2 border border-gray-200 text-center text-gray-500">{m.unit}</td>
-                                                        <td className="px-4 py-2 border border-gray-200 text-right font-bold text-blue-600">{m.total_out}</td>
-                                                        <td className="px-4 py-2 border border-gray-200 text-right font-bold text-gray-400">
-                                                            {Math.max(0, (m.quantity_needed || 0) - m.total_out)}
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                            {data.materialSummary.map((m: any) => (
+                                                <tr key={m.id} className="text-sm">
+                                                    <td className="px-4 py-2 border border-gray-200 font-medium">{m.name}</td>
+                                                    <td className="px-4 py-2 border border-gray-200 text-center text-gray-500 font-mono text-xs">{m.unit}</td>
+                                                    <td className="px-4 py-2 border border-gray-200 text-right font-bold text-purple-600">{m.quantity_needed || 0}</td>
+                                                    <td className="px-4 py-2 border border-gray-200 text-right font-bold text-blue-600">{m.total_out || 0}</td>
+                                                    <td className="px-4 py-2 border border-gray-200 text-right font-bold text-gray-400">
+                                                        {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
-                                    <p className="text-[10px] text-gray-400 mt-2 italic">* Only showing materials with active usage (released).</p>
+                                    <p className="text-[10px] text-gray-400 mt-2 italic">* Showing all materials associated with this project (requirements and usage).</p>
                                 </div>
                             )}
 
