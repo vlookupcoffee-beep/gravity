@@ -52,127 +52,129 @@ export default function ProjectDetailPage() {
     const totalStructures = Object.values(project.structures).reduce((a: any, b: any) => a + b, 0) as number
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center gap-4 mb-6">
-                <Link href="/dashboard/projects" className="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition">
-                    <ArrowLeft size={20} />
-                </Link>
-                <div className="flex-1">
-                    <h1 className="text-2xl font-bold text-white">{project.name}</h1>
-                    <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
-                        <select
-                            value={project.status || 'planning'}
-                            onChange={async (e) => {
-                                const newStatus = e.target.value
-                                // Optimistic update
-                                setProject({ ...project, status: newStatus })
+        <>
+            <div className="space-y-6 print:hidden">
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-6">
+                    <Link href="/dashboard/projects" className="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition">
+                        <ArrowLeft size={20} />
+                    </Link>
+                    <div className="flex-1">
+                        <h1 className="text-2xl font-bold text-white">{project.name}</h1>
+                        <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                            <select
+                                value={project.status || 'planning'}
+                                onChange={async (e) => {
+                                    const newStatus = e.target.value
+                                    // Optimistic update
+                                    setProject({ ...project, status: newStatus })
 
-                                // Call server action
-                                const { updateProjectStatus } = await import('@/app/actions/project-actions')
-                                await updateProjectStatus(project.id, newStatus)
-                            }}
-                            className={`px-2 py-0.5 rounded-full text-xs font-medium border appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-[#1E293B] ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 focus:ring-green-500' :
-                                project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 focus:ring-blue-500' :
-                                    'bg-gray-700/50 text-gray-400 border-gray-600 focus:ring-gray-500'
-                                }`}
+                                    // Call server action
+                                    const { updateProjectStatus } = await import('@/app/actions/project-actions')
+                                    await updateProjectStatus(project.id, newStatus)
+                                }}
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium border appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-[#1E293B] ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 focus:ring-green-500' :
+                                    project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 focus:ring-blue-500' :
+                                        'bg-gray-700/50 text-gray-400 border-gray-600 focus:ring-gray-500'
+                                    }`}
+                            >
+                                <option value="planning" className="bg-[#1E293B] text-gray-400">Planning</option>
+                                <option value="in-progress" className="bg-[#1E293B] text-blue-400">In Progress</option>
+                                <option value="completed" className="bg-[#1E293B] text-green-400">Completed</option>
+                            </select>
+                            <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setShowReport(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-800 transition shadow-sm"
                         >
-                            <option value="planning" className="bg-[#1E293B] text-gray-400">Planning</option>
-                            <option value="in-progress" className="bg-[#1E293B] text-blue-400">In Progress</option>
-                            <option value="completed" className="bg-[#1E293B] text-green-400">Completed</option>
-                        </select>
-                        <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
+                            <FileBarChart size={16} /> Report
+                        </button>
+                        <button
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
+                        >
+                            <Edit size={16} /> Edit Project
+                        </button>
                     </div>
                 </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={() => setShowReport(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-800 transition shadow-sm"
-                    >
-                        <FileBarChart size={16} /> Report
-                    </button>
-                    <button
-                        onClick={() => setIsEditModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
-                    >
-                        <Edit size={16} /> Edit Project
-                    </button>
+
+                {/* Top Row: Stats (Full Width) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <StatsCard
+                        label="Value"
+                        value={formatCurrency(project.value)}
+                        icon={DollarSign}
+                        className="sm:col-span-2 lg:col-span-2 bg-gradient-to-r from-[#1E293B] to-[#0F172A]"
+                    />
+                    <StatsCard label="Progress" value={`${project.progress || 0}%`} icon={Activity} />
+                    <StatsCard label="Length" value={`${totalLength.toFixed(2)} km`} icon={MapIcon} />
+                    <StatsCard label="Structures" value={totalStructures} icon={HardDrive} />
                 </div>
-            </div>
 
-            {/* Top Row: Stats (Full Width) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <StatsCard
-                    label="Value"
-                    value={formatCurrency(project.value)}
-                    icon={DollarSign}
-                    className="sm:col-span-2 lg:col-span-2 bg-gradient-to-r from-[#1E293B] to-[#0F172A]"
-                />
-                <StatsCard label="Progress" value={`${project.progress || 0}%`} icon={Activity} />
-                <StatsCard label="Length" value={`${totalLength.toFixed(2)} km`} icon={MapIcon} />
-                <StatsCard label="Structures" value={totalStructures} icon={HardDrive} />
-            </div>
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column (2/3) */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Description */}
+                        <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
+                            <h2 className="font-bold text-white mb-4">Description</h2>
+                            <p className="text-gray-400 text-sm leading-relaxed">
+                                {project.description || "No description provided."}
+                            </p>
+                        </div>
 
-                {/* Left Column (2/3) */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Description */}
-                    <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
-                        <h2 className="font-bold text-white mb-4">Description</h2>
-                        <p className="text-gray-400 text-sm leading-relaxed">
-                            {project.description || "No description provided."}
-                        </p>
+                        {/* Plan of Work Section */}
+                        <ProjectPoW projectId={project.id} onUpdate={() => loadProject(project.id)} />
+
+                        {/* Work Items / BOQ Section */}
+                        <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
+
+                        {/* Telegram Daily Reports History */}
+                        <DailyReportHistory projectId={project.id} />
                     </div>
 
-                    {/* Plan of Work Section */}
-                    <ProjectPoW projectId={project.id} onUpdate={() => loadProject(project.id)} />
 
-                    {/* Work Items / BOQ Section */}
-                    <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
-
-                    {/* Telegram Daily Reports History */}
-                    <DailyReportHistory projectId={project.id} />
-                </div>
-
-
-                {/* Right Column (1/3) */}
-                <div className="space-y-6">
-                    {/* Timeplan - Aligned with Description */}
-                    <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
-                        <h2 className="font-bold text-white mb-4">Timeplan</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-xs text-gray-500 block mb-1">Start Date</label>
-                                <div className="flex items-center gap-2 text-gray-300">
-                                    <Calendar size={16} className="text-blue-500" />
-                                    <span>{project.start_date ? new Date(project.start_date).toLocaleDateString() : '-'}</span>
+                    {/* Right Column (1/3) */}
+                    <div className="space-y-6">
+                        {/* Timeplan - Aligned with Description */}
+                        <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
+                            <h2 className="font-bold text-white mb-4">Timeplan</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-xs text-gray-500 block mb-1">Start Date</label>
+                                    <div className="flex items-center gap-2 text-gray-300">
+                                        <Calendar size={16} className="text-blue-500" />
+                                        <span>{project.start_date ? new Date(project.start_date).toLocaleDateString() : '-'}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="text-xs text-gray-500 block mb-1">End Date</label>
-                                <div className="flex items-center gap-2 text-gray-300">
-                                    <Calendar size={16} className="text-red-500" />
-                                    <span>{project.end_date ? new Date(project.end_date).toLocaleDateString() : '-'}</span>
+                                <div>
+                                    <label className="text-xs text-gray-500 block mb-1">End Date</label>
+                                    <div className="flex items-center gap-2 text-gray-300">
+                                        <Calendar size={16} className="text-red-500" />
+                                        <span>{project.end_date ? new Date(project.end_date).toLocaleDateString() : '-'}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
-                        <h2 className="font-bold text-white mb-4">Project Status</h2>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-lg border border-gray-700">
-                                <span className="text-sm text-gray-500">Status</span>
-                                <span className={`text-xs font-bold uppercase ${project.status === 'completed' ? 'text-green-400' :
-                                    project.status === 'in-progress' ? 'text-blue-400' :
-                                        'text-gray-400'
-                                    }`}>{project.status || 'Planning'}</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-lg border border-gray-700">
-                                <span className="text-sm text-gray-500">Last Update</span>
-                                <span className="text-xs text-white">{new Date(project.created_at).toLocaleDateString()}</span>
+                        <div className="bg-[#1E293B] p-6 rounded-xl border border-gray-700">
+                            <h2 className="font-bold text-white mb-4">Project Status</h2>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-lg border border-gray-700">
+                                    <span className="text-sm text-gray-500">Status</span>
+                                    <span className={`text-xs font-bold uppercase ${project.status === 'completed' ? 'text-green-400' :
+                                        project.status === 'in-progress' ? 'text-blue-400' :
+                                            'text-gray-400'
+                                        }`}>{project.status || 'Planning'}</span>
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-[#0F172A] rounded-lg border border-gray-700">
+                                    <span className="text-sm text-gray-500">Last Update</span>
+                                    <span className="text-xs text-white">{new Date(project.created_at).toLocaleDateString()}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -195,6 +197,6 @@ export default function ProjectDetailPage() {
                     onClose={() => setShowReport(false)}
                 />
             )}
-        </div>
+        </>
     )
 }

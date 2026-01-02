@@ -34,7 +34,7 @@ export default function DashboardSidebar() {
     }
 
     return (
-        <aside className="w-64 bg-[#0B1120] border-r border-gray-800 flex flex-col h-full fixed left-0 top-0 bottom-0 z-10">
+        <aside className="w-64 bg-[#0B1120] border-r border-gray-800 flex flex-col h-full fixed left-0 top-0 bottom-0 z-10 print:hidden">
             <div className="p-6 border-b border-gray-800">
                 <div className="flex flex-col items-center gap-2">
                     <div className="flex items-center gap-3">

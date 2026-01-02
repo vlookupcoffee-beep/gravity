@@ -15,8 +15,18 @@ const pdfStyles = `
     box-shadow: none !important;
     text-shadow: none !important;
   }
-  .pdf-export-active .no-pdf {
+  .pdf-export-active .no-pdf,
+  .print-mode .no-pdf {
     display: none !important;
+  }
+  @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    aside, .print-hidden {
+      display: none !important;
+    }
   }
 `;
 
@@ -160,8 +170,8 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
     }
 
     return (
-        <div className="fixed inset-0 bg-slate-900/98 backdrop-blur-xl z-[100] flex justify-center items-center overflow-hidden p-0 sm:p-4 print:p-0 print:bg-white print:block">
-            <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-[1440px] h-full sm:h-auto max-h-[98vh] flex flex-col overflow-hidden print:max-h-none print:h-auto print:shadow-none print:rounded-none">
+        <div className="fixed inset-0 bg-slate-900/98 backdrop-blur-xl z-[100] flex justify-center items-center overflow-hidden p-0 sm:p-4 print:p-0 print:bg-white print:static print:block">
+            <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-[1440px] h-full sm:h-auto max-h-[98vh] flex flex-col overflow-hidden print:max-h-none print:h-auto print:shadow-none print:rounded-none print:w-full">
 
                 {/* Top Action Bar */}
                 <div className="px-4 py-2.5 border-b border-slate-200 flex justify-between items-center bg-white print:hidden">
