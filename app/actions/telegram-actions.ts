@@ -1,6 +1,6 @@
 'use server'
 
-export function formatProjectReport(data: any) {
+export async function formatProjectReport(data: any) {
     const reportDate = new Date().toLocaleDateString('id-ID', {
         day: '2-digit',
         month: 'long',
@@ -70,7 +70,7 @@ export async function sendTelegramReport(data: any, target: 'private' | 'group')
     }
 
     // Format the report
-    const message = formatProjectReport(data);
+    const message = await formatProjectReport(data);
 
     try {
         const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {

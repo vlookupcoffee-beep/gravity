@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
             })
             const materialRatio = totalNeeded > 0 ? Math.round((totalUsed / totalNeeded) * 100) : 0
 
-            const reportMessage = formatProjectReport({
+            const reportMessage = await formatProjectReport({
                 ...projectDetails,
                 materialRatio
             })
