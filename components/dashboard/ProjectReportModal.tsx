@@ -137,46 +137,46 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                     {mode === 'single' ? (
                         <div className="space-y-4">
                             {/* High-Contrast Header Section */}
-                            <div className="bg-slate-900 text-white p-5 rounded-[1.5rem] relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6 border border-white/5 shadow-2xl print:bg-slate-900 print:text-white">
-                                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] -mr-32 -mt-32" />
+                            <div className="bg-slate-900 text-white p-4 rounded-[1.25rem] relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4 border border-white/5 shadow-2xl print:bg-slate-900 print:text-white">
+                                <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[80px] -mr-20 -mt-20" />
 
-                                <div className="relative z-10 flex flex-col gap-1.5 transform-none">
-                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit">
+                                <div className="relative z-10 flex flex-col gap-1 transform-none w-full md:w-auto">
+                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit">
                                         Intelijen Strategis
                                     </div>
-                                    <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight uppercase text-white drop-shadow-2xl max-w-2xl">
+                                    <h1 className="text-lg sm:text-xl font-black tracking-tight leading-tight uppercase text-white drop-shadow-2xl max-w-xl">
                                         {data.name}
                                     </h1>
-                                    <div className="flex items-center gap-4 text-slate-500 text-xs font-black uppercase tracking-wider mt-1">
-                                        <div className="flex items-center gap-2 bg-white/5 py-1 px-2.5 rounded-lg">
-                                            <div className={`w-2 h-2 rounded-full ${data.status === 'completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
-                                            <span className="text-slate-300 text-[11px] font-black">{data.status === 'completed' ? 'SELESAI' : 'AKTIF'}</span>
+                                    <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-wider mt-0.5">
+                                        <div className="flex items-center gap-1.5 bg-white/5 py-0.5 px-2 rounded-md">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${data.status === 'completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
+                                            <span className="text-slate-300">{data.status === 'completed' ? 'SELESAI' : 'AKTIF'}</span>
                                         </div>
-                                        <span className="text-white/10 text-xl font-light">|</span>
-                                        <div className="flex items-center gap-2 text-[11px] font-black">
-                                            <Clock size={16} className="text-blue-500/60" />
+                                        <span className="text-white/10 text-lg font-light">|</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <Clock size={12} className="text-blue-500/60" />
                                             <span>{reportDate}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 bg-white/5 backdrop-blur-xl p-4 px-6 rounded-xl border border-white/10 shadow-[0_15px_30px_rgba(0,0,0,0.3)] shrink-0">
-                                    <div className="w-40">
-                                        <div className="flex justify-between items-end mb-1.5">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none opacity-60">Progres Global</span>
-                                            <span className="text-2xl font-black text-blue-400">{data.progress || 0}%</span>
+                                <div className="relative z-10 flex items-center gap-4 bg-white/5 backdrop-blur-xl p-3 px-5 rounded-xl border border-white/10 shadow-[0_10px_20px_rgba(0,0,0,0.3)] shrink-0 w-full md:w-auto justify-between md:justify-start">
+                                    <div className="w-32 sm:w-36">
+                                        <div className="flex justify-between items-end mb-1">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none opacity-60">Progres Global</span>
+                                            <span className="text-lg font-black text-blue-400">{data.progress || 0}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 p-0.5">
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5 p-0.5">
                                             <div className="bg-gradient-to-r from-blue-600 to-blue-400 h-full rounded-full transition-all duration-1000" style={{ width: `${data.progress || 0}%` }} />
                                         </div>
                                     </div>
-                                    <div className="h-10 w-px bg-white/10 hidden sm:block" />
-                                    <div className="w-40">
-                                        <div className="flex justify-between items-end mb-1.5">
-                                            <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest leading-none opacity-60">Progres Sipil</span>
-                                            <span className="text-2xl font-black text-amber-500">{materialRatio}%</span>
+                                    <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                                    <div className="w-32 sm:w-36">
+                                        <div className="flex justify-between items-end mb-1">
+                                            <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest leading-none opacity-60">Progres Sipil</span>
+                                            <span className="text-lg font-black text-amber-500">{materialRatio}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 p-0.5">
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5 p-0.5">
                                             <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-1000" style={{ width: `${materialRatio}%` }} />
                                         </div>
                                     </div>
