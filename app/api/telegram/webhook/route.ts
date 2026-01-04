@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
             let totalNeeded = 0
             let totalUsed = 0
             materialSummary.forEach((m: any) => {
-                totalNeeded += m.total_needed || 0
+                totalNeeded += m.quantity_needed || 0
                 totalUsed += m.total_out || 0
             })
             const materialRatio = totalNeeded > 0 ? Math.round((totalUsed / totalNeeded) * 100) : 0
