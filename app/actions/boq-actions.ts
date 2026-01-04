@@ -116,40 +116,20 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         if (khsItem) {
             const existing = existingMap.get(code)
 
-            if (existing) {
-                // UPDATE Existing (Side-by-Side Merge)
-                const updatedItem = {
-                    ...existing,
-                    khs_item_id: khsItem.id, // Update KHS reference to the latest used
-                    item_code: khsItem.item_code,
-                    description: khsItem.description,
-                    unit: khsItem.unit,
-                }
-
-                if (uploadType === 'vendor') {
-                    updatedItem.unit_price = khsItem.price
-                    updatedItem.quantity = quantity
-                } else {
-                    // Mandor import: Use price_mandor if exists, otherwise use the price column from this CSV
-                    updatedItem.unit_price_mandor = khsItem.price_mandor || khsItem.price
-                    updatedItem.quantity_mandor = quantity
-                }
-                itemsToUpsert.push(updatedItem)
-            } else {
-                // NEW Item
-                itemsToUpsert.push({
-                    project_id: projectId,
-                    khs_item_id: khsItem.id,
-                    item_code: khsItem.item_code,
-                    description: khsItem.description,
-                    unit: khsItem.unit,
-                    unit_price: uploadType === 'vendor' ? khsItem.price : 0,
-                    unit_price_mandor: uploadType === 'mandor' ? (khsItem.price_mandor || khsItem.price) : (khsItem.price_mandor || 0),
-                    quantity: uploadType === 'vendor' ? quantity : 0,
-                    quantity_mandor: uploadType === 'mandor' ? quantity : 0,
-                    progress: 0
-                })
+            const itemData = {
+                project_id: projectId,
+                item_code: khsItem.item_code,
+                khs_item_id: khsItem.id,
+                description: khsItem.description,
+                unit: khsItem.unit,
+                unit_price: uploadType === 'vendor' ? khsItem.price : (existing?.unit_price || 0),
+                unit_price_mandor: uploadType === 'mandor' ? (khsItem.price_mandor || khsItem.price) : (existing?.unit_price_mandor || khsItem.price_mandor || 0),
+                quantity: uploadType === 'vendor' ? quantity : (existing?.quantity || 0),
+                quantity_mandor: uploadType === 'mandor' ? quantity : (existing?.quantity_mandor || 0),
+                progress: existing?.progress || 0
             }
+
+            itemsToUpsert.push(itemData)
         } else {
             skippedCount++
         }
@@ -190,24 +170,17 @@ export async function addProjectItem(projectId: string, khsItem: any, quantity: 
         .eq('item_code', khsItem.item_code)
         .maybeSingle()
 
-    const itemToUpsert = existing ? {
-        ...existing,
-        khs_item_id: khsItem.id,
-        unit_price: uploadType === 'vendor' ? khsItem.price : existing.unit_price,
-        unit_price_mandor: uploadType === 'mandor' ? (khsItem.price_mandor || khsItem.price) : existing.unit_price_mandor,
-        quantity: uploadType === 'vendor' ? quantity : existing.quantity,
-        quantity_mandor: uploadType === 'mandor' ? quantity : existing.quantity_mandor
-    } : {
+    const itemToUpsert = {
         project_id: projectId,
-        khs_item_id: khsItem.id,
         item_code: khsItem.item_code,
+        khs_item_id: khsItem.id,
         description: khsItem.description,
         unit: khsItem.unit,
-        unit_price: uploadType === 'vendor' ? khsItem.price : 0,
-        unit_price_mandor: uploadType === 'mandor' ? (khsItem.price_mandor || khsItem.price) : (khsItem.price_mandor || 0),
-        quantity: uploadType === 'vendor' ? quantity : 0,
-        quantity_mandor: uploadType === 'mandor' ? quantity : 0,
-        progress: 0
+        unit_price: uploadType === 'vendor' ? khsItem.price : (existing?.unit_price || 0),
+        unit_price_mandor: uploadType === 'mandor' ? (khsItem.price_mandor || khsItem.price) : (existing?.unit_price_mandor || khsItem.price_mandor || 0),
+        quantity: uploadType === 'vendor' ? quantity : (existing?.quantity || 0),
+        quantity_mandor: uploadType === 'mandor' ? quantity : (existing?.quantity_mandor || 0),
+        progress: existing?.progress || 0
     }
 
     const { error } = await supabase
