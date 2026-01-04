@@ -8,9 +8,10 @@ import { getKHSProviders } from '@/app/actions/get-khs-providers'
 interface Props {
     projectId: string
     onUpdate?: () => void
+    userRole?: string | null
 }
 
-export default function ProjectBOQ({ projectId, onUpdate }: Props) {
+export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
     const [items, setItems] = useState<any[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -151,35 +152,43 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                 <div>
                     <h3 className="font-bold text-white">Work Items (BOQ)</h3>
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
-                        <p className="text-sm text-gray-400">Total Vendor: <span className="text-green-400 font-mono">{formatCurrency(totalValueVendor)}</span></p>
+                        {userRole !== 'mandor' && (
+                            <p className="text-sm text-gray-400">Total Vendor: <span className="text-green-400 font-mono">{formatCurrency(totalValueVendor)}</span></p>
+                        )}
                         <p className="text-sm text-gray-400">Total Mandor: <span className="text-blue-400 font-mono">{formatCurrency(totalValueMandor)}</span></p>
-                        <button onClick={handleRecalculate} className="text-xs text-gray-500 hover:text-blue-400 underline" title="Recalculate total value">
-                            Force Refresh
-                        </button>
+                        {userRole !== 'mandor' && (
+                            <button onClick={handleRecalculate} className="text-xs text-gray-500 hover:text-blue-400 underline" title="Recalculate total value">
+                                Force Refresh
+                            </button>
+                        )}
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {items.length > 0 && (
-                        <button
-                            onClick={handleDeleteAll}
-                            className="bg-red-600/10 text-red-400 border border-red-600/30 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-600/20 transition flex items-center gap-2"
-                            title="Delete all BOQ items"
-                        >
-                            <Trash2 size={16} /> Delete All
-                        </button>
+                    {userRole !== 'mandor' && (
+                        <>
+                            {items.length > 0 && (
+                                <button
+                                    onClick={handleDeleteAll}
+                                    className="bg-red-600/10 text-red-400 border border-red-600/30 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-600/20 transition flex items-center gap-2"
+                                    title="Delete all BOQ items"
+                                >
+                                    <Trash2 size={16} /> Delete All
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setIsUploadModalOpen(true)}
+                                className="bg-gray-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center gap-2"
+                            >
+                                <Upload size={16} /> Import CSV
+                            </button>
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2"
+                            >
+                                <Plus size={16} /> Add Item
+                            </button>
+                        </>
                     )}
-                    <button
-                        onClick={() => setIsUploadModalOpen(true)}
-                        className="bg-gray-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center gap-2"
-                    >
-                        <Upload size={16} /> Import CSV
-                    </button>
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2"
-                    >
-                        <Plus size={16} /> Add Item
-                    </button>
                 </div>
             </div>
 
@@ -195,11 +204,15 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                             <tr>
                                 <th className="px-4 py-3">Item Code</th>
                                 <th className="px-4 py-3">Description</th>
-                                <th className="px-4 py-3 text-right bg-green-500/5">Vendor Price</th>
-                                <th className="px-4 py-3 text-center bg-green-500/5">Qty Vendor</th>
+                                {userRole !== 'mandor' && (
+                                    <>
+                                        <th className="px-4 py-3 text-right bg-green-500/5">Vendor Price</th>
+                                        <th className="px-4 py-3 text-center bg-green-500/5">Qty Vendor</th>
+                                    </>
+                                )}
                                 <th className="px-4 py-3 text-right bg-blue-500/5">Mandor Price</th>
                                 <th className="px-4 py-3 text-center bg-blue-500/5">Qty Mandor</th>
-                                <th className="px-4 py-3">Actions</th>
+                                {userRole !== 'mandor' && <th className="px-4 py-3">Actions</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
@@ -209,10 +222,14 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                     <td className="px-4 py-3 text-gray-300">{item.description}</td>
 
                                     {/* Vendor Columns */}
-                                    <td className="px-4 py-3 text-right text-gray-400 bg-green-500/5">{formatCurrency(item.unit_price)}</td>
-                                    <td className="px-4 py-3 text-center text-white font-semibold bg-green-500/5">
-                                        {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity || 0)} {item.unit}
-                                    </td>
+                                    {userRole !== 'mandor' && (
+                                        <>
+                                            <td className="px-4 py-3 text-right text-gray-400 bg-green-500/5">{formatCurrency(item.unit_price)}</td>
+                                            <td className="px-4 py-3 text-center text-white font-semibold bg-green-500/5">
+                                                {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity || 0)} {item.unit}
+                                            </td>
+                                        </>
+                                    )}
 
                                     {/* Mandor Columns */}
                                     <td className="px-4 py-3 text-right text-gray-400 bg-blue-500/5">{formatCurrency(item.unit_price_mandor || 0)}</td>
@@ -220,14 +237,16 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                         {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity_mandor || 0)} {item.unit}
                                     </td>
 
-                                    <td className="px-4 py-3">
-                                        <button
-                                            onClick={() => handleDelete(item.id)}
-                                            className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-900/20"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </td>
+                                    {userRole !== 'mandor' && (
+                                        <td className="px-4 py-3">
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-900/20"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

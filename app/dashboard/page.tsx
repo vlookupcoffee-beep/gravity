@@ -8,6 +8,7 @@ import StatsCard from '@/components/dashboard/StatsCard'
 import { Activity, CheckCircle, Clock, Database, Plus, TrendingUp, CheckCircle2, AlertCircle, Pencil, FileText } from 'lucide-react'
 import Link from 'next/link'
 import ProjectReportModal from '@/components/dashboard/ProjectReportModal'
+import { getCurrentUser } from '@/app/actions/auth-actions'
 
 export default function DashboardPage() {
     const [projects, setProjects] = useState<any[]>([])
@@ -17,15 +18,18 @@ export default function DashboardPage() {
     const [newName, setNewName] = useState('')
     const [isRenaming, setIsRenaming] = useState(false)
     const [showReport, setShowReport] = useState(false)
+    const [userRole, setUserRole] = useState<string | null>(null)
 
     const load = async () => {
         setLoading(true)
-        const [projectsData, powData] = await Promise.all([
+        const [projectsData, powData, user] = await Promise.all([
             getProjects(),
-            getAllPowTasks()
+            getAllPowTasks(),
+            getCurrentUser()
         ])
         setProjects(projectsData)
         setPowTasks(powData)
+        setUserRole(user?.role || null)
         setLoading(false)
     }
 
@@ -51,7 +55,7 @@ export default function DashboardPage() {
     const totalProjects = projects.length
     const completedProjects = projects.filter(p => p.status === 'completed').length
     const inProgressProjects = projects.filter(p => p.status === 'in-progress').length
-    const totalValue = projects.reduce((acc, p) => acc + (p.value || 0), 0)
+    const totalValue = projects.reduce((acc, p) => acc + (userRole === 'mandor' ? (p.value_mandor || 0) : (p.value || 0)), 0)
 
     // Helper for currency format
     const formatCurrency = (val: number) => {
@@ -71,20 +75,24 @@ export default function DashboardPage() {
                     <p className="text-gray-400">Welcome back! Here's what's happening today.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button
-                        onClick={() => setShowReport(true)}
-                        className="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-700 transition border border-gray-700 shadow-sm"
-                    >
-                        <FileText size={20} />
-                        <span>Global Report</span>
-                    </button>
-                    <Link
-                        href="/dashboard/projects/new"
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
-                    >
-                        <Plus size={20} />
-                        <span>New Project</span>
-                    </Link>
+                    {userRole !== 'mandor' && (
+                        <>
+                            <button
+                                onClick={() => setShowReport(true)}
+                                className="bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-700 transition border border-gray-700 shadow-sm"
+                            >
+                                <FileText size={20} />
+                                <span>Global Report</span>
+                            </button>
+                            <Link
+                                href="/dashboard/projects/new"
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
+                            >
+                                <Plus size={20} />
+                                <span>New Project</span>
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -106,7 +114,7 @@ export default function DashboardPage() {
                     icon={Activity}
                 />
                 <StatsCard
-                    label="Total Value"
+                    label={userRole === 'mandor' ? "Total Item Value" : "Total Project Value"}
                     value={formatCurrency(totalValue)}
                     icon={Clock}
                     className="sm:col-span-2 lg:col-span-2 bg-gradient-to-r from-[#1E293B] to-[#0F172A]"

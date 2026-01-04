@@ -27,6 +27,7 @@ export async function getProjects() {
       created_at,
       status,
       value,
+      value_mandor,
       description,
       progress,
       start_date,

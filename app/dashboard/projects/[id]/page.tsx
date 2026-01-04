@@ -13,6 +13,7 @@ import EditProjectModal from '@/components/dashboard/EditProjectModal'
 import DailyReportHistory from '@/components/dashboard/DailyReportHistory'
 import ProjectReportModal from '@/components/dashboard/ProjectReportModal'
 import { HardDrive, Map as MapIcon, FileBarChart } from 'lucide-react'
+import { getCurrentUser } from '@/app/actions/auth-actions'
 
 // Reuse map component dynamically
 import dynamic from 'next/dynamic'
@@ -27,6 +28,7 @@ export default function ProjectDetailPage() {
     const [loading, setLoading] = useState(true)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [showReport, setShowReport] = useState(false)
+    const [userRole, setUserRole] = useState<string | null>(null)
 
     useEffect(() => {
         if (params.id) {
@@ -36,8 +38,12 @@ export default function ProjectDetailPage() {
 
     async function loadProject(id: string) {
         setLoading(true)
-        const data = await getProjectDetails(id)
+        const [data, user] = await Promise.all([
+            getProjectDetails(id),
+            getCurrentUser()
+        ])
         setProject(data)
+        setUserRole(user?.role || null)
         setLoading(false)
     }
 
@@ -85,27 +91,29 @@ export default function ProjectDetailPage() {
                             <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
                         </div>
                     </div>
-                    <div className="flex gap-3">
-                        <button
-                            onClick={() => setShowReport(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-800 transition shadow-sm"
-                        >
-                            <FileBarChart size={16} /> Report
-                        </button>
-                        <button
-                            onClick={() => setIsEditModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
-                        >
-                            <Edit size={16} /> Edit Project
-                        </button>
-                    </div>
+                    {userRole !== 'mandor' && (
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowReport(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-800 transition shadow-sm"
+                            >
+                                <FileBarChart size={16} /> Report
+                            </button>
+                            <button
+                                onClick={() => setIsEditModalOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
+                            >
+                                <Edit size={16} /> Edit Project
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Top Row: Stats (Full Width) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <StatsCard
-                        label="Value"
-                        value={formatCurrency(project.value)}
+                        label={userRole === 'mandor' ? "Item Value" : "Project Value"}
+                        value={formatCurrency(userRole === 'mandor' ? project.value_mandor : project.value)}
                         icon={DollarSign}
                         className="sm:col-span-2 lg:col-span-2 bg-gradient-to-r from-[#1E293B] to-[#0F172A]"
                     />
@@ -131,7 +139,7 @@ export default function ProjectDetailPage() {
                         <ProjectPoW projectId={project.id} onUpdate={() => loadProject(project.id)} />
 
                         {/* Work Items / BOQ Section */}
-                        <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} />
+                        <ProjectBOQ projectId={project.id} onUpdate={() => loadProject(project.id)} userRole={userRole} />
 
                         {/* Telegram Daily Reports History */}
                         <DailyReportHistory projectId={project.id} />
