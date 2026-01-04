@@ -9,6 +9,7 @@ import { Activity, CheckCircle, Clock, Database, Plus, TrendingUp, CheckCircle2,
 import Link from 'next/link'
 import ProjectReportModal from '@/components/dashboard/ProjectReportModal'
 import { getCurrentUser } from '@/app/actions/auth-actions'
+import DashboardCharts from '@/components/dashboard/DashboardCharts'
 
 export default function DashboardPage() {
     const [projects, setProjects] = useState<any[]>([])
@@ -120,6 +121,8 @@ export default function DashboardPage() {
                     className="sm:col-span-2 lg:col-span-2 bg-gradient-to-br from-[#1E293B] via-[#1E293B] to-[#0F172A] border-blue-500/20 shadow-blue-500/5"
                 />
             </div>
+
+            <DashboardCharts projects={projects} />
 
             {/* PoW Table Widget */}
             <div className="bg-[#1E293B]/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 overflow-hidden shadow-2xl">
