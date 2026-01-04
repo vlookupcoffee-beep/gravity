@@ -24,7 +24,8 @@ export async function sendTelegramReport(data: any, target: 'private' | 'group')
 
     let message = `📊 **LAPORAN TEKNIS PROYEK**\n\n`;
     message += `🏗 **Proyek:** *${data.name}*\n`;
-    message += `📈 **Efisiensi Global:** \`${data.progress || 0}%\`\n`;
+    message += `📈 **Progres Global:** \`${data.progress || 0}%\` (Fisik)\n`;
+    message += `🏗 **Progres Sipil:** \`${data.materialRatio || 0}%\` (Material)\n`;
     message += `📝 **Aktivitas:** \`${data.reportCount || 0} Laporan Terarsip\`\n`;
     message += `📅 **Tanggal:** ${reportDate}\n`;
     message += `---------------------------\n\n`;

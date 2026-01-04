@@ -160,22 +160,24 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     </div>
                                 </div>
 
-                                <div className="relative z-10 flex items-center gap-8 bg-white/5 backdrop-blur-xl p-6 px-10 rounded-[1.5rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transform hover:scale-105 transition-all">
-                                    <div className="text-center">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 leading-none opacity-60">Jangkauan Linier</p>
-                                        <p className="text-4xl font-black text-white leading-none tracking-tighter">
-                                            {(data.routes?.reduce((acc: number, r: any) => acc + r.length, 0) || 0).toFixed(2)}
-                                            <span className="text-[14px] ml-1.5 text-blue-400 font-black opacity-80 italic">KM</span>
-                                        </p>
-                                    </div>
-                                    <div className="h-14 w-px bg-white/10" />
+                                <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 bg-white/5 backdrop-blur-xl p-6 px-8 rounded-[1.5rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transform hover:scale-105 transition-all">
                                     <div className="w-40">
                                         <div className="flex justify-between items-end mb-2.5">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none opacity-60">Efisiensi</span>
-                                            <span className="text-3xl font-black text-blue-400 leading-none drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">{data.progress || 0}%</span>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none opacity-60">Progres Global</span>
+                                            <span className="text-2xl font-black text-blue-400 leading-none drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">{data.progress || 0}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 shadow-inner p-0.5">
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 shadow-inner p-0.5" title="Berdasarkan fisik pekerjaan (PoW)">
                                             <div className="bg-gradient-to-r from-blue-600 to-blue-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(59,130,246,0.4)]" style={{ width: `${data.progress || 0}%` }} />
+                                        </div>
+                                    </div>
+                                    <div className="h-10 w-px bg-white/10 hidden md:block" />
+                                    <div className="w-40">
+                                        <div className="flex justify-between items-end mb-2.5">
+                                            <span className="text-[10px] font-black text-amber-400 uppercase tracking-[0.3em] leading-none opacity-60">Progres Sipil</span>
+                                            <span className="text-2xl font-black text-amber-500 leading-none drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">{materialRatio}%</span>
+                                        </div>
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 shadow-inner p-0.5" title="Berdasarkan konsumsi material">
+                                            <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(245,158,11,0.4)]" style={{ width: `${materialRatio}%` }} />
                                         </div>
                                     </div>
                                 </div>
