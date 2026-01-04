@@ -12,9 +12,10 @@ async function updateProjectValue(projectId: string) {
         .from('project_items')
         .select('unit_price, quantity, unit_price_mandor, quantity_mandor')
         .eq('project_id', projectId)
+        .limit(5000)
 
-    const totalValueVendor = items?.reduce((acc, item) => acc + (item.unit_price * item.quantity), 0) || 0
-    const totalValueMandor = items?.reduce((acc, item) => acc + (item.unit_price_mandor * (item.quantity_mandor || 0)), 0) || 0
+    const totalValueVendor = items?.reduce((acc, item) => acc + (Number(item.unit_price || 0) * Number(item.quantity || 0)), 0) || 0
+    const totalValueMandor = items?.reduce((acc, item) => acc + (Number(item.unit_price_mandor || 0) * Number(item.quantity_mandor || 0)), 0) || 0
 
     // 2. Update Project
     const { error } = await supabase
@@ -105,7 +106,10 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
 
         const code = parts[0].trim()
         const qtyStr = parts[1].trim()
-        const quantity = parseFloat(qtyStr)
+
+        // Handle Indonesian decimal separator (comma to dot)
+        const normalizedQty = qtyStr.replace(',', '.')
+        const quantity = parseFloat(normalizedQty)
 
         if (!code || isNaN(quantity) || quantity <= 0) {
             skippedCount++
@@ -225,6 +229,7 @@ export async function getProjectItems(projectId: string) {
         .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: true })
+        .limit(5000)
 
     if (error) {
         console.error('Error fetching project items:', error)

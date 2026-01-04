@@ -128,7 +128,7 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
         setUploading(false)
 
         if (result.success) {
-            alert(`Successfully imported ${result.count || 0} items!`)
+            alert(`Successfully imported ${result.count || 0} items!${result.skipped ? ` (${result.skipped} items were skipped - code not found in KHS)` : ''}`)
             setIsUploadModalOpen(false)
             loadProjectItems()
             onUpdate?.()
@@ -142,8 +142,8 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
 
-    const totalValueVendor = items.reduce((acc, item) => acc + (item.unit_price * (item.quantity || 0)), 0)
-    const totalValueMandor = items.reduce((acc, item) => acc + (item.unit_price_mandor * (item.quantity_mandor || 0)), 0)
+    const totalValueVendor = items.reduce((acc, item) => acc + (Number(item.unit_price || 0) * Number(item.quantity || 0)), 0)
+    const totalValueMandor = items.reduce((acc, item) => acc + (Number(item.unit_price_mandor || 0) * Number(item.quantity_mandor || 0)), 0)
 
     return (
         <div className="bg-[#1E293B] rounded-xl border border-gray-700 overflow-hidden">
