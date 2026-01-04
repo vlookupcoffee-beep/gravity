@@ -141,13 +141,13 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                 <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[80px] -mr-20 -mt-20" />
 
                                 <div className="relative z-10 flex flex-col gap-1 transform-none w-full md:w-auto">
-                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit">
+                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit">
                                         Intelijen Strategis
                                     </div>
                                     <h1 className="text-lg sm:text-xl font-black tracking-tight leading-tight uppercase text-white drop-shadow-2xl max-w-xl">
                                         {data.name}
                                     </h1>
-                                    <div className="flex items-center gap-3 text-slate-500 text-[10px] font-black uppercase tracking-wider mt-0.5">
+                                    <div className="flex items-center gap-3 text-slate-500 text-[11px] font-black uppercase tracking-wider mt-0.5">
                                         <div className="flex items-center gap-1.5 bg-white/5 py-0.5 px-2 rounded-md">
                                             <div className={`w-1.5 h-1.5 rounded-full ${data.status === 'completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
                                             <span className="text-slate-300">{data.status === 'completed' ? 'SELESAI' : 'AKTIF'}</span>
@@ -163,7 +163,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                 <div className="relative z-10 flex items-center gap-4 bg-white/5 backdrop-blur-xl p-2.5 px-4 rounded-xl border border-white/10 shadow-[0_10px_20px_rgba(0,0,0,0.3)] shrink-0 w-full md:w-auto justify-between md:justify-start">
                                     <div className="w-32 sm:w-36">
                                         <div className="flex justify-between items-end mb-1">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none opacity-60">Progres Global</span>
+                                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none opacity-60">Progres Global</span>
                                             <span className="text-lg font-black text-blue-400">{data.progress || 0}%</span>
                                         </div>
                                         <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5 p-0.5">
@@ -173,7 +173,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     <div className="h-8 w-px bg-white/10 hidden sm:block" />
                                     <div className="w-32 sm:w-36">
                                         <div className="flex justify-between items-end mb-1">
-                                            <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest leading-none opacity-60">Progres Sipil</span>
+                                            <span className="text-[11px] font-black text-amber-400 uppercase tracking-widest leading-none opacity-60">Progres Sipil</span>
                                             <span className="text-lg font-black text-amber-500">{materialRatio}%</span>
                                         </div>
                                         <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5 p-0.5">
@@ -193,7 +193,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                         <div className="flex items-center gap-2.5 px-1 border-l-4 border-blue-600 pl-3">
                                             <div>
                                                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Tahapan Eksekusi</h3>
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Prioritas Pekerjaan</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Prioritas Pekerjaan</p>
                                             </div>
                                         </div>
                                         <div className="space-y-2">
@@ -216,52 +216,51 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     {/* Daily Stats Summary */}
                                     <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-md">
                                         <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Data Aktivitas</h3>
+                                            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Data Aktivitas</h3>
                                             <div className="bg-blue-50 text-blue-600 p-2 rounded-xl">
                                                 <FileBarChart size={18} />
                                             </div>
                                         </div>
                                         <p className="text-4xl font-black text-slate-900 leading-none">{data.reportCount || 0}</p>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Laporan Terarsip</p>
+                                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-2">Laporan Terarsip</p>
                                     </div>
 
                                     {/* Daily Feedback Section */}
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2 px-1 border-l-4 border-indigo-600 pl-3">
                                             <div>
-                                                <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Ringkasan Harian</h3>
-                                                <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Input Lapangan Terakhir</p>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Input Lapangan Terakhir</p>
                                             </div>
                                         </div>
                                         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-md">
                                             {data.dailyReport ? (
                                                 <div className="flex flex-col">
                                                     <div className="p-3 bg-slate-900 border-b border-slate-800 flex justify-between items-center px-4">
-                                                        <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">Operational Pulse</span>
-                                                        <span className="text-[9px] font-black text-blue-400 tracking-wider">
+                                                        <span className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Operational Pulse</span>
+                                                        <span className="text-[11px] font-black text-blue-400 tracking-wider">
                                                             {new Date(data.dailyReport.report_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }).toUpperCase()}
                                                         </span>
                                                     </div>
                                                     <div className="p-4 space-y-4">
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Aktivitas Hari Ini</p>
+                                                            <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Aktivitas Hari Ini</p>
                                                             <p className="text-sm font-black text-slate-900 leading-normal border-l-4 border-blue-500 pl-4 bg-blue-50/30 py-2 rounded-r-lg">
                                                                 {data.dailyReport.today_activity}
                                                             </p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Rencana Besok</p>
+                                                            <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Rencana Besok</p>
                                                             <p className="text-sm font-bold text-slate-700 italic leading-normal border-l-4 border-slate-300 pl-4 py-1">
                                                                 {data.dailyReport.tomorrow_plan}
                                                             </p>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
                                                             <div className="bg-slate-50 p-2.5 rounded-xl text-center border border-slate-100">
-                                                                <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-wider">Site Lead</p>
+                                                                <p className="text-[11px] font-black text-slate-400 uppercase mb-1 tracking-wider">Site Lead</p>
                                                                 <p className="text-xs font-black text-slate-800 uppercase truncate leading-tight">{data.dailyReport.executor_name || 'System'}</p>
                                                             </div>
                                                             <div className="bg-slate-50 p-2.5 rounded-xl text-center border border-slate-100">
-                                                                <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-wider">Personel</p>
+                                                                <p className="text-[11px] font-black text-slate-400 uppercase mb-1 tracking-wider">Personel</p>
                                                                 <p className="text-xs font-black text-slate-900 leading-tight">{data.dailyReport.manpower_count || 0}</p>
                                                             </div>
                                                         </div>
@@ -269,7 +268,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                                 </div>
                                             ) : (
                                                 <div className="p-10 text-center bg-slate-50/80">
-                                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Awaiting Daily Sync</p>
+                                                    <p className="text-[11px] font-black text-slate-300 uppercase tracking-widest">Awaiting Daily Sync</p>
                                                 </div>
                                             )}
                                         </div>
@@ -281,7 +280,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     <div className="flex items-center gap-2.5 px-1 border-l-4 border-slate-800 pl-3">
                                         <div>
                                             <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Material Inventory Intelligence</h3>
-                                            <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Live Stock & Scope Variance</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Live Stock & Scope Variance</p>
                                         </div>
                                     </div>
                                     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-lg">
@@ -293,11 +292,11 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                                         <div className="flex items-center justify-between gap-4">
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="font-black text-slate-900 text-xs sm:text-[13px] uppercase tracking-tight truncate leading-tight group-hover:text-blue-600 transition-colors">{m.name}</div>
-                                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{m.unit}</div>
+                                                                <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{m.unit}</div>
                                                             </div>
                                                             <div className="text-right shrink-0">
                                                                 <div className="text-sm font-black text-slate-900 tracking-tighter">{m.total_out} / {m.quantity_needed}</div>
-                                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{progress}% TERPAKAI</div>
+                                                                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{progress}% TERPAKAI</div>
                                                             </div>
                                                         </div>
                                                         <div className="w-full bg-slate-100 rounded-full h-3 border border-slate-200 p-0.5 shadow-inner">
@@ -327,10 +326,10 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                             <div className="flex justify-between items-end border-b-2 border-slate-900 pb-6 mb-4">
                                 <div className="space-y-1">
                                     <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">Matriks Portofolio</h1>
-                                    <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px]">Ringkasan Eksekutif Global</p>
+                                    <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-[11px]">Ringkasan Eksekutif Global</p>
                                 </div>
                                 <div className="text-right p-4 px-6 bg-slate-900 text-white rounded-2xl shadow-xl border border-white/5">
-                                    <p className="text-[9px] uppercase font-black text-slate-500 mb-1 tracking-widest text-center">Titik Aktif</p>
+                                    <p className="text-[11px] uppercase font-black text-slate-500 mb-1 tracking-widest text-center">Titik Aktif</p>
                                     <p className="text-3xl font-black leading-none text-center">{(data as any[]).length}</p>
                                 </div>
                             </div>
@@ -338,7 +337,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                             {/* Global Material Ratio Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-lg">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Rasio Material Global</p>
+                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Rasio Material Global</p>
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex-1">
                                             <p className="text-4xl font-black text-slate-900">{materialRatio}%</p>
@@ -356,7 +355,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                             <div className="bg-white rounded-[1.5rem] border border-slate-200 shadow-2xl overflow-hidden">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.15em]">
+                                        <tr className="bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.15em]">
                                             <th className="px-8 py-5 opacity-50">#</th>
                                             <th className="px-8 py-5">Global Designation</th>
                                             <th className="px-8 py-5 text-right opacity-80">Execution Progress</th>
@@ -368,7 +367,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                                 <td className="px-8 py-5 text-xs font-black text-slate-300 group-hover:text-blue-200">{String(i + 1).padStart(2, '0')}</td>
                                                 <td className="px-8 py-5">
                                                     <div className="font-black text-slate-900 text-base uppercase tracking-tight truncate max-w-[500px] group-hover:text-blue-700 transition-colors">{p.name}</div>
-                                                    <div className="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">{p.status || 'OPERATIONAL'}</div>
+                                                    <div className="text-[11px] font-black text-slate-400 mt-1 uppercase tracking-widest">{p.status || 'OPERATIONAL'}</div>
                                                 </td>
                                                 <td className="px-8 py-5 text-right">
                                                     <div className="flex items-center justify-end gap-6 text-right">
@@ -388,7 +387,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                 </div>
 
                 {/* Cyberdeck Footer Bar */}
-                <div className="px-6 py-2.5 bg-[#0F172A] text-white flex justify-between items-center text-[8px] tracking-[0.25em] uppercase font-black shrink-0 border-t border-white/5">
+                <div className="px-6 py-2.5 bg-[#0F172A] text-white flex justify-between items-center text-[10px] tracking-[0.25em] uppercase font-black shrink-0 border-t border-white/5">
                     <div className="flex items-center gap-3">
                         <CheckCircle2 size={12} className="text-blue-400" />
                         <span className="opacity-90">Analytical State // Gravity Network Protocol 4.0</span>
