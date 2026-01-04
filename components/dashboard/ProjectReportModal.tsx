@@ -193,49 +193,61 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
             <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-[1440px] h-full sm:h-auto max-h-[98vh] flex flex-col overflow-hidden print:max-h-none print:h-auto print:shadow-none print:rounded-none print:w-full">
 
                 {/* Top Action Bar */}
-                <div className="px-4 py-2.5 border-b border-slate-200 flex justify-between items-center bg-white print:hidden">
-                    <div className="flex items-center gap-2.5">
-                        <div className="bg-blue-600 p-1.5 rounded-lg">
-                            <TrendingUp className="text-white" size={14} />
+                <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-white print:hidden shadow-sm z-50">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-slate-900 p-2 rounded-xl shadow-lg shadow-slate-900/10">
+                            <TrendingUp className="text-blue-400" size={18} />
                         </div>
-                        <span className="text-xs font-black text-slate-800 uppercase tracking-[0.15em]">Project Analytical Engine v2.1</span>
+                        <div>
+                            <span className="text-sm font-black text-slate-900 uppercase tracking-tighter block leading-none">Intelligence Report</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1 block">Gravity Network Protocol v4.0</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="flex bg-slate-100 p-1 rounded-lg mr-2">
+                    <div className="flex items-center gap-3">
+                        <div className="flex bg-slate-100 p-1 rounded-xl mr-2">
                             <button
                                 onClick={() => setTelegramTarget('private')}
-                                className={`px-2 py-1 rounded-md text-[9px] font-black uppercase transition-all flex items-center gap-1 ${telegramTarget === 'private' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-2 ${telegramTarget === 'private' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                             >
-                                <UserIcon size={12} />
-                                Private
+                                <UserIcon size={14} />
+                                Personal
                             </button>
                             <button
                                 onClick={() => setTelegramTarget('group')}
-                                className={`px-2 py-1 rounded-md text-[9px] font-black uppercase transition-all flex items-center gap-1 ${telegramTarget === 'group' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-2 ${telegramTarget === 'group' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                             >
-                                <Users size={12} />
-                                Group
+                                <Users size={14} />
+                                Channels
                             </button>
                         </div>
 
                         <button
                             onClick={handleSendTelegram}
                             disabled={isDownloading}
-                            className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all text-[10px] font-black uppercase shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ${sendSuccess ? 'bg-green-600 shadow-green-600/20' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20'} text-white`}
+                            className={`flex items-center gap-2 px-6 py-2 rounded-xl transition-all text-[11px] font-black uppercase shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${sendSuccess ? 'bg-emerald-600 shadow-emerald-900/10' : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/10'} text-white border border-white/10`}
                         >
                             {isDownloading ? (
-                                <Loader2 size={14} className="animate-spin" />
+                                <Loader2 size={16} className="animate-spin" />
                             ) : sendSuccess ? (
-                                <CheckCircle2 size={14} />
+                                <CheckCircle2 size={16} />
                             ) : (
-                                <Send size={14} />
+                                <Send size={16} />
                             )}
-                            {isDownloading ? 'Sending...' : sendSuccess ? 'Report Sent!' : 'Send Telegram Report'}
+                            {isDownloading ? 'Processing...' : sendSuccess ? 'Delivered' : 'Dispatch via Telegram'}
                         </button>
 
-                        <div className="w-px h-6 bg-slate-200 mx-1" />
-                        <button onClick={onClose} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors">
-                            <X size={20} />
+                        <button
+                            onClick={handleDownloadPDF}
+                            disabled={isDownloading}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-[11px] font-black uppercase shadow-xl shadow-blue-900/10 transition-all flex items-center gap-2 disabled:opacity-50"
+                            title="Download Professional PDF"
+                        >
+                            <Download size={16} /> Save PDF
+                        </button>
+
+                        <div className="w-px h-8 bg-slate-200 mx-2" />
+                        <button onClick={onClose} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-all active:scale-90">
+                            <X size={24} />
                         </button>
                     </div>
                 </div>
@@ -245,42 +257,45 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                     {mode === 'single' ? (
                         <div className="space-y-5">
                             {/* High-Contrast Header Section */}
-                            <div className="bg-[#0F172A] text-white p-5 rounded-2xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8 border border-white/5 shadow-xl">
-                                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/15 rounded-full blur-[100px] -mr-16 -mt-16" />
+                            <div className="bg-slate-900 text-white p-8 rounded-[2rem] relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10 border border-white/5 shadow-2xl print:bg-slate-900 print:text-white">
+                                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] -mr-32 -mt-32" />
 
-                                <div className="relative z-10 flex flex-col gap-1.5">
-                                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.25em] bg-blue-500/30 text-blue-300 border border-blue-400/30 w-fit">
-                                        Active Deployment
+                                <div className="relative z-10 flex flex-col gap-2 scale-105 origin-left">
+                                    <div className="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.3em] bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit drop-shadow-sm">
+                                        Strategic Intelligence
                                     </div>
-                                    <h1 className="text-2xl sm:text-3xl font-black tracking-tighter leading-tight uppercase text-white truncate max-w-[700px] drop-shadow-md">
+                                    <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-none uppercase text-white drop-shadow-2xl">
                                         {data.name}
                                     </h1>
-                                    <div className="flex items-center gap-4 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-0.5">
-                                        <div className="flex items-center gap-1.5">
-                                            <Clock size={12} className="text-blue-400" />
-                                            <span>{data.status || 'ACTIVE'}</span>
+                                    <div className="flex items-center gap-5 text-slate-500 text-[11px] font-black uppercase tracking-[0.2em] mt-2">
+                                        <div className="flex items-center gap-2 bg-white/5 py-1.5 px-3 rounded-lg">
+                                            <div className={`w-2 h-2 rounded-full ${data.status === 'completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
+                                            <span className="text-slate-300">{data.status || 'ACTIVE'}</span>
                                         </div>
-                                        <span className="text-white/20">•</span>
-                                        <span>{reportDate}</span>
+                                        <span className="text-white/10 text-2xl font-light">|</span>
+                                        <div className="flex items-center gap-2">
+                                            <Clock size={16} className="text-blue-500/60" />
+                                            <span>{reportDate}</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="relative z-10 flex items-center gap-6 bg-white/5 backdrop-blur-md p-4 px-6 rounded-2xl border border-white/10 shadow-2xl shrink-0">
+                                <div className="relative z-10 flex items-center gap-8 bg-white/5 backdrop-blur-xl p-6 px-10 rounded-[1.5rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transform hover:scale-105 transition-all">
                                     <div className="text-center">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 leading-none">Total Coverage</p>
-                                        <p className="text-2xl font-black text-white leading-none tracking-tighter">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-3 leading-none opacity-60">Linear Reach</p>
+                                        <p className="text-4xl font-black text-white leading-none tracking-tighter">
                                             {(data.routes?.reduce((acc: number, r: any) => acc + r.length, 0) || 0).toFixed(2)}
-                                            <span className="text-[11px] ml-1 text-blue-400 font-black">KM</span>
+                                            <span className="text-[14px] ml-1.5 text-blue-400 font-black opacity-80 italic">KM</span>
                                         </p>
                                     </div>
-                                    <div className="h-10 w-px bg-white/10" />
-                                    <div className="w-32">
-                                        <div className="flex justify-between items-end mb-1.5">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none">Progress</span>
-                                            <span className="text-2xl font-black text-blue-400 leading-none">{data.progress || 0}%</span>
+                                    <div className="h-14 w-px bg-white/10" />
+                                    <div className="w-40">
+                                        <div className="flex justify-between items-end mb-2.5">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none opacity-60">Efficiency</span>
+                                            <span className="text-3xl font-black text-blue-400 leading-none drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">{data.progress || 0}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-white/5 shadow-inner">
-                                            <div className="bg-blue-500 h-full rounded-full transition-all duration-1000 shadow-[0_0_15px_rgba(59,130,246,0.3)]" style={{ width: `${data.progress || 0}%` }} />
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 shadow-inner p-0.5">
+                                            <div className="bg-gradient-to-r from-blue-600 to-blue-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(59,130,246,0.4)]" style={{ width: `${data.progress || 0}%` }} />
                                         </div>
                                     </div>
                                 </div>
