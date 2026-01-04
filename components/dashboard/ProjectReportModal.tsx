@@ -141,42 +141,42 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                 <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] -mr-32 -mt-32" />
 
                                 <div className="relative z-10 flex flex-col gap-1.5 transform-none">
-                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.3em] bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit">
+                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit">
                                         Intelijen Strategis
                                     </div>
                                     <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight uppercase text-white drop-shadow-2xl max-w-2xl">
                                         {data.name}
                                     </h1>
-                                    <div className="flex items-center gap-4 text-slate-500 text-xs font-black uppercase tracking-[0.2em] mt-1">
+                                    <div className="flex items-center gap-4 text-slate-500 text-xs font-black uppercase tracking-wider mt-1">
                                         <div className="flex items-center gap-2 bg-white/5 py-1 px-2.5 rounded-lg">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${data.status === 'completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
-                                            <span className="text-slate-300 text-[10px]">{data.status === 'completed' ? 'SELESAI' : 'AKTIF'}</span>
+                                            <div className={`w-2 h-2 rounded-full ${data.status === 'completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
+                                            <span className="text-slate-300 text-[11px] font-black">{data.status === 'completed' ? 'SELESAI' : 'AKTIF'}</span>
                                         </div>
                                         <span className="text-white/10 text-xl font-light">|</span>
-                                        <div className="flex items-center gap-2 text-[10px]">
-                                            <Clock size={14} className="text-blue-500/60" />
+                                        <div className="flex items-center gap-2 text-[11px] font-black">
+                                            <Clock size={16} className="text-blue-500/60" />
                                             <span>{reportDate}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 bg-white/5 backdrop-blur-xl p-4 px-6 rounded-xl border border-white/10 shadow-[0_15px_30px_rgba(0,0,0,0.3)] shrink-0">
-                                    <div className="w-36">
+                                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6 bg-white/5 backdrop-blur-xl p-4 px-6 rounded-xl border border-white/10 shadow-[0_15px_30px_rgba(0,0,0,0.3)] shrink-0">
+                                    <div className="w-40">
                                         <div className="flex justify-between items-end mb-1.5">
-                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none opacity-60">Progres Global</span>
-                                            <span className="text-xl font-black text-blue-400">{data.progress || 0}%</span>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none opacity-60">Progres Global</span>
+                                            <span className="text-2xl font-black text-blue-400">{data.progress || 0}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5 p-0.5">
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 p-0.5">
                                             <div className="bg-gradient-to-r from-blue-600 to-blue-400 h-full rounded-full transition-all duration-1000" style={{ width: `${data.progress || 0}%` }} />
                                         </div>
                                     </div>
-                                    <div className="h-8 w-px bg-white/10 hidden sm:block" />
-                                    <div className="w-36">
+                                    <div className="h-10 w-px bg-white/10 hidden sm:block" />
+                                    <div className="w-40">
                                         <div className="flex justify-between items-end mb-1.5">
-                                            <span className="text-[9px] font-black text-amber-400 uppercase tracking-[0.2em] leading-none opacity-60">Progres Sipil</span>
-                                            <span className="text-xl font-black text-amber-500">{materialRatio}%</span>
+                                            <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest leading-none opacity-60">Progres Sipil</span>
+                                            <span className="text-2xl font-black text-amber-500">{materialRatio}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5 p-0.5">
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 p-0.5">
                                             <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-1000" style={{ width: `${materialRatio}%` }} />
                                         </div>
                                     </div>
@@ -198,14 +198,14 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                         </div>
                                         <div className="space-y-2">
                                             {filteredPowTasks?.map((task: any) => (
-                                                <div key={task.id} className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-all">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <h4 className="font-black text-slate-800 text-[11px] leading-tight flex-1 pr-3 uppercase">
+                                                <div key={task.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-all">
+                                                    <div className="flex justify-between items-start mb-2.5">
+                                                        <h4 className="font-black text-slate-800 text-xs leading-tight flex-1 pr-3 uppercase">
                                                             {task.task_name}
                                                         </h4>
-                                                        <span className="text-[11px] font-black text-blue-700">{task.progress}%</span>
+                                                        <span className="text-xs font-black text-blue-700">{task.progress}%</span>
                                                     </div>
-                                                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                                    <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                                                         <div className="bg-blue-600 h-full rounded-full" style={{ width: `${task.progress}%` }} />
                                                     </div>
                                                 </div>
@@ -243,26 +243,26 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                                         </span>
                                                     </div>
                                                     <div className="p-4 space-y-4">
-                                                        <div className="space-y-1.5">
-                                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.15em]">Aktivitas Hari Ini</p>
-                                                            <p className="text-xs font-black text-slate-900 leading-normal border-l-3 border-blue-500 pl-3 bg-blue-50/30 py-1.5 rounded-r-lg">
+                                                        <div className="space-y-2">
+                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Aktivitas Hari Ini</p>
+                                                            <p className="text-sm font-black text-slate-900 leading-normal border-l-4 border-blue-500 pl-4 bg-blue-50/30 py-2 rounded-r-lg">
                                                                 {data.dailyReport.today_activity}
                                                             </p>
                                                         </div>
-                                                        <div className="space-y-1.5">
-                                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.15em]">Rencana Besok</p>
-                                                            <p className="text-xs font-bold text-slate-600 italic leading-normal border-l-3 border-slate-300 pl-3">
+                                                        <div className="space-y-2">
+                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Rencana Besok</p>
+                                                            <p className="text-sm font-bold text-slate-700 italic leading-normal border-l-4 border-slate-300 pl-4 py-1">
                                                                 {data.dailyReport.tomorrow_plan}
                                                             </p>
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-                                                            <div className="bg-slate-50 p-2 rounded-xl text-center border border-slate-100">
-                                                                <p className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-tighter">Site Lead</p>
-                                                                <p className="text-[10px] font-black text-slate-800 uppercase truncate">{data.dailyReport.executor_name || 'System'}</p>
+                                                        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
+                                                            <div className="bg-slate-50 p-2.5 rounded-xl text-center border border-slate-100">
+                                                                <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-wider">Site Lead</p>
+                                                                <p className="text-xs font-black text-slate-800 uppercase truncate leading-tight">{data.dailyReport.executor_name || 'System'}</p>
                                                             </div>
-                                                            <div className="bg-slate-50 p-2 rounded-xl text-center border border-slate-100">
-                                                                <p className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-tighter">Personel</p>
-                                                                <p className="text-[10px] font-black text-slate-900">{data.dailyReport.manpower_count || 0}</p>
+                                                            <div className="bg-slate-50 p-2.5 rounded-xl text-center border border-slate-100">
+                                                                <p className="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-wider">Personel</p>
+                                                                <p className="text-xs font-black text-slate-900 leading-tight">{data.dailyReport.manpower_count || 0}</p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -289,18 +289,18 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                             {data.materialSummary.map((m: any) => {
                                                 const progress = m.quantity_needed > 0 ? Math.min(100, Math.round((m.total_out / m.quantity_needed) * 100)) : 0;
                                                 return (
-                                                    <div key={m.id} className="p-4 space-y-3 hover:bg-blue-50/20 transition-all group">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex-1 min-w-0 pr-4">
-                                                                <div className="font-black text-slate-900 text-[11px] uppercase tracking-tight truncate leading-tight group-hover:text-blue-600 transition-colors">{m.name}</div>
-                                                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">{m.unit}</div>
+                                                    <div key={m.id} className="p-4.5 space-y-3 hover:bg-blue-50/20 transition-all group border-b last:border-b-0 border-slate-50">
+                                                        <div className="flex items-center justify-between gap-4">
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="font-black text-slate-900 text-xs sm:text-[13px] uppercase tracking-tight truncate leading-tight group-hover:text-blue-600 transition-colors">{m.name}</div>
+                                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{m.unit}</div>
                                                             </div>
-                                                            <div className="text-right">
-                                                                <div className="text-[10px] font-black text-slate-900">{m.total_out} / {m.quantity_needed}</div>
-                                                                <div className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{progress}% TERPAKAI</div>
+                                                            <div className="text-right shrink-0">
+                                                                <div className="text-sm font-black text-slate-900 tracking-tighter">{m.total_out} / {m.quantity_needed}</div>
+                                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{progress}% TERPAKAI</div>
                                                             </div>
                                                         </div>
-                                                        <div className="w-full bg-slate-100 rounded-full h-2.5 border border-slate-200 p-0.5 shadow-inner">
+                                                        <div className="w-full bg-slate-100 rounded-full h-3 border border-slate-200 p-0.5 shadow-inner">
                                                             <div
                                                                 className={`h-full rounded-full transition-all duration-1000 ${progress >= 90 ? 'bg-amber-500' : 'bg-blue-600'}`}
                                                                 style={{ width: `${progress}%` }}
