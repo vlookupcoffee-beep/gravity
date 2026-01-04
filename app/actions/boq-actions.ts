@@ -132,7 +132,6 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         }
 
         const quantity = parseFloat(normalizedQty)
-        console.log(`DEBUG: Raw="${qtyStr}", Norm="${normalizedQty}", Final=${quantity}`)
 
         if (!code || isNaN(quantity) || quantity <= 0) {
             skippedCount++
@@ -253,8 +252,6 @@ export async function getProjectItems(projectId: string) {
         .eq('project_id', projectId)
         .order('created_at', { ascending: true })
         .limit(5000)
-
-    console.log(`FETCHED ${data?.length || 0} items for project ${projectId}`)
 
     if (error) {
         console.error('Error fetching project items:', error)

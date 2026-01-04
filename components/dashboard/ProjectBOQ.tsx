@@ -41,7 +41,6 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
 
     async function loadProjectItems() {
         const data = await getProjectItems(projectId)
-        console.log('UI RECEIVED ITEMS:', data)
         setItems(data || [])
     }
 
@@ -200,7 +199,6 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                 <th className="px-4 py-3 text-center bg-green-500/5">Qty Vendor</th>
                                 <th className="px-4 py-3 text-right bg-blue-500/5">Mandor Price</th>
                                 <th className="px-4 py-3 text-center bg-blue-500/5">Qty Mandor</th>
-                                <th className="px-4 py-3 text-right bg-blue-500/10">Subtotal M</th>
                                 <th className="px-4 py-3">Actions</th>
                             </tr>
                         </thead>
@@ -220,9 +218,6 @@ export default function ProjectBOQ({ projectId, onUpdate }: Props) {
                                     <td className="px-4 py-3 text-right text-gray-400 bg-blue-500/5">{formatCurrency(item.unit_price_mandor || 0)}</td>
                                     <td className="px-4 py-3 text-center text-white font-semibold bg-blue-500/5">
                                         {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity_mandor || 0)} {item.unit}
-                                    </td>
-                                    <td className="px-4 py-3 text-right text-blue-300 font-mono bg-blue-500/10">
-                                        {formatCurrency(Number(item.unit_price_mandor || 0) * Number(item.quantity_mandor || 0))}
                                     </td>
 
                                     <td className="px-4 py-3">
