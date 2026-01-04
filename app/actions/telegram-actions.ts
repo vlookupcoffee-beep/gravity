@@ -22,10 +22,11 @@ export async function sendTelegramReport(data: any, target: 'private' | 'group')
         year: 'numeric'
     });
 
-    let message = `📊 **PROJECT STATUS REPORT**\n\n`;
-    message += `🏗 **Project:** *${data.name}*\n`;
-    message += `📈 **Progress:** \`${data.progress || 0}%\`\n`;
-    message += `📅 **Date:** ${reportDate}\n`;
+    let message = `📊 **LAPORAN TEKNIS PROYEK**\n\n`;
+    message += `🏗 **Proyek:** *${data.name}*\n`;
+    message += `📈 **Efisiensi Global:** \`${data.progress || 0}%\`\n`;
+    message += `📝 **Aktivitas:** \`${data.reportCount || 0} Laporan Terarsip\`\n`;
+    message += `📅 **Tanggal:** ${reportDate}\n`;
     message += `---------------------------\n\n`;
 
     const allowedCategories = [
@@ -35,27 +36,33 @@ export async function sendTelegramReport(data: any, target: 'private' | 'group')
     ];
 
     if (data.powTasks?.length > 0) {
-        message += `📍 **Execution Milestones:**\n`;
+        message += `📍 **Tahapan Eksekusi:**\n`;
         data.powTasks.filter((t: any) => allowedCategories.includes(t.task_name)).forEach((t: any) => {
-            message += `- ${t.task_name}: \`${t.progress}%\`\n`;
+            const dots = Math.round(t.progress / 10);
+            const bar = '🟦'.repeat(dots) + '⬜'.repeat(10 - dots);
+            message += `- ${t.task_name}: \`${t.progress}%\`\n  [${bar}]\n`;
         });
         message += `\n`;
     }
 
-    if (data.dailyReport) {
-        message += `📝 **Daily Snapshot:**\n`;
-        message += `*Activity Today:*\n${data.dailyReport.today_activity || '-'}\n\n`;
-        message += `*Next Plan:*\n${data.dailyReport.tomorrow_plan || '-'}\n\n`;
+    if (data.materialSummary?.length > 0) {
+        message += `📦 **PROGRES MATERIAL (PAKAI/BUTUH):**\n`;
+        data.materialSummary.forEach((m: any) => {
+            const usage = m.quantity_needed > 0 ? Math.min(100, Math.round((m.total_out / m.quantity_needed) * 100)) : 0;
+            const dots = Math.round(usage / 10);
+            const bar = '🟦'.repeat(dots) + '⬜'.repeat(10 - dots);
+            message += `- ${m.name}: \`${usage}%\`\n  [${bar}]\n`;
+        });
+        message += `\n`;
+        if (data.materialRatio) {
+            message += `💡 **Rasio Penggunaan:** \`${data.materialRatio}% Terdistribusi\`\n\n`;
+        }
     }
 
-    if (data.materialSummary?.length > 0) {
-        message += `📦 **Material Inventory (SISA):**\n`;
-        data.materialSummary.forEach((m: any) => {
-            const remaining = Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0));
-            if (remaining > 0) {
-                message += `- ${m.name}: \`${remaining}\` ${m.unit || ''}\n`;
-            }
-        });
+    if (data.dailyReport) {
+        message += `📝 **Update Harian:**\n`;
+        message += `*Hari Ini:* ${data.dailyReport.today_activity || '-'}\n`;
+        message += `*Besok:* ${data.dailyReport.tomorrow_plan || '-'}\n\n`;
     }
 
     try {

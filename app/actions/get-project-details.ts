@@ -106,6 +106,12 @@ export async function getProjectDetails(projectId: string) {
         .limit(1)
         .single()
 
+    // Fetch daily reports count
+    const { count: reportCount } = await supabase
+        .from('daily_reports')
+        .select('*', { count: 'exact', head: true })
+        .eq('project_id', projectId)
+
     return {
         ...project,
         progress: calculatedProgress,
@@ -114,6 +120,7 @@ export async function getProjectDetails(projectId: string) {
         files: files || [],
         materialSummary: materialSummary || [],
         powTasks: powTasks || [],
-        dailyReport: dailyReport || null
+        dailyReport: dailyReport || null,
+        reportCount: reportCount || 0
     }
 }

@@ -91,22 +91,22 @@ export default function ProjectDetailPage() {
                             <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
                         </div>
                     </div>
-                    {userRole !== 'mandor' && (
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setShowReport(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-800 transition shadow-sm"
-                            >
-                                <FileBarChart size={16} /> Report
-                            </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setShowReport(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-800 transition shadow-sm"
+                        >
+                            <FileBarChart size={16} /> Laporan
+                        </button>
+                        {userRole !== 'mandor' && (
                             <button
                                 onClick={() => setIsEditModalOpen(true)}
                                 className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
                             >
-                                <Edit size={16} /> Edit Project
+                                <Edit size={16} /> Edit Proyek
                             </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 {/* Top Row: Stats (Full Width) */}

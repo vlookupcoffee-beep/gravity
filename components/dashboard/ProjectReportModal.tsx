@@ -2,8 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Printer, Download, CheckCircle2, TrendingUp, AlertCircle, Clock, Package, Loader2 } from 'lucide-react'
-import { downloadCSV, triggerPrint } from '@/utils/export-utils'
+import { X, CheckCircle2, TrendingUp, AlertCircle, Clock, Package, Loader2, BarChart3, PieChart, FileBarChart } from 'lucide-react'
 import { sendTelegramReport } from '@/app/actions/telegram-actions'
 import { Send, Users, User as UserIcon } from 'lucide-react'
 
@@ -59,73 +58,15 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
         ? data.powTasks.filter((t: any) => allowedPowCategories.includes(t.task_name))
         : []
 
-    const handleDownloadPDF = async () => {
-        const element = document.getElementById('report-content')
-        if (!element) {
-            console.error("Report content element not found")
-            return
-        }
-
-        try {
-            setIsDownloading(true)
-
-            // 1. Add PDF-specific styles to document
-            const styleTag = document.createElement('style')
-            styleTag.innerHTML = pdfStyles
-            document.head.appendChild(styleTag)
-            document.body.classList.add('pdf-export-active')
-
-            // 2. Short delay to let styles apply and UI thread breathe
-            await new Promise(r => setTimeout(r, 500))
-
-            // 3. Import html2pdf
-            // @ts-ignore
-            const html2pdfModule = await import('html2pdf.js')
-            const html2pdf = html2pdfModule.default || html2pdfModule
-
-            const opt = {
-                margin: 5,
-                filename: `Report_${data.name.replace(/\s+/g, '_')}.pdf`,
-                image: { type: 'jpeg' as const, quality: 0.95 },
-                html2canvas: {
-                    scale: 1.2, // Conservative scale for stability
-                    useCORS: true,
-                    logging: false,
-                    letterRendering: true,
-                    windowWidth: 1440
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
-            }
-
-            // 4. Run the worker
-            await html2pdf().set(opt).from(element).save()
-
-            // 5. Cleanup
-            document.body.classList.remove('pdf-export-active')
-            document.head.removeChild(styleTag)
-
-        } catch (error) {
-            console.error("PDF Generation Error:", error)
-            alert("Maaf, proses PDF terhenti karena beban gambar terlalu berat. Silakan gunakan tombol 'Print Report' lalu pilih 'Save as PDF' sebagai alternatif paling stabil.")
-
-            // Full cleanup on error
-            document.body.classList.remove('pdf-export-active')
-            const styleIds = document.querySelectorAll('style')
-            styleIds.forEach(s => {
-                if (s.innerHTML.includes('pdf-export-active')) {
-                    try { document.head.removeChild(s) } catch (e) { }
-                }
-            })
-        } finally {
-            setIsDownloading(false)
-        }
-    }
+    const totalNeeded = data.materialSummary?.reduce((acc: number, m: any) => acc + (m.quantity_needed || 0), 0) || 0;
+    const totalUsed = data.materialSummary?.reduce((acc: number, m: any) => acc + (m.total_out || 0), 0) || 0;
+    const materialRatio = totalNeeded > 0 ? Math.round((totalUsed / totalNeeded) * 100) : 0;
 
     const handleSendTelegram = async () => {
         try {
             setIsDownloading(true)
             setSendSuccess(false)
-            await sendTelegramReport(data, telegramTarget)
+            await sendTelegramReport({ ...data, materialRatio, reportCount: data.reportCount }, telegramTarget)
             setSendSuccess(true)
             setTimeout(() => setSendSuccess(false), 3000)
         } catch (error: any) {
@@ -133,58 +74,6 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
             alert(error.message || "Gagal mengirim ke Telegram")
         } finally {
             setIsDownloading(false)
-        }
-    }
-
-    const handleDownloadCSV = () => {
-        if (mode === 'single') {
-            const exportData = [{
-                Type: 'PROJECT_INFO',
-                Name: data.name,
-                Status: data.status,
-                Progress: `${data.progress || 0}%`,
-                StartDate: data.start_date || '-',
-                EndDate: data.end_date || '-',
-                Description: (data.description || '').replace(/\n/g, ' ')
-            }]
-
-            if (filteredPowTasks && filteredPowTasks.length > 0) {
-                filteredPowTasks.forEach((t: any) => {
-                    exportData.push({
-                        Type: 'POW_TASK',
-                        Name: t.task_name,
-                        Status: t.status,
-                        Progress: `${t.progress}%`,
-                        StartDate: t.start_date || '',
-                        EndDate: t.end_date || '',
-                        Description: (t.description || '').replace(/\n/g, ' ')
-                    } as any)
-                })
-            }
-
-            if (data.materialSummary?.length > 0) {
-                data.materialSummary.forEach((m: any) => {
-                    exportData.push({
-                        Type: 'MATERIAL_STOCK',
-                        Name: m.name,
-                        Status: `Unit: ${m.unit}`,
-                        Progress: `Used: ${m.total_out || 0} / ${m.quantity_needed || 0}`,
-                        StartDate: `Remaining: ${Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}`,
-                        EndDate: '',
-                        Description: ''
-                    } as any)
-                })
-            }
-
-            downloadCSV(exportData, `Report_${data.name.replace(/\s+/g, '_')}.csv`)
-        } else {
-            const exportData = (data as any[]).map(p => ({
-                Name: p.name,
-                Status: p.status,
-                Progress: `${p.progress || 0}%`,
-                Created: p.created_at
-            }))
-            downloadCSV(exportData, `Global_Project_Report_${new Date().toISOString().split('T')[0]}.csv`)
         }
     }
 
@@ -224,25 +113,16 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                         <button
                             onClick={handleSendTelegram}
                             disabled={isDownloading}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-xl transition-all text-[11px] font-black uppercase shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${sendSuccess ? 'bg-emerald-600 shadow-emerald-900/10' : 'bg-slate-900 hover:bg-slate-800 shadow-slate-900/10'} text-white border border-white/10`}
+                            className={`flex items-center gap-2 px-6 py-2 rounded-xl transition-all text-sm font-black uppercase shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${sendSuccess ? 'bg-emerald-600 shadow-emerald-900/10' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-900/10'} text-white border border-white/10`}
                         >
                             {isDownloading ? (
-                                <Loader2 size={16} className="animate-spin" />
+                                <Loader2 size={18} className="animate-spin" />
                             ) : sendSuccess ? (
-                                <CheckCircle2 size={16} />
+                                <CheckCircle2 size={18} />
                             ) : (
-                                <Send size={16} />
+                                <Send size={18} />
                             )}
                             {isDownloading ? 'Memproses...' : sendSuccess ? 'Terkirim' : 'Kirim via Telegram'}
-                        </button>
-
-                        <button
-                            onClick={handleDownloadPDF}
-                            disabled={isDownloading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-[11px] font-black uppercase shadow-xl shadow-blue-900/10 transition-all flex items-center gap-2 disabled:opacity-50"
-                            title="Unduh PDF Profesional"
-                        >
-                            <Download size={16} /> Simpan PDF
                         </button>
 
                         <div className="w-px h-8 bg-slate-200 mx-2" />
@@ -310,8 +190,8 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2.5 px-1 border-l-4 border-blue-600 pl-3">
                                             <div>
-                                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Execution Milestones</h3>
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Priority Progression</p>
+                                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Tahapan Eksekusi</h3>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Prioritas Pekerjaan</p>
                                             </div>
                                         </div>
                                         <div className="space-y-2">
@@ -331,12 +211,24 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                         </div>
                                     </div>
 
+                                    {/* Daily Stats Summary */}
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-md">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Data Aktivitas</h3>
+                                            <div className="bg-blue-50 text-blue-600 p-2 rounded-xl">
+                                                <FileBarChart size={18} />
+                                            </div>
+                                        </div>
+                                        <p className="text-4xl font-black text-slate-900 leading-none">{data.reportCount || 0}</p>
+                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Laporan Terarsip</p>
+                                    </div>
+
                                     {/* Daily Feedback Section */}
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2.5 px-1 border-l-4 border-indigo-600 pl-3">
                                             <div>
-                                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Daily Snapshot</h3>
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Latest Site Feed</p>
+                                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Ringkasan Harian</h3>
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Input Lapangan Terakhir</p>
                                             </div>
                                         </div>
                                         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-md">
@@ -350,13 +242,13 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                                     </div>
                                                     <div className="p-4 space-y-4">
                                                         <div className="space-y-1.5">
-                                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.15em]">Today Activity</p>
+                                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.15em]">Aktivitas Hari Ini</p>
                                                             <p className="text-xs font-black text-slate-900 leading-normal border-l-3 border-blue-500 pl-3 bg-blue-50/30 py-1.5 rounded-r-lg">
                                                                 {data.dailyReport.today_activity}
                                                             </p>
                                                         </div>
                                                         <div className="space-y-1.5">
-                                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.15em]">Next Plan</p>
+                                                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.15em]">Rencana Besok</p>
                                                             <p className="text-xs font-bold text-slate-600 italic leading-normal border-l-3 border-slate-300 pl-3">
                                                                 {data.dailyReport.tomorrow_plan}
                                                             </p>
@@ -367,7 +259,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                                                 <p className="text-[10px] font-black text-slate-800 uppercase truncate">{data.dailyReport.executor_name || 'System'}</p>
                                                             </div>
                                                             <div className="bg-slate-50 p-2 rounded-xl text-center border border-slate-100">
-                                                                <p className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-tighter">Manpower</p>
+                                                                <p className="text-[7px] font-black text-slate-400 uppercase mb-0.5 tracking-tighter">Personel</p>
                                                                 <p className="text-[10px] font-black text-slate-900">{data.dailyReport.manpower_count || 0}</p>
                                                             </div>
                                                         </div>
@@ -392,25 +284,29 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     </div>
                                     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-lg">
                                         <div className="grid grid-cols-1 md:grid-cols-2 divide-x divide-y divide-slate-100">
-                                            {data.materialSummary.map((m: any) => (
-                                                <div key={m.id} className="p-4 flex items-center justify-between hover:bg-blue-50/20 transition-all group">
-                                                    <div className="flex-1 min-w-0 pr-4">
-                                                        <div className="font-black text-slate-900 text-[11px] uppercase tracking-tight truncate leading-tight group-hover:text-blue-600 transition-colors">{m.name}</div>
-                                                        <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">{m.unit}</div>
-                                                    </div>
-                                                    <div className="flex flex-col items-end shrink-0">
-                                                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-300 mb-1">
-                                                            <span className="opacity-60">{m.quantity_needed || 0}</span>
-                                                            <span className="opacity-20">/</span>
-                                                            <span className="text-blue-600">{m.total_out || 0}</span>
+                                            {data.materialSummary.map((m: any) => {
+                                                const progress = m.quantity_needed > 0 ? Math.min(100, Math.round((m.total_out / m.quantity_needed) * 100)) : 0;
+                                                return (
+                                                    <div key={m.id} className="p-4 space-y-3 hover:bg-blue-50/20 transition-all group">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex-1 min-w-0 pr-4">
+                                                                <div className="font-black text-slate-900 text-[11px] uppercase tracking-tight truncate leading-tight group-hover:text-blue-600 transition-colors">{m.name}</div>
+                                                                <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">{m.unit}</div>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <div className="text-[10px] font-black text-slate-900">{m.total_out} / {m.quantity_needed}</div>
+                                                                <div className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{progress}% TERPAKAI</div>
+                                                            </div>
                                                         </div>
-                                                        <div className={`text-[12px] font-black px-2.5 py-1 rounded-lg flex items-center gap-2 ${((m.quantity_needed || 0) - (m.total_out || 0)) <= 0 ? 'text-red-700 bg-red-100 shadow-[inset_0_0_10px_rgba(220,38,38,0.1)]' : 'text-slate-900 bg-slate-200 shadow-sm'}`}>
-                                                            {Math.max(0, (m.quantity_needed || 0) - (m.total_out || 0))}
-                                                            <span className="text-[8px] tracking-widest opacity-60">SISA</span>
+                                                        <div className="w-full bg-slate-100 rounded-full h-2.5 border border-slate-200 p-0.5 shadow-inner">
+                                                            <div
+                                                                className={`h-full rounded-full transition-all duration-1000 ${progress >= 90 ? 'bg-amber-500' : 'bg-blue-600'}`}
+                                                                style={{ width: `${progress}%` }}
+                                                            />
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                         {data.materialSummary.length === 0 && (
                                             <div className="p-12 text-center bg-slate-50/50">
@@ -428,12 +324,30 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                         <div className="p-4 space-y-6">
                             <div className="flex justify-between items-end border-b-2 border-slate-900 pb-6 mb-4">
                                 <div className="space-y-1">
-                                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">Portfolio Matrix</h1>
-                                    <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-[9px]">Consolidated Tactical Engine</p>
+                                    <h1 className="text-4xl font-black uppercase tracking-tighter text-slate-900 leading-none">Matriks Portofolio</h1>
+                                    <p className="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px]">Ringkasan Eksekutif Global</p>
                                 </div>
                                 <div className="text-right p-4 px-6 bg-slate-900 text-white rounded-2xl shadow-xl border border-white/5">
-                                    <p className="text-[9px] uppercase font-black text-slate-500 mb-1 tracking-widest text-center">Active Nodes</p>
+                                    <p className="text-[9px] uppercase font-black text-slate-500 mb-1 tracking-widest text-center">Titik Aktif</p>
                                     <p className="text-3xl font-black leading-none text-center">{(data as any[]).length}</p>
+                                </div>
+                            </div>
+
+                            {/* Global Material Ratio Stats */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-lg">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Rasio Material Global</p>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex-1">
+                                            <p className="text-4xl font-black text-slate-900">{materialRatio}%</p>
+                                            <div className="w-full bg-slate-100 h-2 rounded-full mt-2">
+                                                <div className="bg-blue-600 h-full rounded-full" style={{ width: `${materialRatio}%` }} />
+                                            </div>
+                                        </div>
+                                        <div className="bg-blue-50 p-3 rounded-2xl">
+                                            <Package className="text-blue-600" size={24} />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
