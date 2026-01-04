@@ -107,9 +107,32 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         const code = parts[0].trim()
         const qtyStr = parts[1].trim()
 
-        // Handle Indonesian decimal separator (comma to dot)
-        const normalizedQty = qtyStr.replace(',', '.')
+        // Robust Parsing Logic:
+        // 1. If it has a comma AND a dot (e.g. 1.234,56 or 1,234.56)
+        // 2. If it has only a comma and it's followed by 3 digits (e.g. 1,000 -> 1000)
+        let normalizedQty = qtyStr.replace(/\s/g, '')
+
+        if (normalizedQty.includes(',') && normalizedQty.includes('.')) {
+            // Mixed separators: Assume the last one is the decimal
+            if (normalizedQty.lastIndexOf(',') > normalizedQty.lastIndexOf('.')) {
+                normalizedQty = normalizedQty.replace(/\./g, '').replace(',', '.')
+            } else {
+                normalizedQty = normalizedQty.replace(/,/g, '')
+            }
+        } else if (normalizedQty.includes(',')) {
+            // Only comma: Is it decimal (1,5) or thousand (1,000)?
+            const pieces = normalizedQty.split(',')
+            if (pieces.length === 2 && pieces[1].length === 3) {
+                // Highly likely a thousand separator (e.g. 1,000)
+                normalizedQty = normalizedQty.replace(/,/g, '')
+            } else {
+                // Likely a decimal (e.g. 1,5 or 12,50)
+                normalizedQty = normalizedQty.replace(',', '.')
+            }
+        }
+
         const quantity = parseFloat(normalizedQty)
+        console.log(`DEBUG: Raw="${qtyStr}", Norm="${normalizedQty}", Final=${quantity}`)
 
         if (!code || isNaN(quantity) || quantity <= 0) {
             skippedCount++
