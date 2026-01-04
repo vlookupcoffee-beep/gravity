@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { getProjects } from '@/app/actions/get-projects'
 import { Search, Filter, Plus, FileText, Trash2, Edit, Map as MapIcon, Download } from 'lucide-react'
 import Link from 'next/link'
+import { getCurrentUser } from '@/app/actions/auth-actions'
 
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<any[]>([])
@@ -12,6 +13,7 @@ export default function ProjectsPage() {
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+    const [userRole, setUserRole] = useState<string | null>(null)
 
     useEffect(() => {
         loadProjects()
@@ -38,9 +40,13 @@ export default function ProjectsPage() {
 
     async function loadProjects() {
         setLoading(true)
-        const data = await getProjects()
+        const [data, user] = await Promise.all([
+            getProjects(),
+            getCurrentUser()
+        ])
         setProjects(data)
         setFilteredProjects(data)
+        setUserRole(user?.role || null)
         setLoading(false)
     }
 
@@ -49,10 +55,11 @@ export default function ProjectsPage() {
     }
 
     const getStatusLabel = (status: string) => {
-        if (status === 'in-progress') return 'In Progress'
-        if (status === 'on-hold') return 'On Hold'
-        if (!status) return 'Planning'
-        return status.charAt(0).toUpperCase() + status.slice(1)
+        if (status === 'in-progress') return 'Dalam Pengerjaan'
+        if (status === 'on-hold') return 'Ditangguhkan'
+        if (status === 'completed') return 'Selesai'
+        if (!status || status === 'planning') return 'Perencanaan'
+        return status
     }
 
     const toggleDropdown = (id: string, e: React.MouseEvent) => {
@@ -141,16 +148,18 @@ export default function ProjectsPage() {
         <div className="space-y-6" onClick={() => setActiveDropdown(null)}>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Projects</h1>
-                    <p className="text-gray-400">Manage and track all your engineering projects.</p>
+                    <h1 className="text-2xl font-bold text-white">Daftar Proyek</h1>
+                    <p className="text-gray-400">Kelola dan pantau semua proyek teknik Anda.</p>
                 </div>
-                <Link
-                    href="/dashboard/projects/new"
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
-                >
-                    <Plus size={20} />
-                    <span>Create Project</span>
-                </Link>
+                {userRole !== 'mandor' && (
+                    <Link
+                        href="/dashboard/projects/new"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
+                    >
+                        <Plus size={20} />
+                        <span>Buat Proyek Baru</span>
+                    </Link>
+                )}
             </div>
 
             {/* Controls */}
@@ -159,7 +168,7 @@ export default function ProjectsPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                     <input
                         type="text"
-                        placeholder="Search projects by name or description..."
+                        placeholder="Cari proyek berdasarkan nama atau deskripsi..."
                         className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#0F172A] text-white placeholder-gray-500"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -172,11 +181,11 @@ export default function ProjectsPage() {
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
-                        <option value="all">All Status</option>
-                        <option value="planning">Planning</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                        <option value="on-hold">On Hold</option>
+                        <option value="all">Semua Status</option>
+                        <option value="planning">Perencanaan</option>
+                        <option value="in-progress">Dalam Pengerjaan</option>
+                        <option value="completed">Selesai</option>
+                        <option value="on-hold">Ditangguhkan</option>
                     </select>
                 </div>
             </div>
@@ -187,11 +196,11 @@ export default function ProjectsPage() {
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-[#0F172A] text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
                             <tr>
-                                <th className="px-6 py-4 font-semibold">Project Name</th>
+                                <th className="px-6 py-4 font-semibold">Nama Proyek</th>
                                 <th className="px-6 py-4 font-semibold text-center">Status</th>
-                                <th className="px-6 py-4 font-semibold">Value</th>
-                                <th className="px-6 py-4 font-semibold">Progress</th>
-                                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                                <th className="px-6 py-4 font-semibold">Nilai</th>
+                                <th className="px-6 py-4 font-semibold">Progres</th>
+                                <th className="px-6 py-4 font-semibold text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-700">
@@ -208,7 +217,7 @@ export default function ProjectsPage() {
                             ) : filteredProjects.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                                        No projects found matching your criteria.
+                                        Tidak ada proyek yang ditemukan.
                                     </td>
                                 </tr>
                             ) : (
@@ -230,12 +239,13 @@ export default function ProjectsPage() {
                                         <td className="px-6 py-4 text-center">
                                             <div className="relative inline-block">
                                                 <button
-                                                    onClick={(e) => toggleDropdown(project.id, e)}
+                                                    onClick={(e) => userRole !== 'mandor' && toggleDropdown(project.id, e)}
+                                                    disabled={userRole === 'mandor'}
                                                     className={`px-2.5 py-1 rounded-full text-xs font-medium border flex items-center justify-center min-w-[100px] whitespace-nowrap transition-colors ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' :
                                                         project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' :
                                                             project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' :
                                                                 'bg-gray-700/50 text-gray-400 border-gray-600 hover:bg-gray-700'
-                                                        }`}
+                                                        } ${userRole === 'mandor' ? 'cursor-default' : 'cursor-pointer'}`}
                                                 >
                                                     {getStatusLabel(project.status)}
                                                 </button>
@@ -260,7 +270,7 @@ export default function ProjectsPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium text-gray-300">
-                                            {formatCurrency(project.value)}
+                                            {formatCurrency(userRole === 'mandor' ? project.value_mandor : project.value)}
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="w-full bg-gray-700 rounded-full h-2 mb-1">
@@ -269,7 +279,7 @@ export default function ProjectsPage() {
                                                     style={{ width: `${project.progress || 0}%` }}
                                                 ></div>
                                             </div>
-                                            <span className="text-xs text-gray-500">{project.progress || 0}% Complete</span>
+                                            <span className="text-xs text-gray-500">{project.progress || 0}% Selesai</span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -283,20 +293,24 @@ export default function ProjectsPage() {
                                                 <button
                                                     onClick={(e) => handleDownload(project.id, project.name, e)}
                                                     className="p-2 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition"
-                                                    title="Download Project"
+                                                    title="Unduh Proyek"
                                                 >
                                                     <Download size={16} />
                                                 </button>
-                                                <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Edit">
-                                                    <Edit size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => handleDelete(project.id, project.name, e)}
-                                                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
+                                                {userRole !== 'mandor' && (
+                                                    <>
+                                                        <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Edit">
+                                                            <Edit size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => handleDelete(project.id, project.name, e)}
+                                                            className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                                                            title="Hapus"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -307,10 +321,10 @@ export default function ProjectsPage() {
                 </div>
                 {/* Pagination */}
                 <div className="px-6 py-4 border-t border-gray-700 flex justify-between items-center bg-[#0F172A]/50">
-                    <p className="text-xs text-gray-400">Showing {filteredProjects.length} projects</p>
+                    <p className="text-xs text-gray-400">Menampilkan {filteredProjects.length} proyek</p>
                     <div className="flex gap-2">
-                        <button className="px-3 py-1 border border-gray-700 rounded bg-[#1E293B] text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-800" disabled>Previous</button>
-                        <button className="px-3 py-1 border border-gray-700 rounded bg-[#1E293B] text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-800" disabled>Next</button>
+                        <button className="px-3 py-1 border border-gray-700 rounded bg-[#1E293B] text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-800" disabled>Sebelumnya</button>
+                        <button className="px-3 py-1 border border-gray-700 rounded bg-[#1E293B] text-gray-300 text-xs disabled:opacity-50 hover:bg-gray-800" disabled>Berikutnya</button>
                     </div>
                 </div>
             </div>
