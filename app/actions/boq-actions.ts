@@ -231,6 +231,8 @@ export async function getProjectItems(projectId: string) {
         .order('created_at', { ascending: true })
         .limit(5000)
 
+    console.log(`FETCHED ${data?.length || 0} items for project ${projectId}`)
+
     if (error) {
         console.error('Error fetching project items:', error)
         return []
