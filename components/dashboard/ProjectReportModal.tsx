@@ -137,7 +137,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                     {mode === 'single' ? (
                         <div className="space-y-4">
                             {/* High-Contrast Header Section */}
-                            <div className="bg-slate-900 text-white p-4 rounded-[1.25rem] relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4 border border-white/5 shadow-2xl print:bg-slate-900 print:text-white">
+                            <div className="bg-slate-900 text-white py-3 px-5 rounded-[1.25rem] relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-3 border border-white/5 shadow-2xl print:bg-slate-900 print:text-white">
                                 <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[80px] -mr-20 -mt-20" />
 
                                 <div className="relative z-10 flex flex-col gap-1 transform-none w-full md:w-auto">
@@ -160,7 +160,7 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     </div>
                                 </div>
 
-                                <div className="relative z-10 flex items-center gap-4 bg-white/5 backdrop-blur-xl p-3 px-5 rounded-xl border border-white/10 shadow-[0_10px_20px_rgba(0,0,0,0.3)] shrink-0 w-full md:w-auto justify-between md:justify-start">
+                                <div className="relative z-10 flex items-center gap-4 bg-white/5 backdrop-blur-xl p-2.5 px-4 rounded-xl border border-white/10 shadow-[0_10px_20px_rgba(0,0,0,0.3)] shrink-0 w-full md:w-auto justify-between md:justify-start">
                                     <div className="w-32 sm:w-36">
                                         <div className="flex justify-between items-end mb-1">
                                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none opacity-60">Progres Global</span>

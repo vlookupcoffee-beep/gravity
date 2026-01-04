@@ -1,21 +1,6 @@
 'use server'
 
-export async function sendTelegramReport(data: any, target: 'private' | 'group') {
-    const token = process.env.BOT_TELEGRAM_TOKEN;
-    const privateId = process.env.TELEGRAM_PRIVATE_ID;
-    const groupId = process.env.TELEGRAM_GROUP_ID;
-
-    const chatId = target === 'private' ? privateId : groupId;
-
-    if (!token) {
-        throw new Error('Telegram Bot Token (BOT_TELEGRAM_TOKEN) is not configured in .env');
-    }
-
-    if (!chatId) {
-        throw new Error(`Telegram Chat ID for ${target} is not configured in .env. Please set TELEGRAM_${target === 'private' ? 'PRIVATE' : 'GROUP'}_ID`);
-    }
-
-    // Format the report
+export function formatProjectReport(data: any) {
     const reportDate = new Date().toLocaleDateString('id-ID', {
         day: '2-digit',
         month: 'long',
@@ -65,6 +50,27 @@ export async function sendTelegramReport(data: any, target: 'private' | 'group')
         message += `*Hari Ini:* ${data.dailyReport.today_activity || '-'}\n`;
         message += `*Besok:* ${data.dailyReport.tomorrow_plan || '-'}\n\n`;
     }
+
+    return message;
+}
+
+export async function sendTelegramReport(data: any, target: 'private' | 'group') {
+    const token = process.env.BOT_TELEGRAM_TOKEN;
+    const privateId = process.env.TELEGRAM_PRIVATE_ID;
+    const groupId = process.env.TELEGRAM_GROUP_ID;
+
+    const chatId = target === 'private' ? privateId : groupId;
+
+    if (!token) {
+        throw new Error('Telegram Bot Token (BOT_TELEGRAM_TOKEN) is not configured in .env');
+    }
+
+    if (!chatId) {
+        throw new Error(`Telegram Chat ID for ${target} is not configured in .env. Please set TELEGRAM_${target === 'private' ? 'PRIVATE' : 'GROUP'}_ID`);
+    }
+
+    // Format the report
+    const message = formatProjectReport(data);
 
     try {
         const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {

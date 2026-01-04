@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { parseTelegramMessage } from '@/utils/telegram-parser'
 import { syncPowProgressWithMaterials } from '@/app/actions/pow-sync-actions'
+import { getProjectDetails } from '@/app/actions/get-project-details'
+import { formatProjectReport } from '@/app/actions/telegram-actions'
 
 // Prevent caching for webhooks
 export const dynamic = 'force-dynamic'
@@ -41,9 +43,51 @@ export async function POST(request: NextRequest) {
         const text = update.message.text as string
         const chatId = update.message.chat.id
 
-        // Only process /lapor commands
+        // Case 1: /status command
+        if (text.startsWith('/status')) {
+            const projectName = text.replace('/status', '').trim()
+
+            if (!projectName) {
+                await sendTelegramReply(chatId, '❓ **Gunakan Format:** `/status NAMA PROJECT`')
+                return NextResponse.json({ message: 'Missing project name' }, { status: 200 })
+            }
+
+            const supabase = await createClient()
+            const { data: projects } = await supabase
+                .from('projects')
+                .select('id, name')
+                .ilike('name', `%${projectName}%`)
+                .limit(1)
+
+            if (!projects || projects.length === 0) {
+                await sendTelegramReply(chatId, `❌ **Proyek Tidak Ditemukan:** "*${projectName}*" tidak ada di database.`)
+                return NextResponse.json({ message: 'Project not found' }, { status: 200 })
+            }
+
+            const projectDetails = await getProjectDetails(projects[0].id)
+
+            // Calculate material ratio if possible (global ratio)
+            const materialSummary = projectDetails.materialSummary || []
+            let totalNeeded = 0
+            let totalUsed = 0
+            materialSummary.forEach((m: any) => {
+                totalNeeded += m.total_needed || 0
+                totalUsed += m.total_out || 0
+            })
+            const materialRatio = totalNeeded > 0 ? Math.round((totalUsed / totalNeeded) * 100) : 0
+
+            const reportMessage = formatProjectReport({
+                ...projectDetails,
+                materialRatio
+            })
+
+            await sendTelegramReply(chatId, reportMessage)
+            return NextResponse.json({ success: true }, { status: 200 })
+        }
+
+        // Case 2: /lapor command
         if (!text.startsWith('/lapor')) {
-            return NextResponse.json({ message: 'Not a report command' }, { status: 200 })
+            return NextResponse.json({ message: 'Not a recognized command' }, { status: 200 })
         }
 
         // Parse the message
