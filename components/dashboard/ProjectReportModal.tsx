@@ -135,49 +135,49 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                 {/* Dashboard Main Container */}
                 <div id="report-content" className="flex-1 overflow-y-auto print:overflow-visible bg-[#F8FAFC] p-4 sm:p-6 space-y-5">
                     {mode === 'single' ? (
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             {/* High-Contrast Header Section */}
-                            <div className="bg-slate-900 text-white p-8 rounded-[2rem] relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10 border border-white/5 shadow-2xl print:bg-slate-900 print:text-white">
-                                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] -mr-32 -mt-32" />
+                            <div className="bg-slate-900 text-white p-5 rounded-[1.5rem] relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6 border border-white/5 shadow-2xl print:bg-slate-900 print:text-white">
+                                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[100px] -mr-32 -mt-32" />
 
-                                <div className="relative z-10 flex flex-col gap-2 scale-105 origin-left">
-                                    <div className="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.3em] bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit drop-shadow-sm">
+                                <div className="relative z-10 flex flex-col gap-1.5 transform-none">
+                                    <div className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.3em] bg-blue-500/20 text-blue-400 border border-blue-400/20 w-fit">
                                         Intelijen Strategis
                                     </div>
-                                    <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-none uppercase text-white drop-shadow-2xl">
+                                    <h1 className="text-xl sm:text-2xl font-black tracking-tight leading-tight uppercase text-white drop-shadow-2xl max-w-2xl">
                                         {data.name}
                                     </h1>
-                                    <div className="flex items-center gap-5 text-slate-500 text-[11px] font-black uppercase tracking-[0.2em] mt-2">
-                                        <div className="flex items-center gap-2 bg-white/5 py-1.5 px-3 rounded-lg">
-                                            <div className={`w-2 h-2 rounded-full ${data.status === 'completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
-                                            <span className="text-slate-300">{data.status === 'completed' ? 'SELESAI' : 'AKTIF'}</span>
+                                    <div className="flex items-center gap-4 text-slate-500 text-xs font-black uppercase tracking-[0.2em] mt-1">
+                                        <div className="flex items-center gap-2 bg-white/5 py-1 px-2.5 rounded-lg">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${data.status === 'completed' ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></div>
+                                            <span className="text-slate-300 text-[10px]">{data.status === 'completed' ? 'SELESAI' : 'AKTIF'}</span>
                                         </div>
-                                        <span className="text-white/10 text-2xl font-light">|</span>
-                                        <div className="flex items-center gap-2">
-                                            <Clock size={16} className="text-blue-500/60" />
+                                        <span className="text-white/10 text-xl font-light">|</span>
+                                        <div className="flex items-center gap-2 text-[10px]">
+                                            <Clock size={14} className="text-blue-500/60" />
                                             <span>{reportDate}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 bg-white/5 backdrop-blur-xl p-6 px-8 rounded-[1.5rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] shrink-0 transform hover:scale-105 transition-all">
-                                    <div className="w-40">
-                                        <div className="flex justify-between items-end mb-2.5">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] leading-none opacity-60">Progres Global</span>
-                                            <span className="text-2xl font-black text-blue-400 leading-none drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">{data.progress || 0}%</span>
+                                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 bg-white/5 backdrop-blur-xl p-4 px-6 rounded-xl border border-white/10 shadow-[0_15px_30px_rgba(0,0,0,0.3)] shrink-0">
+                                    <div className="w-36">
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none opacity-60">Progres Global</span>
+                                            <span className="text-xl font-black text-blue-400">{data.progress || 0}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 shadow-inner p-0.5" title="Berdasarkan fisik pekerjaan (PoW)">
-                                            <div className="bg-gradient-to-r from-blue-600 to-blue-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(59,130,246,0.4)]" style={{ width: `${data.progress || 0}%` }} />
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5 p-0.5">
+                                            <div className="bg-gradient-to-r from-blue-600 to-blue-400 h-full rounded-full transition-all duration-1000" style={{ width: `${data.progress || 0}%` }} />
                                         </div>
                                     </div>
-                                    <div className="h-10 w-px bg-white/10 hidden md:block" />
-                                    <div className="w-40">
-                                        <div className="flex justify-between items-end mb-2.5">
-                                            <span className="text-[10px] font-black text-amber-400 uppercase tracking-[0.3em] leading-none opacity-60">Progres Sipil</span>
-                                            <span className="text-2xl font-black text-amber-500 leading-none drop-shadow-[0_0_10px_rgba(245,158,11,0.5)]">{materialRatio}%</span>
+                                    <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                                    <div className="w-36">
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <span className="text-[9px] font-black text-amber-400 uppercase tracking-[0.2em] leading-none opacity-60">Progres Sipil</span>
+                                            <span className="text-xl font-black text-amber-500">{materialRatio}%</span>
                                         </div>
-                                        <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden border border-white/5 shadow-inner p-0.5" title="Berdasarkan konsumsi material">
-                                            <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(245,158,11,0.4)]" style={{ width: `${materialRatio}%` }} />
+                                        <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5 p-0.5">
+                                            <div className="bg-gradient-to-r from-amber-600 to-amber-400 h-full rounded-full transition-all duration-1000" style={{ width: `${materialRatio}%` }} />
                                         </div>
                                     </div>
                                 </div>
@@ -187,9 +187,9 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
                                 {/* LEFT COLUMN (POW + DAILY) */}
-                                <div className="lg:col-span-4 space-y-5">
+                                <div className="lg:col-span-4 space-y-4">
                                     {/* Execution Timeline */}
-                                    <div className="space-y-3">
+                                    <div className="space-y-2">
                                         <div className="flex items-center gap-2.5 px-1 border-l-4 border-blue-600 pl-3">
                                             <div>
                                                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Tahapan Eksekusi</h3>
@@ -226,11 +226,11 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                                     </div>
 
                                     {/* Daily Feedback Section */}
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-2.5 px-1 border-l-4 border-indigo-600 pl-3">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 px-1 border-l-4 border-indigo-600 pl-3">
                                             <div>
-                                                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">Ringkasan Harian</h3>
-                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Input Lapangan Terakhir</p>
+                                                <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-tight">Ringkasan Harian</h3>
+                                                <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Input Lapangan Terakhir</p>
                                             </div>
                                         </div>
                                         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-md">
