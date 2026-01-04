@@ -220,7 +220,7 @@ export async function bulkCreateMaterials(materials: { name: string; description
                             material_id: mat.id,
                             quantity_needed: m.initial_stock,
                             updated_at: new Date().toISOString()
-                        }, { onConflict: 'project_id, material_id' })
+                        }, { onConflict: 'project_id,material_id' })
 
                     if (reqError) {
                         errors.push({ name: m.name, error: `Requirement Update Failed: ${reqError.message}` })
@@ -438,7 +438,7 @@ export async function updateMaterialRequirement(projectId: string, materialId: s
                 material_id: materialId,
                 quantity_needed: quantity,
                 updated_at: new Date().toISOString()
-            }, { onConflict: 'project_id, material_id' })
+            }, { onConflict: 'project_id,material_id' })
 
         if (error) throw error
 

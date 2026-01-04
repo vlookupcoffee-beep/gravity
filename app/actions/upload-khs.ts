@@ -101,7 +101,7 @@ export async function uploadKHS(formData: FormData) {
     // 3. Bulk Insert Items
     const { error: insertError } = await supabase
         .from('khs_items')
-        .upsert(itemsToInsert, { onConflict: 'provider_id, item_code' })
+        .upsert(itemsToInsert, { onConflict: 'provider_id,item_code' })
 
     if (insertError) {
         console.error('Insert Error:', insertError)

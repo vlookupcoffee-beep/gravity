@@ -83,17 +83,16 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
     const text = await file.text()
     const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0)
 
-    // Assume Header: Item Code; Quantity OR Item Code, Quantity
-    // Skip header if it looks like header
+    // Skip header
     const startIndex = lines[0].toLowerCase().includes('item') ? 1 : 0
 
-    // 3. Get Existing Project Items to MERGE
+    // 3. Get Existing Project Items to MERGE by item_code
     const { data: existingProjectItems } = await supabase
         .from('project_items')
         .select('*')
         .eq('project_id', projectId)
 
-    const existingMap = new Map((existingProjectItems || []).map(i => [i.khs_item_id, i]))
+    const existingMap = new Map((existingProjectItems || []).map(i => [i.item_code, i]))
     const itemsToUpsert = []
     let skippedCount = 0
 
@@ -115,17 +114,27 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
 
         const khsItem = khsMap.get(code)
         if (khsItem) {
-            const existing = existingMap.get(khsItem.id)
+            const existing = existingMap.get(code)
 
             if (existing) {
-                // UPDATE Existing
-                itemsToUpsert.push({
+                // UPDATE Existing (Side-by-Side Merge)
+                const updatedItem = {
                     ...existing,
-                    unit_price: khsItem.price,
-                    unit_price_mandor: khsItem.price_mandor || 0,
-                    quantity: uploadType === 'vendor' ? quantity : existing.quantity,
-                    quantity_mandor: uploadType === 'mandor' ? quantity : existing.quantity_mandor
-                })
+                    khs_item_id: khsItem.id, // Update KHS reference to the latest used
+                    item_code: khsItem.item_code,
+                    description: khsItem.description,
+                    unit: khsItem.unit,
+                }
+
+                if (uploadType === 'vendor') {
+                    updatedItem.unit_price = khsItem.price
+                    updatedItem.quantity = quantity
+                } else {
+                    // Mandor import: Use price_mandor if exists, otherwise use the price column from this CSV
+                    updatedItem.unit_price_mandor = khsItem.price_mandor || khsItem.price
+                    updatedItem.quantity_mandor = quantity
+                }
+                itemsToUpsert.push(updatedItem)
             } else {
                 // NEW Item
                 itemsToUpsert.push({
@@ -134,8 +143,8 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
                     item_code: khsItem.item_code,
                     description: khsItem.description,
                     unit: khsItem.unit,
-                    unit_price: khsItem.price,
-                    unit_price_mandor: khsItem.price_mandor || 0,
+                    unit_price: uploadType === 'vendor' ? khsItem.price : 0,
+                    unit_price_mandor: uploadType === 'mandor' ? (khsItem.price_mandor || khsItem.price) : (khsItem.price_mandor || 0),
                     quantity: uploadType === 'vendor' ? quantity : 0,
                     quantity_mandor: uploadType === 'mandor' ? quantity : 0,
                     progress: 0
@@ -150,16 +159,17 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         return { success: false, error: 'No valid items found to insert. Check CSV format (Item Code, Quantity)' }
     }
 
-    // 4. Upsert Items
+    // 4. Upsert Items (Conflict on item_code)
     const { error } = await supabase
         .from('project_items')
-        .upsert(itemsToUpsert, { onConflict: 'project_id, khs_item_id' })
+        .upsert(itemsToUpsert, { onConflict: 'project_id,item_code' })
 
     if (error) {
+        console.error('Upsert Error:', error)
         return { success: false, error: error.message }
     }
 
-    // 4. Update Value
+    // 5. Update Project totals
     await updateProjectValue(projectId)
     revalidatePath(`/dashboard/projects/${projectId}`)
 
@@ -172,18 +182,19 @@ export async function addProjectItem(projectId: string, khsItem: any, quantity: 
 
     const uploadType = (khsItem as any).uploadType || 'vendor'
 
-    // Check if exists
+    // Check if exists by item_code
     const { data: existing } = await supabase
         .from('project_items')
         .select('*')
         .eq('project_id', projectId)
-        .eq('khs_item_id', khsItem.id)
-        .single()
+        .eq('item_code', khsItem.item_code)
+        .maybeSingle()
 
     const itemToUpsert = existing ? {
         ...existing,
-        unit_price: khsItem.price,
-        unit_price_mandor: khsItem.price_mandor || 0,
+        khs_item_id: khsItem.id,
+        unit_price: uploadType === 'vendor' ? khsItem.price : existing.unit_price,
+        unit_price_mandor: uploadType === 'mandor' ? (khsItem.price_mandor || khsItem.price) : existing.unit_price_mandor,
         quantity: uploadType === 'vendor' ? quantity : existing.quantity,
         quantity_mandor: uploadType === 'mandor' ? quantity : existing.quantity_mandor
     } : {
@@ -192,8 +203,8 @@ export async function addProjectItem(projectId: string, khsItem: any, quantity: 
         item_code: khsItem.item_code,
         description: khsItem.description,
         unit: khsItem.unit,
-        unit_price: khsItem.price,
-        unit_price_mandor: khsItem.price_mandor || 0,
+        unit_price: uploadType === 'vendor' ? khsItem.price : 0,
+        unit_price_mandor: uploadType === 'mandor' ? (khsItem.price_mandor || khsItem.price) : (khsItem.price_mandor || 0),
         quantity: uploadType === 'vendor' ? quantity : 0,
         quantity_mandor: uploadType === 'mandor' ? quantity : 0,
         progress: 0
@@ -201,7 +212,7 @@ export async function addProjectItem(projectId: string, khsItem: any, quantity: 
 
     const { error } = await supabase
         .from('project_items')
-        .upsert(itemToUpsert, { onConflict: 'project_id, khs_item_id' })
+        .upsert(itemToUpsert, { onConflict: 'project_id,item_code' })
 
     if (error) {
         console.error('Error adding project item:', error)
@@ -212,6 +223,7 @@ export async function addProjectItem(projectId: string, khsItem: any, quantity: 
     revalidatePath(`/dashboard/projects/${projectId}`)
     return { success: true }
 }
+
 
 // Delete an item from Project BOQ
 export async function deleteProjectItem(itemId: string, projectId: string) {
