@@ -86,10 +86,10 @@ export default function DashboardSidebar() {
                 <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
                     {[
                         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                        { href: '/dashboard/projects', label: 'Projects List', icon: FolderKanban },
-                        { href: '/dashboard/khs', label: 'Price Lists', icon: Receipt },
-                        { href: '/dashboard/materials', label: 'Resources', icon: Package },
-                        { href: '/dashboard/map', label: 'Geo Intelligence', icon: MapIcon },
+                        { href: '/dashboard/projects', label: 'Daftar Proyek', icon: FolderKanban },
+                        { href: '/dashboard/khs', label: 'Daftar Harga (KHS)', icon: Receipt },
+                        { href: '/dashboard/materials', label: 'Material', icon: Package },
+                        { href: '/dashboard/map', label: 'Peta Geospasial', icon: MapIcon },
                     ].map((item) => (
                         <Link
                             key={item.href}
@@ -115,7 +115,7 @@ export default function DashboardSidebar() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-xs font-black text-white truncate uppercase tracking-tighter">
-                                        {user.full_name || 'Protocol Admin'}
+                                        {user.full_name || 'Admin Protokol'}
                                     </p>
                                     <p className="text-[10px] text-gray-500 truncate font-bold">{user.username}</p>
                                 </div>
@@ -129,7 +129,7 @@ export default function DashboardSidebar() {
                         className="flex items-center gap-4 px-4 py-3 text-gray-500 rounded-xl hover:bg-red-500/10 hover:text-red-400 w-full transition-all duration-200 font-bold text-sm"
                     >
                         <LogOut size={20} />
-                        <span>Terminate Session</span>
+                        <span>Keluar Sesi</span>
                     </button>
                 </div>
             </aside>

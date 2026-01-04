@@ -72,8 +72,8 @@ export default function DashboardPage() {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-white tracking-tight">Dashboard Overview</h1>
-                    <p className="text-gray-400 mt-1 font-medium italic">Monitoring your project evolution in real-time.</p>
+                    <h1 className="text-3xl font-extrabold text-white tracking-tight">Ringkasan Dashboard</h1>
+                    <p className="text-gray-400 mt-1 font-medium italic">Memantau evolusi proyek Anda secara real-time.</p>
                 </div>
                 <div className="flex gap-3">
                     {userRole !== 'mandor' && (
@@ -83,14 +83,14 @@ export default function DashboardPage() {
                                 className="bg-[#1E293B]/50 backdrop-blur-md text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-gray-700 transition-all border border-gray-700/50 shadow-lg active:scale-95"
                             >
                                 <FileText size={18} className="text-blue-400" />
-                                <span className="font-semibold text-sm">Global Report</span>
+                                <span className="font-semibold text-sm">Laporan Global</span>
                             </button>
                             <Link
                                 href="/dashboard/projects/new"
                                 className="bg-gradient-to-br from-blue-600 to-blue-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:from-blue-500 hover:to-blue-600 transition-all shadow-xl shadow-blue-900/40 active:scale-95 border border-blue-400/20"
                             >
                                 <Plus size={18} />
-                                <span className="font-semibold text-sm">New Project</span>
+                                <span className="font-semibold text-sm">Proyek Baru</span>
                             </Link>
                         </>
                     )}
@@ -100,22 +100,22 @@ export default function DashboardPage() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                 <StatsCard
-                    label="Active Nodes"
+                    label="Titik Aktif"
                     value={totalProjects}
                     icon={Database}
                 />
                 <StatsCard
-                    label="Milestones Met"
+                    label="Milestone Tercapai"
                     value={completedProjects}
                     icon={CheckCircle}
                 />
                 <StatsCard
-                    label="In Execution"
+                    label="Dalam Pengerjaan"
                     value={inProgressProjects}
                     icon={Activity}
                 />
                 <StatsCard
-                    label={userRole === 'mandor' ? "Accumulated Mandor" : "Global Portfolio Value"}
+                    label={userRole === 'mandor' ? "Akumulasi Mandor" : "Nilai Portofolio Global"}
                     value={formatCurrency(totalValue)}
                     icon={TrendingUp}
                     className="sm:col-span-2 lg:col-span-2 bg-gradient-to-br from-[#1E293B] via-[#1E293B] to-[#0F172A] border-blue-500/20 shadow-blue-500/5"
@@ -130,17 +130,17 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-center mb-6">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-8 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
-                            <h2 className="text-xl font-bold text-white tracking-tight italic">Operations Roadmap</h2>
+                            <h2 className="text-xl font-bold text-white tracking-tight italic">Roadmap Operasional</h2>
                         </div>
                         <Link href="/dashboard/projects" className="bg-[#0F172A]/50 border border-gray-700/50 text-blue-400 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-500/10 transition-all uppercase tracking-widest">
-                            Archive List
+                            Arsip Daftar
                         </Link>
                     </div>
                     {/* Search Bar */}
                     <div className="relative group">
                         <input
                             type="text"
-                            placeholder="Find specific project sequence..."
+                            placeholder="Cari urutan proyek spesifik..."
                             className="w-full bg-[#0F172A]/80 border border-gray-700/50 text-white rounded-xl px-4 py-3 pl-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
                             onChange={(e) => {
                                 const searchTerm = e.target.value.toLowerCase()
@@ -165,30 +165,30 @@ export default function DashboardPage() {
                             <thead className="bg-[#0F172A]/80 backdrop-blur-md text-gray-400 font-bold border-b border-gray-700/50 uppercase tracking-widest text-[10px]">
                                 <tr>
                                     <th className="px-6 py-4 sticky left-0 bg-[#0F172A] z-20 border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">No</th>
-                                    <th className="px-6 py-4 sticky left-14 bg-[#0F172A] z-20 min-w-[240px] border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">Project Designation</th>
-                                    <th className="px-6 py-4 sticky left-[294px] bg-[#0F172A] z-20 text-center border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">Progress</th>
+                                    <th className="px-6 py-4 sticky left-14 bg-[#0F172A] z-20 min-w-[240px] border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">Penamaan Proyek</th>
+                                    <th className="px-6 py-4 sticky left-[294px] bg-[#0F172A] z-20 text-center border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">Progres</th>
                                     <th className="px-4 py-4 text-center bg-blue-500/10 border-l border-gray-700 group/h" colSpan={3}>
                                         <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
                                             <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse"></span>
-                                            PHASE 1: PREPARATION
+                                            TAHAP 1: PERSIAPAN
                                         </div>
                                     </th>
                                     <th className="px-4 py-4 text-center bg-purple-500/10 border-l border-gray-700 group/h" colSpan={4}>
                                         <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
                                             <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)] animate-pulse"></span>
-                                            PHASE 2: LOGISTICS
+                                            TAHAP 2: LOGISTIK
                                         </div>
                                     </th>
                                     <th className="px-4 py-4 text-center bg-orange-500/10 border-l border-gray-700 group/h" colSpan={6}>
                                         <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
                                             <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse"></span>
-                                            PHASE 3: DEPLOYMENT
+                                            TAHAP 3: PEMASANGAN
                                         </div>
                                     </th>
                                     <th className="px-4 py-4 text-center bg-green-500/10 border-l border-gray-700 group/h">
                                         <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
                                             <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></span>
-                                            PHASE 4: CLOSING
+                                            TAHAP 4: PENUTUPAN
                                         </div>
                                     </th>
                                 </tr>
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                                                 <div className="flex flex-col gap-1 w-full min-w-[100px]">
                                                     <div className="flex justify-between items-end">
                                                         <span className={`text-[10px] font-black tracking-tighter ${overallProgress === 100 ? 'text-green-400' : 'text-gray-400'}`}>
-                                                            {overallProgress === 100 ? 'SUCCESS' : 'EXECUTING'}
+                                                            {overallProgress === 100 ? 'SELESAI' : 'BERJALAN'}
                                                         </span>
                                                         <span className="text-[11px] font-black text-white">{overallProgress}%</span>
                                                     </div>

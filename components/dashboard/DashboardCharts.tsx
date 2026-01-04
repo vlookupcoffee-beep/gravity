@@ -40,7 +40,7 @@ export default function DashboardCharts({ projects }: DashboardChartsProps) {
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
                         <div className="w-1.5 h-4 bg-blue-500 rounded-full"></div>
-                        Project Velocity
+                        Veloistas Proyek
                     </h3>
                 </div>
                 <div className="h-[300px] w-full">
@@ -87,7 +87,7 @@ export default function DashboardCharts({ projects }: DashboardChartsProps) {
                 <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
                         <div className="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
-                        Portfolio Flux
+                        Fluktuasi Portofolio
                     </h3>
                 </div>
                 <div className="h-[300px] w-full">
