@@ -20,6 +20,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-leaflet": "^5.0.0",
+    "recharts": "^2.15.0",
     "server-only": "^0.0.1",
     "xml2js": "^0.6.2"
   },
