@@ -43,7 +43,30 @@ export async function POST(request: NextRequest) {
         const text = update.message.text as string
         const chatId = update.message.chat.id
 
-        // Case 1: /status command
+        // Case 1: /project command - List all projects
+        if (text.startsWith('/project')) {
+            const supabase = await createClient()
+            const { data: projects } = await supabase
+                .from('projects')
+                .select('name')
+                .order('name', { ascending: true })
+
+            if (!projects || projects.length === 0) {
+                await sendTelegramReply(chatId, '📭 **Belum ada proyek** yang terdaftar di database.')
+                return NextResponse.json({ message: 'No projects found' }, { status: 200 })
+            }
+
+            let listMessage = `📋 **DAFTAR PROYEK AKTIF**\n\n`;
+            projects.forEach((p: any, index: number) => {
+                listMessage += `${index + 1}. \`${p.name}\`\n`;
+            });
+            listMessage += `\n💡 *Gunakan \`/status Nama Proyek\` untuk melihat detail.*`;
+
+            await sendTelegramReply(chatId, listMessage)
+            return NextResponse.json({ success: true }, { status: 200 })
+        }
+
+        // Case 2: /status command
         if (text.startsWith('/status')) {
             const projectName = text.replace('/status', '').trim()
 
