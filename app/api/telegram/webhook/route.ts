@@ -346,9 +346,8 @@ export async function POST(request: NextRequest) {
                 .ilike('name', `%${projectName}%`)
                 .limit(1)
 
-            if (allowedProjectIds.length > 0) {
-                query = query.in('id', allowedProjectIds)
-            }
+            // Strictly filter by allowed projects
+            query = query.in('id', allowedProjectIds)
 
             const { data: projects } = await query
 
@@ -398,9 +397,8 @@ export async function POST(request: NextRequest) {
             .ilike('name', `%${reportData.siteName}%`)
             .limit(1)
 
-        if (allowedProjectIds.length > 0) {
-            query = query.in('id', allowedProjectIds)
-        }
+        // Strictly filter by allowed projects
+        query = query.in('id', allowedProjectIds)
 
         const { data: projects } = await query
 
