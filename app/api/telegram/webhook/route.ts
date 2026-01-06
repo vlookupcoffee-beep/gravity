@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
         // If not, we block all commands EXCEPT /start which is used to identify the ID.
         const { data: authUser, error: authError } = await supabase
             .from('telegram_authorized_users')
-            .select('telegram_id, is_active')
+            .select('telegram_id, is_active, is_admin')
             .eq('telegram_id', userId)
             .single()
 
@@ -250,6 +250,39 @@ export async function POST(request: NextRequest) {
         if (!isAuthorized) {
             await sendTelegramReply(chatId, `🚫 **Akses Ditolak.**\n\nID \`${userId}\` belum terdaftar. Silakan hubungi admin untuk aktivasi akses.`)
             return NextResponse.json({ message: 'Unauthorized' }, { status: 200 })
+        }
+
+        // --- ADMIN COMMANDS ---
+        if (text.startsWith('/manage') && authUser.is_admin) {
+            const targetUserId = text.replace('/manage', '').trim()
+            if (!targetUserId || isNaN(Number(targetUserId))) {
+                await sendTelegramReply(chatId, "❓ **Gunakan Format:** `/manage ID_TELEGRAM_USER`")
+                return NextResponse.json({ message: 'Invalid target ID' }, { status: 200 })
+            }
+
+            // Register user if not exists
+            await supabase.from('telegram_authorized_users').upsert({
+                telegram_id: targetUserId,
+                name: `User ${targetUserId}`,
+                is_active: true
+            })
+
+            // Show Project Selection Menu
+            const { data: projects } = await supabase.from('projects').select('id, name').order('name')
+            const { data: allowed } = await supabase.from('telegram_user_projects').select('project_id').eq('telegram_id', targetUserId)
+            const allowedIds = allowed?.map(a => a.project_id) || []
+
+            const buttons = projects?.map(p => ([{
+                text: `${allowedIds.includes(p.id) ? '✅' : '❌'} ${p.name}`,
+                callback_data: `toggle:${targetUserId}:${p.id}`
+            }])) || []
+
+            buttons.push([{ text: "💾 Simpan & Selesai", callback_data: `done:${targetUserId}` }])
+
+            await sendTelegramReply(chatId, `🛠 **Atur Akses Proyek**\nUser: \`${targetUserId}\`\n\nKlik nama proyek untuk mengaktifkan/menonaktifkan:`, {
+                inline_keyboard: buttons
+            })
+            return NextResponse.json({ success: true }, { status: 200 })
         }
 
         // Case 1: /project command - List all projects
