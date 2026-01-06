@@ -8,8 +8,8 @@ import { formatProjectReport } from '@/app/actions/telegram-actions'
 // Prevent caching for webhooks
 export const dynamic = 'force-dynamic'
 
-// Helper to send message back to Telegram
-async function sendTelegramReply(chatId: number, text: string) {
+// Helper to send message with optional buttons
+async function sendTelegramReply(chatId: number, text: string, replyMarkup?: any) {
     const token = process.env.BOT_TELEGRAM_TOKEN
     if (!token) {
         console.error('BOT_TELEGRAM_TOKEN not set')
@@ -23,7 +23,8 @@ async function sendTelegramReply(chatId: number, text: string) {
             body: JSON.stringify({
                 chat_id: chatId,
                 text: text,
-                parse_mode: 'Markdown'
+                parse_mode: 'Markdown',
+                reply_markup: replyMarkup
             })
         })
     } catch (e) {
@@ -31,9 +32,172 @@ async function sendTelegramReply(chatId: number, text: string) {
     }
 }
 
+// Helper to edit existing message
+async function editTelegramMessage(chatId: number, messageId: number, text: string, replyMarkup?: any) {
+    const token = process.env.BOT_TELEGRAM_TOKEN
+    if (!token) return
+
+    try {
+        await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                message_id: messageId,
+                text: text,
+                parse_mode: 'Markdown',
+                reply_markup: replyMarkup
+            })
+        })
+    } catch (e) {
+        console.error('Failed to edit Telegram message:', e)
+    }
+}
+
+// Helper to answer callback query
+async function answerCallbackQuery(callbackQueryId: string, text?: string) {
+    const token = process.env.BOT_TELEGRAM_TOKEN
+    if (!token) return
+
+    try {
+        await fetch(`https://api.telegram.org/bot${token}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                callback_query_id: callbackQueryId,
+                text: text
+            })
+        })
+    } catch (e) {
+        console.error('Failed to answer callback query:', e)
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         const update = await request.json()
+        const supabase = await createClient()
+
+        // --- HANDLE CALLBACK QUERIES ---
+        if (update.callback_query) {
+            const callbackQuery = update.callback_query
+            const data = callbackQuery.data as string
+            const chatId = callbackQuery.message.chat.id
+            const messageId = callbackQuery.message.message_id
+            const adminId = callbackQuery.from.id
+
+            // Check if requester is Admin
+            const { data: adminUser } = await supabase
+                .from('telegram_authorized_users')
+                .select('is_admin')
+                .eq('telegram_id', adminId)
+                .single()
+
+            if (!adminUser?.is_admin) {
+                await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
+                return NextResponse.json({ success: true })
+            }
+
+            // Callback Logic: approve:[userId]
+            if (data.startsWith('approve:')) {
+                const targetUserId = data.split(':')[1]
+                const name = callbackQuery.message.text.split('\n')[0].replace('📩 Permintaan Akses dari: ', '').trim()
+
+                // Register user
+                await supabase.from('telegram_authorized_users').upsert({
+                    telegram_id: targetUserId,
+                    name: name || `User ${targetUserId}`,
+                    is_active: true
+                })
+
+                await answerCallbackQuery(callbackQuery.id, "✅ User Disetujui!")
+
+                // Show Project Selection Menu
+                const { data: projects } = await supabase.from('projects').select('id, name').order('name')
+                const { data: allowed } = await supabase.from('telegram_user_projects').select('project_id').eq('telegram_id', targetUserId)
+                const allowedIds = allowed?.map(a => a.project_id) || []
+
+                const buttons = projects?.map(p => ([{
+                    text: `${allowedIds.includes(p.id) ? '✅' : '❌'} ${p.name}`,
+                    callback_data: `toggle:${targetUserId}:${p.id}`
+                }])) || []
+
+                buttons.push([{ text: "💾 Simpan & Selesai", callback_data: `done:${targetUserId}` }])
+
+                await editTelegramMessage(chatId, messageId, `🛠 **Atur Akses Proyek**\nUser: \`${targetUserId}\`\n\nKlik nama proyek untuk mengaktifkan/menonaktifkan:`, {
+                    inline_keyboard: buttons
+                })
+            }
+
+            // Callback Logic: toggle:[userId]:[projectId]
+            if (data.startsWith('toggle:')) {
+                const [_, targetUserId, projectId] = data.split(':')
+
+                // Check if already exists
+                const { data: exists } = await supabase
+                    .from('telegram_user_projects')
+                    .select('*')
+                    .eq('telegram_id', targetUserId)
+                    .eq('project_id', projectId)
+                    .single()
+
+                if (exists) {
+                    await supabase.from('telegram_user_projects').delete().eq('telegram_id', targetUserId).eq('project_id', projectId)
+                } else {
+                    await supabase.from('telegram_user_projects').insert({ telegram_id: targetUserId, project_id: projectId })
+                }
+
+                // Update Menu
+                const { data: projects } = await supabase.from('projects').select('id, name').order('name')
+                const { data: allowed } = await supabase.from('telegram_user_projects').select('project_id').eq('telegram_id', targetUserId)
+                const allowedIds = allowed?.map(a => a.project_id) || []
+
+                const buttons = projects?.map(p => ([{
+                    text: `${allowedIds.includes(p.id) ? '✅' : '❌'} ${p.name}`,
+                    callback_data: `toggle:${targetUserId}:${p.id}`
+                }])) || []
+
+                buttons.push([{ text: "💾 Simpan & Selesai", callback_data: `done:${targetUserId}` }])
+
+                await editTelegramMessage(chatId, messageId, `🛠 **Atur Akses Proyek**\nUser: \`${targetUserId}\`\n\nKlik nama proyek untuk mengaktifkan/menonaktifkan:`, {
+                    inline_keyboard: buttons
+                })
+                await answerCallbackQuery(callbackQuery.id)
+            }
+
+            // Callback Logic: done:[userId]
+            if (data.startsWith('done:')) {
+                const targetUserId = data.split(':')[1]
+                await editTelegramMessage(chatId, messageId, `✅ **Selesai!**\nUser \`${targetUserId}\` telah dikonfigurasi.`)
+                await answerCallbackQuery(callbackQuery.id)
+
+                // Notify the user
+                await sendTelegramReply(Number(targetUserId), "🎉 **Akses Anda telah diaktifkan!**\nSilakan gunakan perintah `/project` untuk mulai.")
+            }
+
+            // Handle "Request Access" button from user
+            if (data.startsWith('request_access:')) {
+                const userId = callbackQuery.from.id
+                const name = `${callbackQuery.from.first_name || ''} ${callbackQuery.from.last_name || ''}`.trim()
+
+                // Find Admin
+                const { data: admins } = await supabase.from('telegram_authorized_users').select('telegram_id').eq('is_admin', true)
+
+                if (admins && admins.length > 0) {
+                    for (const admin of admins) {
+                        await sendTelegramReply(Number(admin.telegram_id), `📩 Permintaan Akses dari: *${name}*\nID: \`${userId}\``, {
+                            inline_keyboard: [[{ text: "✅ Setujui & Atur Proyek", callback_data: `approve:${userId}` }]]
+                        })
+                    }
+                    await answerCallbackQuery(callbackQuery.id, "📨 Permintaan terkirim ke Admin.")
+                    await editTelegramMessage(chatId, messageId, `👋 **Halo!**\n\nPermintaan akses Anda telah dikirim ke Admin. Tunggu konfirmasi.`)
+                } else {
+                    await answerCallbackQuery(callbackQuery.id, "❌ Admin belum diset. Hubungi pengembang.")
+                }
+            }
+
+            return NextResponse.json({ success: true })
+        }
 
         // Basic validation of Telegram Update structure
         if (!update.message || !update.message.text) {
@@ -42,14 +206,68 @@ export async function POST(request: NextRequest) {
 
         const text = update.message.text as string
         const chatId = update.message.chat.id
+        const userId = update.message.from?.id
+
+        // --- AUTHORIZATION CHECK ---
+        // We check if the sender (userId) is in the authorized list.
+        // If not, we block all commands EXCEPT /start which is used to identify the ID.
+        const { data: authUser, error: authError } = await supabase
+            .from('telegram_authorized_users')
+            .select('telegram_id, is_active')
+            .eq('telegram_id', userId)
+            .single()
+
+        const isAuthorized = authUser && authUser.is_active
+
+        // Fetch allowed projects for this user
+        const { data: allowedProjectsData } = await supabase
+            .from('telegram_user_projects')
+            .select('project_id')
+            .eq('telegram_id', userId)
+
+        const allowedProjectIds = allowedProjectsData?.map(p => p.project_id) || []
+
+        // Case: /start command - Show Telegram ID
+        if (text.startsWith('/start')) {
+            let startMessage = `👋 **Halo!**\n\n`
+            startMessage += `ID Telegram Anda adalah: \`${userId}\`\n\n`
+
+            if (isAuthorized) {
+                startMessage += `✅ Anda terdaftar sebagai pengguna **resmi**.\n`
+                startMessage += `📊 Anda memiliki akses ke **${allowedProjectIds.length} proyek**.`
+                await sendTelegramReply(chatId, startMessage)
+            } else {
+                startMessage += `⚠️ Anda **belum terdaftar** sebagai pengguna resmi.`
+                await sendTelegramReply(chatId, startMessage, {
+                    inline_keyboard: [[{ text: "🙋‍♂️ Minta Akses", callback_data: `request_access:${userId}` }]]
+                })
+            }
+
+            return NextResponse.json({ success: true }, { status: 200 })
+        }
+
+        // Block unauthorized users from other commands
+        if (!isAuthorized) {
+            await sendTelegramReply(chatId, `🚫 **Akses Ditolak.**\n\nID \`${userId}\` belum terdaftar. Silakan hubungi admin untuk aktivasi akses.`)
+            return NextResponse.json({ message: 'Unauthorized' }, { status: 200 })
+        }
 
         // Case 1: /project command - List all projects
         if (text.startsWith('/project')) {
-            const supabase = await createClient()
-            const { data: projects } = await supabase
+            let query = supabase
                 .from('projects')
                 .select('name')
                 .order('name', { ascending: true })
+
+            // Filter by allowed projects if not empty
+            if (allowedProjectIds.length > 0) {
+                query = query.in('id', allowedProjectIds)
+            } else {
+                await sendTelegramReply(chatId, '📭 **Akses Terbatas**: Anda belum ditugaskan ke proyek manapun. Hubungi admin.')
+                return NextResponse.json({ message: 'No assigned projects' }, { status: 200 })
+            }
+
+            const { data: projects } = await query
 
             if (!projects || projects.length === 0) {
                 await sendTelegramReply(chatId, '📭 **Belum ada proyek** yang terdaftar di database.')
@@ -75,16 +293,21 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ message: 'Missing project name' }, { status: 200 })
             }
 
-            const supabase = await createClient()
-            const { data: projects } = await supabase
+            let query = supabase
                 .from('projects')
                 .select('id, name')
                 .ilike('name', `%${projectName}%`)
                 .limit(1)
 
+            if (allowedProjectIds.length > 0) {
+                query = query.in('id', allowedProjectIds)
+            }
+
+            const { data: projects } = await query
+
             if (!projects || projects.length === 0) {
-                await sendTelegramReply(chatId, `❌ **Proyek Tidak Ditemukan:** "*${projectName}*" tidak ada di database.`)
-                return NextResponse.json({ message: 'Project not found' }, { status: 200 })
+                await sendTelegramReply(chatId, `❌ **Akses Ditolak atau Tidak Ditemukan**: Anda tidak memiliki akses ke proyek "*${projectName}*" atau proyek tidak tersedia.`)
+                return NextResponse.json({ message: 'Project not found/access denied' }, { status: 200 })
             }
 
             const projectDetails = await getProjectDetails(projects[0].id)
@@ -121,24 +344,27 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'No Site Name found' }, { status: 200 })
         }
 
-        const supabase = await createClient()
-
-        // 1. Find Project ID
-        // Try exact match or loose match
-        let projectId = null
-        const { data: projects } = await supabase
+        // 1. Find Project ID with access check
+        let query = supabase
             .from('projects')
             .select('id, name')
             .ilike('name', `%${reportData.siteName}%`)
             .limit(1)
 
+        if (allowedProjectIds.length > 0) {
+            query = query.in('id', allowedProjectIds)
+        }
+
+        const { data: projects } = await query
+
+        let projectId = null
         if (projects && projects.length > 0) {
             projectId = projects[0].id
         }
 
         if (!projectId) {
-            await sendTelegramReply(chatId, `❌ **Gagal**: Project dengan nama "*${reportData.siteName}*" tidak ditemukan di database.\n\nPastikan nama di laporan sama dengan nama di web.`)
-            return NextResponse.json({ message: 'Project not found' }, { status: 200 })
+            await sendTelegramReply(chatId, `❌ **Akses Ditolak atau Tidak Ditemukan**: Anda tidak memiliki akses untuk melaporkan proyek "*${reportData.siteName}*".`)
+            return NextResponse.json({ message: 'Project access denied' }, { status: 200 })
         }
 
         // 2. Create Daily Report
