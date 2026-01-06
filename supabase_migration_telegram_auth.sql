@@ -23,10 +23,10 @@ DROP POLICY IF EXISTS "Allow read for authenticated users" ON telegram_authorize
 CREATE POLICY "Allow read for authenticated users" ON telegram_authorized_users
     FOR SELECT USING (auth.role() = 'authenticated');
 
--- Allow all for public (simplifying for bot webhook access if not using service role)
+-- Allow all for public (bot webhook access)
 DROP POLICY IF EXISTS "Allow select for public" ON telegram_authorized_users;
-CREATE POLICY "Allow select for public" ON telegram_authorized_users
-    FOR SELECT USING (true);
+CREATE POLICY "Allow all for public" ON telegram_authorized_users
+    FOR ALL USING (true) WITH CHECK (true);
 
 -- Junction table for User-Project mapping
 CREATE TABLE IF NOT EXISTS telegram_user_projects (
@@ -43,10 +43,10 @@ DROP POLICY IF EXISTS "Allow read for authenticated users" ON telegram_user_proj
 CREATE POLICY "Allow read for authenticated users" ON telegram_user_projects
     FOR SELECT USING (auth.role() = 'authenticated');
 
--- Allow select for public (bot access)
+-- Allow all for public (bot access)
 DROP POLICY IF EXISTS "Allow select for public" ON telegram_user_projects;
-CREATE POLICY "Allow select for public" ON telegram_user_projects
-    FOR SELECT USING (true);
+CREATE POLICY "Allow all for public" ON telegram_user_projects
+    FOR ALL USING (true) WITH CHECK (true);
 
 -- Insert initial admin/owner
 INSERT INTO telegram_authorized_users (telegram_id, name, is_active, is_admin)

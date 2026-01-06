@@ -104,11 +104,17 @@ export async function POST(request: NextRequest) {
                 const name = callbackQuery.message.text.split('\n')[0].replace('📩 Permintaan Akses dari: ', '').trim()
 
                 // Register user
-                await supabase.from('telegram_authorized_users').upsert({
+                const { error: upsertError } = await supabase.from('telegram_authorized_users').upsert({
                     telegram_id: targetUserId,
                     name: name || `User ${targetUserId}`,
                     is_active: true
                 })
+
+                if (upsertError) {
+                    console.error('Supabase Upsert Error:', upsertError)
+                    await answerCallbackQuery(callbackQuery.id, "❌ Gagal mendaftarkan user di database.")
+                    return NextResponse.json({ success: true })
+                }
 
                 await answerCallbackQuery(callbackQuery.id, "✅ User Disetujui!")
 
@@ -142,9 +148,11 @@ export async function POST(request: NextRequest) {
                     .single()
 
                 if (exists) {
-                    await supabase.from('telegram_user_projects').delete().eq('telegram_id', targetUserId).eq('project_id', projectId)
+                    const { error: delError } = await supabase.from('telegram_user_projects').delete().eq('telegram_id', targetUserId).eq('project_id', projectId)
+                    if (delError) console.error('Supabase Delete Error:', delError)
                 } else {
-                    await supabase.from('telegram_user_projects').insert({ telegram_id: targetUserId, project_id: projectId })
+                    const { error: insError } = await supabase.from('telegram_user_projects').insert({ telegram_id: targetUserId, project_id: projectId })
+                    if (insError) console.error('Supabase Insert Error:', insError)
                 }
 
                 // Update Menu
@@ -261,11 +269,17 @@ export async function POST(request: NextRequest) {
             }
 
             // Register user if not exists
-            await supabase.from('telegram_authorized_users').upsert({
+            const { error: upsertError } = await supabase.from('telegram_authorized_users').upsert({
                 telegram_id: targetUserId,
                 name: `User ${targetUserId}`,
                 is_active: true
             })
+
+            if (upsertError) {
+                console.error('Supabase Manage Upsert Error:', upsertError)
+                await sendTelegramReply(chatId, "❌ Gagal memproses data di database.")
+                return NextResponse.json({ success: true }, { status: 200 })
+            }
 
             // Show Project Selection Menu
             const { data: projects } = await supabase.from('projects').select('id, name').order('name')
