@@ -195,11 +195,10 @@ export async function POST(request: NextRequest) {
                 let msg = `📊 **MATERIAL: ${projectDetails.name}**\n`
                 msg += `📍 **BREAKDOWN: ${distName ? distName.toUpperCase() : 'TOTAL PROJECT'}**\n\n`
 
-                msg += '`MAT | KEB | MSK`\n'
-                msg += '`---------------`\n'
-
                 summary.forEach((m: any) => {
-                    msg += `\`${m.name.substring(0, 3)} | ${m.quantity_needed} | ${m.total_in}\`\n`
+                    if (m.quantity_needed === 0 && m.total_in === 0 && m.total_out === 0) return
+                    msg += `\n🔸 **${m.name}**\n`
+                    msg += `\`KEB: ${m.quantity_needed} | MSK: ${m.total_in}\`\n`
                 })
 
                 msg += `\n💡 *Sisa = Masuk - Terpakai*`
@@ -451,18 +450,12 @@ export async function POST(request: NextRequest) {
             let msg = `📊 **MATERIAL: ${projectDetails.name}**\n`
             msg += `📍 **TOTAL PROJECT**\n\n`
 
-            msg += '`MAT | KEB | MSK | TPK | SIS`\n'
-            msg += '`----------------------------`\n'
-
             summary.forEach((m: any) => {
                 const sisa = m.total_in - m.total_out
-                // Alignment padding for fixed width
-                const name = m.name.substring(0, 3).padEnd(3)
-                const keb = String(m.quantity_needed).padStart(3)
-                const msk = String(m.total_in).padStart(3)
-                const tpk = String(m.total_out).padStart(3)
-                const sis = String(sisa).padStart(3)
-                msg += `\`${name} | ${keb} | ${msk} | ${tpk} | ${sis}\`\n`
+                if (m.quantity_needed === 0 && m.total_in === 0 && m.total_out === 0) return
+
+                msg += `\n🔸 **${m.name}**\n`
+                msg += `\`KEB: ${m.quantity_needed} | MSK: ${m.total_in} | TPK: ${m.total_out} | SIS: ${sisa}\`\n`
             })
 
             msg += `\n💡 *Gunakan tombol di bawah untuk breakdown per distribusi.*`
