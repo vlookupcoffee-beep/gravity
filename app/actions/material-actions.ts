@@ -218,12 +218,13 @@ export async function bulkCreateMaterials(materials: {
 
             // 2. Handle Stock, Requirements or Both
             const importType = m.import_type || 'STOCK'
-            const distName = m.distribution_name || ''
+            const rawDistName = m.distribution_name || ''
+            const distName = rawDistName.trim().toUpperCase()
 
             // --- HANDLE REQUIREMENT ---
             if (importType === 'REQUIREMENT' || importType === 'BOTH') {
-                const reqQty = m.initial_stock // This is the 'Kebutuhan' field
-                if (m.project_id) {
+                const reqQty = Number(m.initial_stock)
+                if (m.project_id && !isNaN(reqQty)) {
                     const { error: reqError } = await supabase
                         .from('project_material_requirements')
                         .upsert({
@@ -243,10 +244,10 @@ export async function bulkCreateMaterials(materials: {
 
             // --- HANDLE STOCK (MASUK) ---
             if (importType === 'STOCK' || importType === 'BOTH') {
-                const stockQty = importType === 'BOTH' ? (m.quantity_in || 0) : m.initial_stock;
+                const stockQty = Number(importType === 'BOTH' ? (m.quantity_in || 0) : m.initial_stock);
 
-                if (stockQty > 0) {
-                    // Update global material current_stock first
+                if (!isNaN(stockQty) && stockQty > 0) {
+                    // Update global material current_stock
                     const { data: current } = await supabase.from('materials').select('current_stock').eq('id', mat.id).single()
                     await supabase.from('materials').update({
                         current_stock: (current?.current_stock || 0) + stockQty
@@ -273,7 +274,6 @@ export async function bulkCreateMaterials(materials: {
 
         revalidatePath('/dashboard/materials')
 
-        // Return success if at least one worked, but include errors
         return {
             success: errors.length === 0,
             count: results.length,
@@ -427,17 +427,16 @@ export async function getProjectMaterialSummary(projectId: string, distributionN
     // Process Requirements
     if (requirements) {
         requirements.forEach((req: any) => {
+            const materialId = req.material_id
             const mat = req.materials
             if (!mat) return
 
-            if (summaryMap.has(mat.id)) {
-                // Sum requirements if viewing TOTAL, otherwise it will just be the one filtered
-                const current = summaryMap.get(mat.id)!
+            if (summaryMap.has(materialId)) {
+                const current = summaryMap.get(materialId)!
                 current.quantity_needed = (current.quantity_needed || 0) + req.quantity_needed
             } else {
-                // Add new (no transactions yet)
-                summaryMap.set(mat.id, {
-                    id: mat.id,
+                summaryMap.set(materialId, {
+                    id: materialId,
                     name: mat.name,
                     unit: mat.unit,
                     total_in: 0,
