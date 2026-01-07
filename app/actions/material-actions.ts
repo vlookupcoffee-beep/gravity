@@ -218,22 +218,26 @@ export async function bulkCreateMaterials(materials: {
 
             // 2. Handle Stock, Requirements or Both
             const importType = m.import_type || 'STOCK'
+            const distName = m.distribution_name || ''
 
             // --- HANDLE REQUIREMENT ---
             if (importType === 'REQUIREMENT' || importType === 'BOTH') {
-                const reqQty = importType === 'BOTH' ? (m.initial_stock) : m.initial_stock;
-                if (m.project_id && reqQty >= 0) {
+                const reqQty = m.initial_stock // This is the 'Kebutuhan' field
+                if (m.project_id) {
                     const { error: reqError } = await supabase
                         .from('project_material_requirements')
                         .upsert({
                             project_id: m.project_id,
                             material_id: mat.id,
                             quantity_needed: reqQty,
-                            distribution_name: m.distribution_name || '',
+                            distribution_name: distName,
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'project_id,material_id,distribution_name' })
 
-                    if (reqError) errors.push({ name: m.name, error: `Requirement Update Failed: ${reqError.message}` })
+                    if (reqError) {
+                        console.error('Req Error:', reqError)
+                        errors.push({ name: m.name, error: `Kebutuhan Failed: ${reqError.message}` })
+                    }
                 }
             }
 
@@ -242,23 +246,25 @@ export async function bulkCreateMaterials(materials: {
                 const stockQty = importType === 'BOTH' ? (m.quantity_in || 0) : m.initial_stock;
 
                 if (stockQty > 0) {
+                    // Update global material current_stock first
+                    const { data: current } = await supabase.from('materials').select('current_stock').eq('id', mat.id).single()
+                    await supabase.from('materials').update({
+                        current_stock: (current?.current_stock || 0) + stockQty
+                    }).eq('id', mat.id)
+
+                    // Then insert transaction
                     const { error: txError } = await supabase.from('material_transactions').insert({
                         material_id: mat.id,
                         transaction_type: 'IN',
                         quantity: stockQty,
                         notes: 'Bulk Import / Input',
                         project_id: m.project_id || null,
-                        distribution_name: m.distribution_name || ''
+                        distribution_name: distName
                     })
 
                     if (txError) {
-                        errors.push({ name: m.name, error: `Transaction Failed: ${txError.message}` })
-                    } else {
-                        // Update material current_stock (global)
-                        const { data: current } = await supabase.from('materials').select('current_stock').eq('id', mat.id).single()
-                        await supabase.from('materials').update({
-                            current_stock: (current?.current_stock || 0) + stockQty
-                        }).eq('id', mat.id)
+                        console.error('Tx Error:', txError)
+                        errors.push({ name: m.name, error: `Masuk Failed: ${txError.message}` })
                     }
                 }
             }
@@ -422,18 +428,17 @@ export async function getProjectMaterialSummary(projectId: string, distributionN
     if (requirements) {
         requirements.forEach((req: any) => {
             const mat = req.materials
-            if (summaryMap.has(req.material_id)) {
+            if (!mat) return
+
+            if (summaryMap.has(mat.id)) {
                 // Sum requirements if viewing TOTAL, otherwise it will just be the one filtered
-                const current = summaryMap.get(req.material_id)!
+                const current = summaryMap.get(mat.id)!
                 current.quantity_needed = (current.quantity_needed || 0) + req.quantity_needed
-            } else if (mat) {
+            } else {
                 // Add new (no transactions yet)
-                // @ts-ignore
-                summaryMap.set(req.material_id, {
-                    id: req.material_id,
-                    // @ts-ignore
+                summaryMap.set(mat.id, {
+                    id: mat.id,
                     name: mat.name,
-                    // @ts-ignore
                     unit: mat.unit,
                     total_in: 0,
                     total_out: 0,
