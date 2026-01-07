@@ -212,10 +212,15 @@ export async function POST(request: NextRequest) {
                     buttons.push([{ text: "📋 LIHAT TOTAL", callback_data: `dist:${projectId}:` }])
                 }
 
-                // Add other dist buttons (except current)
-                dists.filter((d: string) => d !== distName).forEach((d: string) => {
-                    buttons.push([{ text: `📦 ${d.toUpperCase()}`, callback_data: `dist:${projectId}:${d}` }])
-                })
+                // Add other dist buttons in grid (max 3 per row)
+                const otherDists = dists.filter((d: string) => d !== distName)
+                for (let i = 0; i < otherDists.length; i += 3) {
+                    const row = otherDists.slice(i, i + 3).map((d: string) => ({
+                        text: `📦 ${d.toUpperCase()}`,
+                        callback_data: `dist:${projectId}:${d}`
+                    }))
+                    buttons.push(row)
+                }
 
                 await editTelegramMessage(chatId, messageId, msg, {
                     inline_keyboard: buttons
@@ -460,13 +465,17 @@ export async function POST(request: NextRequest) {
 
             msg += `\n💡 *Gunakan tombol di bawah untuk breakdown per distribusi.*`
 
-            const buttons = dists.map((d: string) => ([{
-                text: `📦 ${d.toUpperCase()}`,
-                callback_data: `dist:${projectId}:${d}`
-            }]))
+            const distButtons = []
+            for (let i = 0; i < dists.length; i += 3) {
+                const row = dists.slice(i, i + 3).map((d: string) => ({
+                    text: `📦 ${d.toUpperCase()}`,
+                    callback_data: `dist:${projectId}:${d}`
+                }))
+                distButtons.push(row)
+            }
 
             await sendTelegramReply(chatId, msg, {
-                inline_keyboard: buttons
+                inline_keyboard: distButtons
             })
             return NextResponse.json({ success: true }, { status: 200 })
         }
