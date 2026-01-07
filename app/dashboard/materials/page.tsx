@@ -259,18 +259,24 @@ export default function MaterialsPage() {
                                         {selectedProjectId ? (
                                             <>
                                                 <td className="px-6 py-4 text-right font-medium text-purple-400">
-                                                    <input
-                                                        type="number"
-                                                        defaultValue={m.quantity_needed || 0}
-                                                        className="w-20 bg-transparent border-b border-gray-700 text-right focus:border-purple-500 focus:outline-none"
-                                                        onBlur={(e) => handleUpdateRequirement(m.id, e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                handleUpdateRequirement(m.id, (e.target as HTMLInputElement).value)
-                                                                    ; (e.target as HTMLInputElement).blur()
-                                                            }
-                                                        }}
-                                                    />
+                                                    {!selectedDistribution ? (
+                                                        <span className="text-purple-300 opacity-80" title="Sum of all distributions">
+                                                            {m.quantity_needed || 0}
+                                                        </span>
+                                                    ) : (
+                                                        <input
+                                                            type="number"
+                                                            defaultValue={m.quantity_needed || 0}
+                                                            className="w-20 bg-transparent border-b border-gray-700 text-right focus:border-purple-500 focus:outline-none"
+                                                            onBlur={(e) => handleUpdateRequirement(m.id, e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    handleUpdateRequirement(m.id, (e.target as HTMLInputElement).value)
+                                                                        ; (e.target as HTMLInputElement).blur()
+                                                                }
+                                                            }}
+                                                        />
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 text-right font-medium text-blue-400">
                                                     {m.total_in > 0 ? `+${m.total_in}` : '-'}
