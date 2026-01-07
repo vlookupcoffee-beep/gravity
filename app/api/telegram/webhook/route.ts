@@ -280,14 +280,33 @@ export async function POST(request: NextRequest) {
 
         const allowedProjectIds = allowedProjectsData?.map(p => p.project_id) || []
 
-        // Case: /start command - Show Telegram ID
+        // Case: /start command - Show Telegram ID & Help
         if (text.startsWith('/start')) {
             let startMessage = `👋 **Halo!**\n\n`
             startMessage += `ID Telegram Anda adalah: \`${userId}\`\n\n`
 
             if (isAuthorized) {
                 startMessage += `✅ Anda terdaftar sebagai pengguna **resmi**.\n`
-                startMessage += `📊 Anda memiliki akses ke **${allowedProjectIds.length} proyek**.`
+                startMessage += `📊 Anda memiliki akses ke **${allowedProjectIds.length} proyek**.\n\n`
+
+                startMessage += `🚀 **PERINTAH UTAMA:**\n`
+                startMessage += `• \`/project\` - Tabel daftar proyek milik Anda.\n`
+                startMessage += `• \`/status [Proyek]\` - Detail progres Proyek.\n`
+                startMessage += `• \`/material [Proyek]\` - Stok material & distribusi.\n`
+                startMessage += `• \`/lapor\` - Kirim laporan & potong stok harian.\n\n`
+
+                startMessage += `📝 **FORMAT LAPOR SINGKAT:**\n`
+                startMessage += `\`\`\`\n`
+                startMessage += `/lapor\n`
+                startMessage += `Site Name : [Nama Proyek]\n`
+                startMessage += `Man Power : [Jumlah]\n`
+                startMessage += `Executor : [Nama]\n`
+                startMessage += `Waspang : [Nama]\n`
+                startMessage += `Today Activity : [Kegiatan]\n`
+                startMessage += `Tomorrow Plan : [Rencana]\n\n`
+                startMessage += `[Material] : [HariIni]/[Total]/[Scope]\n`
+                startMessage += `\`\`\``
+
                 await sendTelegramReply(chatId, startMessage)
             } else {
                 startMessage += `⚠️ Anda **belum terdaftar** sebagai pengguna resmi.`
