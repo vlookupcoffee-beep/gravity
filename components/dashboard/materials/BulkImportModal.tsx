@@ -119,6 +119,11 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
             return
         }
 
+        if (distributionName && !globalProjectId) {
+            setError('Please select a project to use with Distribution Name.')
+            return
+        }
+
         setLoading(true)
         // Ensure project ID is applied if it wasn't during parse (e.g. user changed selection after parse)
         const finalData = parsedData.map(d => ({
@@ -131,6 +136,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
         const result = await bulkCreateMaterials(finalData)
 
         if (result.success) {
+            window.location.reload() // Force reload to see new distributions
             onClose()
         } else {
             if (result.errors && Array.isArray(result.errors)) {

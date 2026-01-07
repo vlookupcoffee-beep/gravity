@@ -219,7 +219,7 @@ export async function bulkCreateMaterials(materials: { name: string; description
                             project_id: m.project_id,
                             material_id: mat.id,
                             quantity_needed: m.initial_stock,
-                            distribution_name: m.distribution_name || null,
+                            distribution_name: m.distribution_name || '',
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'project_id,material_id,distribution_name' })
 
@@ -236,7 +236,7 @@ export async function bulkCreateMaterials(materials: { name: string; description
                         quantity: m.initial_stock,
                         notes: 'Bulk Import / Input',
                         project_id: m.project_id || null,
-                        distribution_name: m.distribution_name || null
+                        distribution_name: m.distribution_name || ''
                     })
 
                     if (txError) {
@@ -420,9 +420,9 @@ export async function getProjectMaterialSummary(projectId: string, distributionN
         requirements.forEach((req: any) => {
             const mat = req.materials
             if (summaryMap.has(req.material_id)) {
-                // Update existing
+                // Sum requirements if viewing TOTAL, otherwise it will just be the one filtered
                 const current = summaryMap.get(req.material_id)!
-                current.quantity_needed = req.quantity_needed
+                current.quantity_needed = (current.quantity_needed || 0) + req.quantity_needed
             } else if (mat) {
                 // Add new (no transactions yet)
                 // @ts-ignore
@@ -453,7 +453,7 @@ export async function updateMaterialRequirement(projectId: string, materialId: s
                 project_id: projectId,
                 material_id: materialId,
                 quantity_needed: quantity,
-                distribution_name: distributionName || null,
+                distribution_name: distributionName || '',
                 updated_at: new Date().toISOString()
             }, { onConflict: 'project_id,material_id,distribution_name' })
 
@@ -476,14 +476,14 @@ export async function getAvailableDistributions(projectId: string) {
             .from('project_material_requirements')
             .select('distribution_name')
             .eq('project_id', projectId)
-            .not('distribution_name', 'is', null)
+            .neq('distribution_name', '')
 
         // Get from transactions
         const { data: txDists } = await supabase
             .from('material_transactions')
             .select('distribution_name')
             .eq('project_id', projectId)
-            .not('distribution_name', 'is', null)
+            .neq('distribution_name', '')
 
         const dists = new Set<string>()
         reqDists?.forEach(d => d.distribution_name && dists.add(d.distribution_name))
