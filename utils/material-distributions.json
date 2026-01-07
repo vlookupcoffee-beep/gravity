@@ -1,0 +1,315 @@
+{
+    "project_name": "DEPLOYMENT - FIBERISASI FDT-ASBG-SKRJ (SUKOREJO)",
+    "distributions": [
+        {
+            "id": "dist-1",
+            "name": "DISTRIBUSI 1",
+            "items": [
+                {
+                    "material": "AC-ADSS-SM-12C",
+                    "target": 576,
+                    "realized": 420
+                },
+                {
+                    "material": "AC-ADSS-SM-24C",
+                    "target": 3485,
+                    "realized": 0
+                },
+                {
+                    "material": "PS-1-16-FAT",
+                    "target": 25,
+                    "realized": 0
+                },
+                {
+                    "material": "FAT-PB-16C-SOLID",
+                    "target": 25,
+                    "realized": 0
+                },
+                {
+                    "material": "FS-OF-SM",
+                    "target": 76,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-STAINLESS BELT",
+                    "target": 72,
+                    "realized": 100
+                },
+                {
+                    "material": "ACC-HELLICAL",
+                    "target": 72,
+                    "realized": 100
+                },
+                {
+                    "material": "ACC-Bracket",
+                    "target": 72,
+                    "realized": 100
+                },
+                {
+                    "material": "NP-7.0-140-3S",
+                    "target": 38,
+                    "realized": 0
+                },
+                {
+                    "material": "MV-MATERIAL-20/40",
+                    "target": 1,
+                    "realized": 0
+                }
+            ]
+        },
+        {
+            "id": "dist-2",
+            "name": "DISTRIBUSI 2",
+            "items": [
+                {
+                    "material": "AC-ADSS-SM-24C",
+                    "target": 2250,
+                    "realized": 0
+                },
+                {
+                    "material": "PS-1-16-FAT",
+                    "target": 12,
+                    "realized": 0
+                },
+                {
+                    "material": "FAT-PB-16C-SOLID",
+                    "target": 12,
+                    "realized": 0
+                },
+                {
+                    "material": "FS-OF-SM",
+                    "target": 36,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-STAINLESS BELT",
+                    "target": 114,
+                    "realized": 90
+                },
+                {
+                    "material": "ACC-HELLICAL",
+                    "target": 114,
+                    "realized": 90
+                },
+                {
+                    "material": "ACC-Bracket",
+                    "target": 114,
+                    "realized": 80
+                },
+                {
+                    "material": "ACC-POLESTRAP SPIRAL",
+                    "target": 75,
+                    "realized": 36
+                },
+                {
+                    "material": "NP-7.0-140-3S",
+                    "target": 57,
+                    "realized": 0
+                },
+                {
+                    "material": "MV-MATERIAL-20/40",
+                    "target": 1,
+                    "realized": 0
+                }
+            ]
+        },
+        {
+            "id": "dist-3",
+            "name": "DISTRIBUSI 3",
+            "items": [
+                {
+                    "material": "AC-ADSS-SM-12C",
+                    "target": 2315,
+                    "realized": 1700
+                },
+                {
+                    "material": "AC-ADSS-SM-24C",
+                    "target": 2850,
+                    "realized": 0
+                },
+                {
+                    "material": "AC-ADSS-SM-48C",
+                    "target": 1380,
+                    "realized": 0
+                },
+                {
+                    "material": "JC-OF-SM-48C",
+                    "target": 1,
+                    "realized": 0
+                },
+                {
+                    "material": "PS-1-16-FAT",
+                    "target": 26,
+                    "realized": 0
+                },
+                {
+                    "material": "FAT-PB-16C-SOLID",
+                    "target": 26,
+                    "realized": 0
+                },
+                {
+                    "material": "NP-7.0-140-2S",
+                    "target": 100,
+                    "realized": 87
+                },
+                {
+                    "material": "FS-OF-SM",
+                    "target": 154,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-STAINLESS BELT",
+                    "target": 212,
+                    "realized": 110
+                },
+                {
+                    "material": "ACC-HELLICAL",
+                    "target": 212,
+                    "realized": 110
+                },
+                {
+                    "material": "ACC-Bracket",
+                    "target": 212,
+                    "realized": 74
+                },
+                {
+                    "material": "NP-7.0-140-3S",
+                    "target": 6,
+                    "realized": 0
+                },
+                {
+                    "material": "MV-MATERIAL-20/40",
+                    "target": 1,
+                    "realized": 0
+                }
+            ]
+        },
+        {
+            "id": "dist-4",
+            "name": "DISTRIBUSI 4",
+            "items": [
+                {
+                    "material": "AC-ADSS-SM-12C",
+                    "target": 1554,
+                    "realized": 3640
+                },
+                {
+                    "material": "AC-ADSS-SM-24C",
+                    "target": 2137,
+                    "realized": 0
+                },
+                {
+                    "material": "PS-1-16-FAT",
+                    "target": 16,
+                    "realized": 0
+                },
+                {
+                    "material": "FAT-PB-16C-SOLID",
+                    "target": 16,
+                    "realized": 0
+                },
+                {
+                    "material": "NP-7.0-140-2S",
+                    "target": 37,
+                    "realized": 32
+                },
+                {
+                    "material": "FS-OF-SM",
+                    "target": 48,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-STAINLESS BELT",
+                    "target": 74,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-HELLICAL",
+                    "target": 74,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-Bracket",
+                    "target": 74,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-POLESTRAP SPIRAL",
+                    "target": 78,
+                    "realized": 0
+                },
+                {
+                    "material": "MV-MATERIAL-20/40",
+                    "target": 1,
+                    "realized": 0
+                }
+            ]
+        },
+        {
+            "id": "dist-5",
+            "name": "DISTRIBUSI 5",
+            "items": [
+                {
+                    "material": "AC-ADSS-SM-12C",
+                    "target": 1277,
+                    "realized": 0
+                },
+                {
+                    "material": "AC-ADSS-SM-24C",
+                    "target": 3330,
+                    "realized": 0
+                },
+                {
+                    "material": "PS-1-16-FAT",
+                    "target": 16,
+                    "realized": 0
+                },
+                {
+                    "material": "FAT-PB-16C-SOLID",
+                    "target": 16,
+                    "realized": 0
+                },
+                {
+                    "material": "NP-7.0-140-2S",
+                    "target": 100,
+                    "realized": 85
+                },
+                {
+                    "material": "FS-OF-SM",
+                    "target": 50,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-STAINLESS BELT",
+                    "target": 200,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-HELLICAL",
+                    "target": 200,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-Bracket",
+                    "target": 200,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-POLESTRAP SPIRAL",
+                    "target": 0,
+                    "realized": 48
+                },
+                {
+                    "material": "MV-MATERIAL-20/40",
+                    "target": 1,
+                    "realized": 0
+                },
+                {
+                    "material": "ACC-KLEMRING STOP",
+                    "target": 0,
+                    "realized": 16
+                }
+            ]
+        }
+    ]
+}

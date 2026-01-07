@@ -4,6 +4,7 @@ import { parseTelegramMessage } from '@/utils/telegram-parser'
 import { syncPowProgressWithMaterials } from '@/app/actions/pow-sync-actions'
 import { getProjectDetails } from '@/app/actions/get-project-details'
 import { formatProjectReport } from '@/app/actions/telegram-actions'
+import { getProjectMaterialSummary, getAvailableDistributions } from '@/app/actions/material-actions'
 
 // Prevent caching for webhooks
 export const dynamic = 'force-dynamic'
@@ -181,6 +182,47 @@ export async function POST(request: NextRequest) {
 
                 // Notify the user
                 await sendTelegramReply(Number(targetUserId), "🎉 **Akses Anda telah diaktifkan!**\nSilakan gunakan perintah `/project` untuk mulai.")
+            }
+
+            // Callback Logic: dist:[projectId]:[distName]
+            if (data.startsWith('dist:')) {
+                const [_, projectId, distName] = data.split(':')
+                const projectDetails = await getProjectDetails(projectId)
+
+                // Get Distribution Summary
+                const summary = await getProjectMaterialSummary(projectId, distName || undefined)
+
+                let msg = `📊 **MATERIAL: ${projectDetails.name}**\n`
+                msg += `📍 **BREAKDOWN: ${distName ? distName.toUpperCase() : 'TOTAL PROJECT'}**\n\n`
+
+                msg += '`MAT | KEB | MSK | TPK | SIS`\n'
+                msg += '`----------------------------`\n'
+
+                summary.forEach((m: any) => {
+                    const sisa = m.total_in - m.total_out
+                    msg += `\`${m.name.substring(0, 3)} | ${m.quantity_needed} | ${m.total_in} | ${m.total_out} | ${sisa}\`\n`
+                })
+
+                msg += `\n💡 *Sisa = Masuk - Terpakai*`
+
+                // Get all dists for buttons
+                const dists = await getAvailableDistributions(projectId)
+                const buttons = []
+
+                // Add "TOTAL" button
+                if (distName !== '') {
+                    buttons.push([{ text: "📋 LIHAT TOTAL", callback_data: `dist:${projectId}:` }])
+                }
+
+                // Add other dist buttons (except current)
+                dists.filter((d: string) => d !== distName).forEach((d: string) => {
+                    buttons.push([{ text: `📦 ${d.toUpperCase()}`, callback_data: `dist:${projectId}:${d}` }])
+                })
+
+                await editTelegramMessage(chatId, messageId, msg, {
+                    inline_keyboard: buttons
+                })
+                await answerCallbackQuery(callbackQuery.id)
             }
 
             // Handle "Request Access" button from user
@@ -374,6 +416,60 @@ export async function POST(request: NextRequest) {
             })
 
             await sendTelegramReply(chatId, reportMessage)
+            return NextResponse.json({ success: true }, { status: 200 })
+        }
+
+        // Case 3: /material command
+        if (text.startsWith('/material')) {
+            const projectName = text.replace('/material', '').trim()
+
+            if (!projectName) {
+                await sendTelegramReply(chatId, '❓ **Gunakan Format:** `/material NAMA PROJECT`')
+                return NextResponse.json({ message: 'Missing project name' }, { status: 200 })
+            }
+
+            let query = supabase
+                .from('projects')
+                .select('id, name')
+                .ilike('name', `%${projectName}%`)
+                .limit(1)
+
+            // Strictly filter by allowed projects
+            query = query.in('id', allowedProjectIds)
+
+            const { data: projects } = await query
+
+            if (!projects || projects.length === 0) {
+                await sendTelegramReply(chatId, `❌ **Akses Ditolak atau Tidak Ditemukan**: Anda tidak memiliki akses ke proyek "*${projectName}*" atau proyek tidak tersedia.`)
+                return NextResponse.json({ message: 'Project not found/access denied' }, { status: 200 })
+            }
+
+            const projectId = projects[0].id
+            const projectDetails = await getProjectDetails(projectId)
+            const summary = await getProjectMaterialSummary(projectId)
+            const dists = await getAvailableDistributions(projectId)
+
+            let msg = `📊 **MATERIAL: ${projectDetails.name}**\n`
+            msg += `📍 **TOTAL PROJECT**\n\n`
+
+            msg += '`MAT | KEB | MSK | TPK | SIS`\n'
+            msg += '`----------------------------`\n'
+
+            summary.forEach((m: any) => {
+                const sisa = m.total_in - m.total_out
+                msg += `\`${m.name.substring(0, 3)} | ${m.quantity_needed} | ${m.total_in} | ${m.total_out} | ${sisa}\`\n`
+            })
+
+            msg += `\n💡 *Gunakan tombol di bawah untuk breakdown per distribusi.*`
+
+            const buttons = dists.map((d: string) => ([{
+                text: `📦 ${d.toUpperCase()}`,
+                callback_data: `dist:${projectId}:${d}`
+            }]))
+
+            await sendTelegramReply(chatId, msg, {
+                inline_keyboard: buttons
+            })
             return NextResponse.json({ success: true }, { status: 200 })
         }
 

@@ -183,7 +183,7 @@ export async function useMaterial(formData: FormData) {
     }
 }
 
-export async function bulkCreateMaterials(materials: { name: string; description?: string; unit?: string; initial_stock: number; project_id?: string, import_type?: 'STOCK' | 'REQUIREMENT' }[]) {
+export async function bulkCreateMaterials(materials: { name: string; description?: string; unit?: string; initial_stock: number; project_id?: string, import_type?: 'STOCK' | 'REQUIREMENT', distribution_name?: string }[]) {
     const supabase = await createClient()
 
     try {
@@ -219,8 +219,9 @@ export async function bulkCreateMaterials(materials: { name: string; description
                             project_id: m.project_id,
                             material_id: mat.id,
                             quantity_needed: m.initial_stock,
+                            distribution_name: m.distribution_name || null,
                             updated_at: new Date().toISOString()
-                        }, { onConflict: 'project_id,material_id' })
+                        }, { onConflict: 'project_id,material_id,distribution_name' })
 
                     if (reqError) {
                         errors.push({ name: m.name, error: `Requirement Update Failed: ${reqError.message}` })
@@ -234,7 +235,8 @@ export async function bulkCreateMaterials(materials: { name: string; description
                         transaction_type: 'IN',
                         quantity: m.initial_stock,
                         notes: 'Bulk Import / Input',
-                        project_id: m.project_id || null
+                        project_id: m.project_id || null,
+                        distribution_name: m.distribution_name || null
                     })
 
                     if (txError) {
@@ -323,15 +325,16 @@ export async function getProjectMaterials(projectId: string) {
     return Array.from(usageMap.values())
 }
 
-export async function getProjectMaterialSummary(projectId: string) {
+export async function getProjectMaterialSummary(projectId: string, distributionName?: string) {
     const supabase = await createClient()
 
     // 1. Get Transactions
-    const { data: transactions, error: txError } = await supabase
+    let txQuery = supabase
         .from('material_transactions')
         .select(`
             transaction_type,
             quantity,
+            distribution_name,
             materials (
                 id,
                 name,
@@ -339,6 +342,12 @@ export async function getProjectMaterialSummary(projectId: string) {
             )
         `)
         .eq('project_id', projectId)
+
+    if (distributionName) {
+        txQuery = txQuery.eq('distribution_name', distributionName)
+    }
+
+    const { data: transactions, error: txError } = await txQuery
 
     if (txError) {
         console.error('Error getting project material transactions:', txError)
@@ -346,11 +355,12 @@ export async function getProjectMaterialSummary(projectId: string) {
     }
 
     // 2. Get Requirements
-    const { data: requirements, error: reqError } = await supabase
+    let reqQuery = supabase
         .from('project_material_requirements')
         .select(`
             material_id,
             quantity_needed,
+            distribution_name,
             materials (
                 id,
                 name,
@@ -358,6 +368,12 @@ export async function getProjectMaterialSummary(projectId: string) {
             )
         `)
         .eq('project_id', projectId)
+
+    if (distributionName) {
+        reqQuery = reqQuery.eq('distribution_name', distributionName)
+    }
+
+    const { data: requirements, error: reqError } = await reqQuery
 
     if (reqError) {
         console.error('Error getting project requirements:', reqError)
@@ -427,7 +443,7 @@ export async function getProjectMaterialSummary(projectId: string) {
     return Array.from(summaryMap.values())
 }
 
-export async function updateMaterialRequirement(projectId: string, materialId: string, quantity: number) {
+export async function updateMaterialRequirement(projectId: string, materialId: string, quantity: number, distributionName?: string) {
     const supabase = await createClient()
 
     try {
@@ -437,8 +453,9 @@ export async function updateMaterialRequirement(projectId: string, materialId: s
                 project_id: projectId,
                 material_id: materialId,
                 quantity_needed: quantity,
+                distribution_name: distributionName || null,
                 updated_at: new Date().toISOString()
-            }, { onConflict: 'project_id,material_id' })
+            }, { onConflict: 'project_id,material_id,distribution_name' })
 
         if (error) throw error
 
@@ -447,5 +464,34 @@ export async function updateMaterialRequirement(projectId: string, materialId: s
         return { success: true }
     } catch (e: any) {
         return { success: false, error: e.message }
+    }
+}
+
+export async function getAvailableDistributions(projectId: string) {
+    const supabase = await createClient()
+
+    try {
+        // Get from requirements
+        const { data: reqDists } = await supabase
+            .from('project_material_requirements')
+            .select('distribution_name')
+            .eq('project_id', projectId)
+            .not('distribution_name', 'is', null)
+
+        // Get from transactions
+        const { data: txDists } = await supabase
+            .from('material_transactions')
+            .select('distribution_name')
+            .eq('project_id', projectId)
+            .not('distribution_name', 'is', null)
+
+        const dists = new Set<string>()
+        reqDists?.forEach(d => d.distribution_name && dists.add(d.distribution_name))
+        txDists?.forEach(d => d.distribution_name && dists.add(d.distribution_name))
+
+        return Array.from(dists).sort()
+    } catch (e) {
+        console.error('Error getting distributions:', e)
+        return []
     }
 }

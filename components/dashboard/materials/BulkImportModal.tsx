@@ -20,7 +20,10 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
     const [importType, setImportType] = useState<'STOCK' | 'REQUIREMENT'>('STOCK')
 
     // Global Project Selection
+    // Global Project Selection
     const [globalProjectId, setGlobalProjectId] = useState<string>('')
+    // Distribution Selection
+    const [distributionName, setDistributionName] = useState<string>('')
     const [projects, setProjects] = useState<any[]>([])
 
     useEffect(() => {
@@ -94,7 +97,8 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                     description,
                     unit,
                     initial_stock: stock,
-                    project_id: globalProjectId || undefined // Link to selected project
+                    project_id: globalProjectId || undefined, // Link to selected project
+                    distribution_name: distributionName || undefined
                 })
             }
         }
@@ -120,6 +124,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
         const finalData = parsedData.map(d => ({
             ...d,
             project_id: globalProjectId || undefined,
+            distribution_name: distributionName || undefined,
             import_type: importType
         }))
 
@@ -189,6 +194,20 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                                 <option key={p.id} value={p.id}>{p.name}</option>
                             ))}
                         </select>
+                    </div>
+
+                    {/* Distribution Name Input */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Distribution Name (Optional)
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g. Distribusi 1, Tahap 1, dst"
+                            className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all uppercase"
+                            value={distributionName}
+                            onChange={e => setDistributionName(e.target.value.toUpperCase())}
+                        />
                     </div>
                 </div>
 

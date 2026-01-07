@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getMaterials, getProjectMaterialSummary, updateMaterialRequirement, deleteAllMaterials } from '@/app/actions/material-actions'
+import { getMaterials, getProjectMaterialSummary, updateMaterialRequirement, deleteAllMaterials, getAvailableDistributions } from '@/app/actions/material-actions'
 import { getProjects } from '@/app/actions/get-projects'
 import BulkImportModal from '@/components/dashboard/materials/BulkImportModal'
 import { Plus, Minus, Package, Search, Filter, Upload, Layers, Trash2 } from 'lucide-react'
@@ -19,6 +19,8 @@ export default function MaterialsPage() {
 
     // Filter State
     const [selectedProjectId, setSelectedProjectId] = useState<string>('')
+    const [availableDistributions, setAvailableDistributions] = useState<string[]>([])
+    const [selectedDistribution, setSelectedDistribution] = useState<string>('')
 
     // Modals state
     const [showAddModal, setShowAddModal] = useState(false)
@@ -34,9 +36,9 @@ export default function MaterialsPage() {
 
     useEffect(() => {
         if (selectedProjectId) {
-            loadProjectSpecificData(selectedProjectId)
+            loadProjectSpecificData(selectedProjectId, selectedDistribution)
         }
-    }, [selectedProjectId])
+    }, [selectedProjectId, selectedDistribution])
 
     async function loadData() {
         setLoading(true)
@@ -49,10 +51,14 @@ export default function MaterialsPage() {
         setLoading(false)
     }
 
-    async function loadProjectSpecificData(id: string) {
+    async function loadProjectSpecificData(id: string, distName?: string) {
         setLoading(true)
-        const data = await getProjectMaterialSummary(id)
+        const [data, dists] = await Promise.all([
+            getProjectMaterialSummary(id, distName),
+            getAvailableDistributions(id)
+        ])
         setProjectMaterials(data)
+        setAvailableDistributions(dists)
         setLoading(false)
     }
 
@@ -60,9 +66,9 @@ export default function MaterialsPage() {
         const quantity = parseFloat(value)
         if (isNaN(quantity) || quantity < 0) return
 
-        await updateMaterialRequirement(selectedProjectId, materialId, quantity)
+        await updateMaterialRequirement(selectedProjectId, materialId, quantity, selectedDistribution)
         // Optimistic update or reload
-        loadProjectSpecificData(selectedProjectId)
+        loadProjectSpecificData(selectedProjectId, selectedDistribution)
     }
 
     async function handleDeleteAll() {
@@ -149,6 +155,33 @@ export default function MaterialsPage() {
                     </select>
                 </div>
             </div>
+
+            {/* Distribution Buttons Section */}
+            {selectedProjectId && (
+                <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <button
+                        onClick={() => setSelectedDistribution('')}
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${!selectedDistribution
+                            ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20'
+                            : 'bg-[#1E293B] border-gray-700 text-gray-400 hover:bg-gray-800'
+                            }`}
+                    >
+                        TOTAL PROJECT
+                    </button>
+                    {availableDistributions.map(dist => (
+                        <button
+                            key={dist}
+                            onClick={() => setSelectedDistribution(dist)}
+                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all border ${selectedDistribution === dist
+                                ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-900/20'
+                                : 'bg-[#1E293B] border-gray-700 text-gray-400 hover:bg-gray-800'
+                                }`}
+                        >
+                            {dist.toUpperCase()}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Main Content */}
             <div className="bg-[#1E293B] rounded-xl border border-gray-700 shadow-sm overflow-hidden min-h-[400px]">
