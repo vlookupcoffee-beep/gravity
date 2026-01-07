@@ -66,7 +66,12 @@ export default function MaterialsPage() {
         const quantity = parseFloat(value)
         if (isNaN(quantity) || quantity < 0) return
 
-        await updateMaterialRequirement(selectedProjectId, materialId, quantity, selectedDistribution)
+        const result = await updateMaterialRequirement(selectedProjectId, materialId, quantity, selectedDistribution)
+        if (!result.success) {
+            alert(`Error updating requirement: ${result.error}`)
+            return
+        }
+
         // Optimistic update or reload
         loadProjectSpecificData(selectedProjectId, selectedDistribution)
     }
