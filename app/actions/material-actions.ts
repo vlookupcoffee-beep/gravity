@@ -183,7 +183,16 @@ export async function useMaterial(formData: FormData) {
     }
 }
 
-export async function bulkCreateMaterials(materials: { name: string; description?: string; unit?: string; initial_stock: number; project_id?: string, import_type?: 'STOCK' | 'REQUIREMENT', distribution_name?: string }[]) {
+export async function bulkCreateMaterials(materials: {
+    name: string;
+    description?: string;
+    unit?: string;
+    initial_stock: number; // This acts as 'STOCK' or 'KEBUTUHAN' based on type
+    quantity_in?: number;  // New: explicitly for 'MASUK'
+    project_id?: string;
+    import_type?: 'STOCK' | 'REQUIREMENT' | 'BOTH';
+    distribution_name?: string
+}[]) {
     const supabase = await createClient()
 
     try {
@@ -210,30 +219,33 @@ export async function bulkCreateMaterials(materials: { name: string; description
             // 2. Handle Stock, Requirements or Both
             const importType = m.import_type || 'STOCK'
 
-            if (importType === 'REQUIREMENT') {
-                if (m.project_id && m.initial_stock > 0) {
-                    // Update Requirement
+            // --- HANDLE REQUIREMENT ---
+            if (importType === 'REQUIREMENT' || importType === 'BOTH') {
+                const reqQty = importType === 'BOTH' ? (m.initial_stock) : m.initial_stock;
+                if (m.project_id && reqQty >= 0) {
                     const { error: reqError } = await supabase
                         .from('project_material_requirements')
                         .upsert({
                             project_id: m.project_id,
                             material_id: mat.id,
-                            quantity_needed: m.initial_stock,
+                            quantity_needed: reqQty,
                             distribution_name: m.distribution_name || '',
                             updated_at: new Date().toISOString()
                         }, { onConflict: 'project_id,material_id,distribution_name' })
 
-                    if (reqError) {
-                        errors.push({ name: m.name, error: `Requirement Update Failed: ${reqError.message}` })
-                    }
+                    if (reqError) errors.push({ name: m.name, error: `Requirement Update Failed: ${reqError.message}` })
                 }
-            } else {
-                // Default STOCK behavior
-                if (m.initial_stock > 0) {
+            }
+
+            // --- HANDLE STOCK (MASUK) ---
+            if (importType === 'STOCK' || importType === 'BOTH') {
+                const stockQty = importType === 'BOTH' ? (m.quantity_in || 0) : m.initial_stock;
+
+                if (stockQty > 0) {
                     const { error: txError } = await supabase.from('material_transactions').insert({
                         material_id: mat.id,
                         transaction_type: 'IN',
-                        quantity: m.initial_stock,
+                        quantity: stockQty,
                         notes: 'Bulk Import / Input',
                         project_id: m.project_id || null,
                         distribution_name: m.distribution_name || ''
@@ -242,20 +254,11 @@ export async function bulkCreateMaterials(materials: { name: string; description
                     if (txError) {
                         errors.push({ name: m.name, error: `Transaction Failed: ${txError.message}` })
                     } else {
-                        // Update stock count manually
-                        const { data: current, error: fetchError } = await supabase.from('materials').select('current_stock').eq('id', mat.id).single()
-
-                        if (fetchError) {
-                            errors.push({ name: m.name, error: `Fetch Stock Failed: ${fetchError.message}` })
-                        } else {
-                            const { error: updateError } = await supabase.from('materials').update({
-                                current_stock: (current?.current_stock || 0) + m.initial_stock
-                            }).eq('id', mat.id)
-
-                            if (updateError) {
-                                errors.push({ name: m.name, error: `Update Stock Failed: ${updateError.message}` })
-                            }
-                        }
+                        // Update material current_stock (global)
+                        const { data: current } = await supabase.from('materials').select('current_stock').eq('id', mat.id).single()
+                        await supabase.from('materials').update({
+                            current_stock: (current?.current_stock || 0) + stockQty
+                        }).eq('id', mat.id)
                     }
                 }
             }

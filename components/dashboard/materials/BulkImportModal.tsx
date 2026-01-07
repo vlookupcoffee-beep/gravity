@@ -17,7 +17,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
     const [error, setError] = useState('')
 
     // Import Type
-    const [importType, setImportType] = useState<'STOCK' | 'REQUIREMENT'>('STOCK')
+    const [importType, setImportType] = useState<'STOCK' | 'REQUIREMENT' | 'BOTH'>('STOCK')
 
     // Global Project Selection
     // Global Project Selection
@@ -56,19 +56,34 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
             let description = ''
             let unit = 'pcs'
             let stock = 0
+            let quantityIn = 0
 
             // Try to be smart about column mapping
-            if (cols.length >= 4) {
+            if (cols.length >= 5) {
+                // Name | Kebutuhan | Masuk | Terpakai | Sisa
+                // Use Name | [empty] | [empty] | stock
+                // If in BOTH mode, map specifically
+                if (importType === 'BOTH') {
+                    stock = parseFloat(cols[1]) || 0 // Kebutuhan
+                    quantityIn = parseFloat(cols[2]) || 0 // Masuk
+                } else if (importType === 'REQUIREMENT') {
+                    stock = parseFloat(cols[1]) || 0 // Kebutuhan
+                } else {
+                    stock = parseFloat(cols[2]) || 0 // Masuk
+                }
+            } else if (cols.length === 4) {
                 // Name | Desc | Unit | Stock
                 description = cols[1]
                 unit = cols[2]
                 stock = parseFloat(cols[3]) || 0
             } else if (cols.length === 3) {
-                // Heuristic: Name | Unit | Stock vs Name | Desc | Stock
-                // If col 2 is number, it's stock.
-                if (!isNaN(parseFloat(cols[2]))) {
+                // Name | Kebutuhan | Masuk (if BOTH)
+                if (importType === 'BOTH') {
+                    stock = parseFloat(cols[1]) || 0
+                    quantityIn = parseFloat(cols[2]) || 0
+                } else if (!isNaN(parseFloat(cols[2]))) {
                     // Name | Unit? | Stock
-                    unit = cols[1] // assume col 1 is unit if col 2 is number
+                    unit = cols[1]
                     stock = parseFloat(cols[2])
                 } else {
                     // Name | Desc | Stock?
@@ -97,6 +112,7 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                     description,
                     unit,
                     initial_stock: stock,
+                    quantity_in: quantityIn,
                     project_id: globalProjectId || undefined, // Link to selected project
                     distribution_name: distributionName || undefined
                 })
@@ -114,8 +130,8 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
     }
 
     async function handleSubmit() {
-        if (importType === 'REQUIREMENT' && !globalProjectId) {
-            setError('Please select a project for Requirements import.')
+        if ((importType === 'REQUIREMENT' || importType === 'BOTH') && !globalProjectId) {
+            setError('Please select a project for Requirements/Distribution import.')
             return
         }
 
@@ -175,17 +191,18 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                         <select
                             className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all"
                             value={importType}
-                            onChange={e => setImportType(e.target.value as 'STOCK' | 'REQUIREMENT')}
+                            onChange={e => setImportType(e.target.value as 'STOCK' | 'REQUIREMENT' | 'BOTH')}
                         >
                             <option value="STOCK">Stock / Material Masuk</option>
                             <option value="REQUIREMENT">Kebutuhan Project (Requirements)</option>
+                            <option value="BOTH">🔥 Distribution (Kebutuhan & Masuk)</option>
                         </select>
                     </div>
 
                     {/* Global Project Selector */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            {importType === 'REQUIREMENT' ? 'Assign to Project (Required)' : 'Assign to Project (Optional)'}
+                            {(importType === 'REQUIREMENT' || importType === 'BOTH') ? 'Assign to Project (Required)' : 'Assign to Project (Optional)'}
                         </label>
                         <select
                             className={`w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all
@@ -193,9 +210,9 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                             `}
                             value={globalProjectId}
                             onChange={e => setGlobalProjectId(e.target.value)}
-                            required={importType === 'REQUIREMENT'}
+                            required={importType !== 'STOCK'}
                         >
-                            <option value="">{importType === 'REQUIREMENT' ? '-- Select Project (Required) --' : '-- General / Central Stock --'}</option>
+                            <option value="">{importType !== 'STOCK' ? '-- Select Project (Required) --' : '-- General / Central Stock --'}</option>
                             {projects.map(p => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
                             ))}
@@ -228,12 +245,18 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                     {step === 'input' ? (
                         <div className="space-y-4">
                             <div className={`border rounded-lg p-4 text-sm ${importType === 'REQUIREMENT' ? 'bg-purple-50 border-purple-100 text-purple-900' : 'bg-blue-50 border-blue-100 text-blue-800'}`}>
-                                <p className="font-semibold mb-1">Instructions ({importType === 'REQUIREMENT' ? 'Requirements' : 'Stock'}):</p>
+                                <p className="font-semibold mb-1">Instructions ({importType === 'BOTH' ? 'Distribution Breakdown' : importType === 'REQUIREMENT' ? 'Requirements' : 'Stock'}):</p>
                                 <p>1. Copy columns from your spreadsheet (Excel/Google Sheets).</p>
                                 <p>2. Paste them below.</p>
-                                <p className="mt-2 text-xs opacity-75">Supported Columns Order: <strong>Name | Description | Unit | Quantity</strong></p>
-                                <p className="text-xs opacity-75">Or simplified: <strong>Name | Unit | Quantity</strong></p>
-                                {importType === 'REQUIREMENT' && (
+                                {importType === 'BOTH' ? (
+                                    <p className="mt-2 text-xs opacity-75">Format: <strong>Material | Kebutuhan | Masuk | [ignore] | [ignore]</strong></p>
+                                ) : (
+                                    <>
+                                        <p className="mt-2 text-xs opacity-75">Supported Columns Order: <strong>Name | Description | Unit | Quantity</strong></p>
+                                        <p className="text-xs opacity-75">Or simplified: <strong>Name | Unit | Quantity</strong></p>
+                                    </>
+                                )}
+                                {(importType === 'REQUIREMENT' || importType === 'BOTH') && (
                                     <p className="mt-2 font-bold text-xs">Note: This will set the required quantity for the selected project.</p>
                                 )}
                             </div>
@@ -255,7 +278,9 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                                             <th className="px-4 py-2">Name</th>
                                             <th className="px-4 py-2">Description</th>
                                             <th className="px-4 py-2">Unit</th>
-                                            <th className="px-4 py-2 text-right">{importType === 'REQUIREMENT' ? 'Needs' : 'Stock'}</th>
+                                            <th className="px-4 py-2 text-right">
+                                                {importType === 'BOTH' ? 'Kebutuhan | Masuk' : importType === 'REQUIREMENT' ? 'Needs' : 'Stock'}
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -264,7 +289,14 @@ export default function BulkImportModal({ onClose }: BulkImportModalProps) {
                                                 <td className="px-4 py-2 font-medium text-gray-900">{row.name}</td>
                                                 <td className="px-4 py-2 text-gray-500 truncate max-w-xs text-xs">{row.description}</td>
                                                 <td className="px-4 py-2 text-gray-500 text-xs font-mono">{row.unit}</td>
-                                                <td className="px-4 py-2 text-right font-medium">{row.initial_stock}</td>
+                                                <td className="px-4 py-2 text-right font-medium">
+                                                    {importType === 'BOTH' ? (
+                                                        <span className="flex flex-col">
+                                                            <span className="text-purple-600 font-bold">{row.initial_stock} KEB</span>
+                                                            <span className="text-blue-600 font-bold">{row.quantity_in} MSK</span>
+                                                        </span>
+                                                    ) : row.initial_stock}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
