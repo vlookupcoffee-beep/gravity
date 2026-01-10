@@ -1,5 +1,6 @@
 export interface ParsedReport {
     siteName: string | null;
+    distribusi: string | null;
     manpower: number;
     executor: string | null;
     waspang: string | null;
@@ -20,6 +21,7 @@ export function parseTelegramMessage(text: string): ParsedReport {
 
     const report: ParsedReport = {
         siteName: null,
+        distribusi: null,
         manpower: 0,
         executor: null,
         waspang: null,
@@ -59,6 +61,7 @@ export function parseTelegramMessage(text: string): ParsedReport {
         // Parse Content based on Section
         if (currentSection === 'header') {
             if (trimmed.toLowerCase().startsWith('site name')) report.siteName = trimmed.split(':')[1]?.trim() || null;
+            if (trimmed.toLowerCase().startsWith('distribusi')) report.distribusi = trimmed.split(':')[1]?.trim() || null;
             if (trimmed.toLowerCase().startsWith('manpower')) {
                 const match = trimmed.match(/(\d+)/);
                 if (match) report.manpower = parseInt(match[1]);

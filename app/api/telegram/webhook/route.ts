@@ -99,6 +99,86 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ success: true })
             }
 
+            // Callback Logic: approve_lapor:[reportId]
+            if (data.startsWith('approve_lapor:')) {
+                const reportId = data.split(':')[1]
+
+                // Fetch report details
+                const { data: report, error: fetchError } = await supabase
+                    .from('daily_reports')
+                    .select('*, projects(name)')
+                    .eq('id', reportId)
+                    .single()
+
+                if (fetchError || !report) {
+                    await answerCallbackQuery(callbackQuery.id, "❌ Laporan tidak ditemukan.")
+                    return NextResponse.json({ success: true })
+                }
+
+                if (report.status !== 'PENDING') {
+                    await answerCallbackQuery(callbackQuery.id, "⚠️ Laporan sudah diproses.")
+                    return NextResponse.json({ success: true })
+                }
+
+                // Update status
+                await supabase.from('daily_reports').update({ status: 'APPROVED' }).eq('id', reportId)
+
+                // Process stock deduction
+                const { data: reportItems } = await supabase.from('daily_report_items').select('*').eq('report_id', reportId)
+                let updatedItemsCount = 0
+
+                if (reportItems) {
+                    for (const item of reportItems) {
+                        if (item.material_id && item.quantity_today > 0) {
+                            // Transaction OUT
+                            await supabase.from('material_transactions').insert({
+                                material_id: item.material_id,
+                                project_id: report.project_id,
+                                transaction_type: 'OUT',
+                                quantity: item.quantity_today,
+                                distribution_name: report.distribusi_name,
+                                notes: `Approved Report: ${report.projects?.name} - ${item.material_name_snapshot}`
+                            })
+
+                            // Update Stock
+                            const { data: currentMat } = await supabase.from('materials').select('current_stock').eq('id', item.material_id).single()
+                            if (currentMat) {
+                                await supabase.from('materials').update({
+                                    current_stock: (currentMat.current_stock || 0) - item.quantity_today
+                                }).eq('id', item.material_id)
+                            }
+                            updatedItemsCount++
+                        }
+                    }
+                }
+
+                // Sync PoW
+                if (report.project_id) {
+                    await syncPowProgressWithMaterials(report.project_id)
+                }
+
+                await answerCallbackQuery(callbackQuery.id, "✅ Laporan Disetujui!")
+                await editTelegramMessage(chatId, messageId, `✅ **LAPORAN DISETUJUI**\n\nProject: *${report.projects?.name}*\nDistribusi: *${report.distribusi_name || '-'}*\n\nStatus: \`APPROVED\`\nStock updated for ${updatedItemsCount} items.`)
+
+                // Notify original sender if we had their ID (we don't store it in daily_reports yet, but we could if we wanted to)
+                // For now, just finish.
+            }
+
+            // Callback Logic: reject_lapor:[reportId]
+            if (data.startsWith('reject_lapor:')) {
+                const reportId = data.split(':')[1]
+
+                const { data: report } = await supabase.from('daily_reports').select('*, projects(name)').eq('id', reportId).single()
+                if (!report) return NextResponse.json({ success: true })
+
+                await supabase.from('daily_reports').update({ status: 'REJECTED' }).eq('id', reportId)
+
+                await answerCallbackQuery(callbackQuery.id, "❌ Laporan Ditolak.")
+                await editTelegramMessage(chatId, messageId, `❌ **LAPORAN DITOLAK**\n\nProject: *${report.projects?.name}*\n\nStatus: \`REJECTED\``)
+            }
+
+            // --- RESTORED ORIGINAL CALLBACKS ---
+
             // Callback Logic: approve:[userId]
             if (data.startsWith('approve:')) {
                 const targetUserId = data.split(':')[1]
@@ -540,12 +620,14 @@ export async function POST(request: NextRequest) {
             .insert({
                 project_id: projectId,
                 report_date: new Date(), // Today
+                distribusi_name: reportData.distribusi,
                 manpower_count: reportData.manpower,
                 executor_name: reportData.executor,
                 waspang_name: reportData.waspang,
                 today_activity: reportData.todayActivity,
                 tomorrow_plan: reportData.tomorrowPlan,
-                raw_message: text
+                raw_message: text,
+                status: 'PENDING'
             })
             .select()
             .single()
@@ -557,17 +639,10 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Process Items
-        let updatedItemsCount = 0
         for (const item of reportData.items) {
-            // Find Material ID
-            // Try simplified name matching (e.g. "NP-7.0-140-3S" from "NP-7.0-140-3S (TIANG 3S)")
-            // Extract the first part before any brace or just the name
-
-            // Heuristic: Split by '(' and take first part, trim.
             const searchName = item.rawName.split('(')[0].trim()
 
             let materialId = null
-            // Try searching exact or ilike
             const { data: mats } = await supabase
                 .from('materials')
                 .select('id, name')
@@ -587,40 +662,39 @@ export async function POST(request: NextRequest) {
                 quantity_total: item.totalDone,
                 quantity_today: item.todayDone
             })
+        }
 
-            // 4. Update Stock (Transaction OUT) if Today > 0 and Material Found
-            if (materialId && item.todayDone > 0) {
-                // Check if transaction already exists for this report item? 
-                // No, just insert.
-                await supabase.from('material_transactions').insert({
-                    material_id: materialId,
-                    project_id: projectId,
-                    transaction_type: 'OUT',
-                    quantity: item.todayDone,
-                    notes: `Telegram Auto-Report: ${reportData.siteName} (${new Date().toLocaleDateString()}) - ${item.rawName}`
-                })
+        // 4. Notify Admins for Approval
+        const { data: admins } = await supabase.from('telegram_authorized_users').select('telegram_id').eq('is_admin', true)
 
-                // Update Material Current Stock (Decrement)
-                // Fetch current first
-                const { data: currentMat } = await supabase.from('materials').select('current_stock').eq('id', materialId).single()
-                if (currentMat) {
-                    await supabase.from('materials').update({
-                        current_stock: (currentMat.current_stock || 0) - item.todayDone
-                    }).eq('id', materialId)
-                }
-                updatedItemsCount++
+        const senderName = update.message.from?.first_name || 'User'
+        let adminMsg = `📥 **LAPORAN BARU PERLU APPROVAL**\n\n`
+        adminMsg += `👤 Dari: *${senderName}* (\`${userId}\`)\n`
+        adminMsg += `📍 Project: *${projects?.[0]?.name}*\n`
+        adminMsg += `📦 Distribusi: *${reportData.distribusi || '-'}*\n`
+        adminMsg += `👷 Manpower: \`${reportData.manpower}\`\n\n`
+        adminMsg += `🛠 **Items:**\n`
+        reportData.items.forEach(it => {
+            if (it.todayDone > 0) {
+                adminMsg += `• ${it.rawName}: \`${it.todayDone}\`\n`
+            }
+        })
+
+        const buttons = {
+            inline_keyboard: [[
+                { text: "✅ Approve", callback_data: `approve_lapor:${report.id}` },
+                { text: "❌ Reject", callback_data: `reject_lapor:${report.id}` }
+            ]]
+        }
+
+        if (admins) {
+            for (const admin of admins) {
+                await sendTelegramReply(Number(admin.telegram_id), adminMsg, buttons)
             }
         }
 
-        // Success Reply
-        const projectStatus = projectId ? `✅ Project Found: *${projects?.[0]?.name}*` : `⚠️ Project Not Found (Saved as General Report)`
-
-        // 5. Trigger PoW Sync if project found
-        if (projectId) {
-            await syncPowProgressWithMaterials(projectId)
-        }
-
-        await sendTelegramReply(chatId, `✅ **Laporan Diterima!**\n\n${projectStatus}\n\n📊 Items Processed: ${reportData.items.length}\n📉 Stock Updates: ${updatedItemsCount} Items deducted.\n🔄 PoW Progress Updated.\n\nTerima kasih, laporan tersimpan.`)
+        // Success Reply to User
+        await sendTelegramReply(chatId, `✅ **Laporan Terkirim!**\n\nLaporan Anda sedang menunggu persetujuan Admin/Owner. Anda akan melihat update di web setelah disetujui.\n\nProject: *${projects?.[0]?.name}*\nDistribusi: *${reportData.distribusi || '-'}*`)
 
         return NextResponse.json({ success: true, reportId: report.id }, { status: 200 })
 
