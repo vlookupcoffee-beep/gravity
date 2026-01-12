@@ -404,43 +404,107 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ message: 'Unauthorized' }, { status: 200 })
         }
 
-        // --- ADMIN COMMANDS ---
-        if (text.startsWith('/manage') && authUser.is_admin) {
-            const targetUserId = text.replace('/manage', '').trim()
-            if (!targetUserId || isNaN(Number(targetUserId))) {
-                await sendTelegramReply(chatId, "❓ **Gunakan Format:** `/manage ID_TELEGRAM_USER`")
-                return NextResponse.json({ message: 'Invalid target ID' }, { status: 200 })
-            }
+        // --- ADMIN/OWNER ONLY COMMANDS ---
+        if (authUser.is_admin) {
+            // Command: /exp [Amount] [Description]
+            // Example: /exp 50000 Beli bensin
+            if (text.startsWith('/exp')) {
+                const parts = text.replace('/exp', '').trim().split(' ')
+                const amountStr = parts[0]?.replace(/[^0-9]/g, '')
+                const amount = Number(amountStr)
+                const description = parts.slice(1).join(' ')
 
-            // Register user if not exists
-            const { error: upsertError } = await supabase.from('telegram_authorized_users').upsert({
-                telegram_id: targetUserId,
-                name: `User ${targetUserId}`,
-                is_active: true
-            })
+                if (!amount || isNaN(amount)) {
+                    await sendTelegramReply(chatId, "❓ **Gunakan Format:** `/exp [Nominal] [Deskripsi]`\nContoh: `/exp 50000 Beli bensin`")
+                    return NextResponse.json({ success: true }, { status: 200 })
+                }
 
-            if (upsertError) {
-                console.error('Supabase Manage Upsert Error:', upsertError)
-                await sendTelegramReply(chatId, "❌ Gagal memproses data di database.")
+                const { error: expError } = await supabase.from('expenses').insert({
+                    amount: amount,
+                    description: description || 'No description',
+                    category: 'Lainnya',
+                    created_by: userId,
+                    date: new Date().toISOString().split('T')[0]
+                })
+
+                if (expError) {
+                    await sendTelegramReply(chatId, `❌ **Gagal mencatat pengeluaran:**\n${expError.message}`)
+                } else {
+                    const formattedAmount = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount)
+                    await sendTelegramReply(chatId, `✅ **Pengeluaran Tercatat!**\n\nNominal: *${formattedAmount}*\nCatatan: _${description}_`)
+                }
                 return NextResponse.json({ success: true }, { status: 200 })
             }
 
-            // Show Project Selection Menu
-            const { data: projects } = await supabase.from('projects').select('id, name').order('name')
-            const { data: allowed } = await supabase.from('telegram_user_projects').select('project_id').eq('telegram_id', targetUserId)
-            const allowedIds = allowed?.map(a => a.project_id) || []
+            // Command: /billing
+            // Show milestones that are triggered but not yet paid
+            if (text.startsWith('/billing')) {
+                const { data: milestones, error: billError } = await supabase
+                    .from('project_payment_milestones')
+                    .select('*, projects(name)')
+                    .eq('is_paid', false)
 
-            const buttons = projects?.map(p => ([{
-                text: `${allowedIds.includes(p.id) ? '✅' : '❌'} ${p.name}`,
-                callback_data: `toggle:${targetUserId}:${p.id}`
-            }])) || []
+                if (billError) {
+                    await sendTelegramReply(chatId, "❌ Gagal mengambil data tagihan.")
+                    return NextResponse.json({ success: true }, { status: 200 })
+                }
 
-            buttons.push([{ text: "💾 Simpan & Selesai", callback_data: `done:${targetUserId}` }])
+                if (!milestones || milestones.length === 0) {
+                    await sendTelegramReply(chatId, "📭 **Tidak ada tagihan** yang menunggu saat ini.")
+                    return NextResponse.json({ success: true }, { status: 200 })
+                }
 
-            await sendTelegramReply(chatId, `🛠 **Atur Akses Proyek**\nUser: \`${targetUserId}\`\n\nKlik nama proyek untuk mengaktifkan/menonaktifkan:`, {
-                inline_keyboard: buttons
-            })
-            return NextResponse.json({ success: true }, { status: 200 })
+                // Note: Real-time progress check is hard here without full calculation logic
+                // For simplified bot view, we just list all unpaid milestones
+                let billMsg = `💰 **DAFTAR TAGIHAN (BELUM CAIR)**\n\n`
+                milestones.forEach((m: any, idx: number) => {
+                    const amt = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(m.amount)
+                    billMsg += `${idx + 1}. *${m.projects?.name}*\n   📌 ${m.label} (${m.percentage}%)\n   💵 *${amt}*\n\n`
+                })
+                billMsg += `💡 *Cek detail di Dashboard Web untuk status progres.*`
+
+                await sendTelegramReply(chatId, billMsg)
+                return NextResponse.json({ success: true }, { status: 200 })
+            }
+
+            // Existing /manage command
+            if (text.startsWith('/manage')) {
+                const targetUserId = text.replace('/manage', '').trim()
+                if (!targetUserId || isNaN(Number(targetUserId))) {
+                    await sendTelegramReply(chatId, "❓ **Gunakan Format:** `/manage ID_TELEGRAM_USER`")
+                    return NextResponse.json({ message: 'Invalid target ID' }, { status: 200 })
+                }
+
+                // Register user if not exists
+                const { error: upsertError } = await supabase.from('telegram_authorized_users').upsert({
+                    telegram_id: targetUserId,
+                    name: `User ${targetUserId}`,
+                    is_active: true
+                })
+
+                if (upsertError) {
+                    console.error('Supabase Manage Upsert Error:', upsertError)
+                    await sendTelegramReply(chatId, "❌ Gagal memproses data di database.")
+                    return NextResponse.json({ success: true }, { status: 200 })
+                }
+
+                // Show Project Selection Menu
+                const { data: projects } = await supabase.from('projects').select('id, name').order('name')
+                const { data: allowed } = await supabase.from('telegram_user_projects').select('project_id').eq('telegram_id', targetUserId)
+                const allowedIds = allowed?.map(a => a.project_id) || []
+
+                const buttons = projects?.map(p => ([{
+                    text: `${allowedIds.includes(p.id) ? '✅' : '❌'} ${p.name}`,
+                    callback_data: `toggle:${targetUserId}:${p.id}`
+                }])) || []
+
+                buttons.push([{ text: "💾 Simpan & Selesai", callback_data: `done:${targetUserId}` }])
+
+                await sendTelegramReply(chatId, `🛠 **Atur Akses Proyek**\nUser: \`${targetUserId}\`\n\nKlik nama proyek untuk mengaktifkan/menonaktifkan:`, {
+                    inline_keyboard: buttons
+                })
+                return NextResponse.json({ success: true }, { status: 200 })
+            }
         }
 
         // Case 1: /project command - List all projects

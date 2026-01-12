@@ -39,6 +39,21 @@ export default function DashboardSidebar() {
         return pathname.startsWith(path)
     }
 
+    const menuItems = [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/dashboard/projects', label: 'Daftar Proyek', icon: FolderKanban },
+        { href: '/dashboard/khs', label: 'Daftar Harga (KHS)', icon: Receipt },
+        { href: '/dashboard/materials', label: 'Material', icon: Package },
+        { href: '/dashboard/map', label: 'Peta Geospasial', icon: MapIcon },
+    ]
+
+    // Only show Finance for owner
+    if (user?.role === 'owner') {
+        const financeItem = { href: '/dashboard/finance', label: 'Keuangan', icon: Receipt };
+        // Insert after Daftar Proyek (index 1)
+        menuItems.splice(2, 0, financeItem);
+    }
+
     return (
         <>
             {/* Mobile Hamburger Toggle */}
@@ -84,13 +99,7 @@ export default function DashboardSidebar() {
                 </div>
 
                 <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
-                    {[
-                        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                        { href: '/dashboard/projects', label: 'Daftar Proyek', icon: FolderKanban },
-                        { href: '/dashboard/khs', label: 'Daftar Harga (KHS)', icon: Receipt },
-                        { href: '/dashboard/materials', label: 'Material', icon: Package },
-                        { href: '/dashboard/map', label: 'Peta Geospasial', icon: MapIcon },
-                    ].map((item) => (
+                    {menuItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
