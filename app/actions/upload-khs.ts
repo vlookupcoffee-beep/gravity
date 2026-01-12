@@ -37,38 +37,75 @@ export async function uploadKHS(formData: FormData) {
 
     // 2. Read and Parse CSV
     const text = await file.text()
-    const lines = text.split('\n')
+    const lines = text.split(/\r?\n/)
 
     const itemsToInsert = []
-
-    // Skip header (index 0 and 1 based on the file view)
-    // Line 1: NO;ITEM DESIGN;...
-    // Line 2: ;;;;
-    // Start from index 2
-
     const priceType = formData.get('priceType') as string || 'vendor'
 
-    for (let i = 2; i < lines.length; i++) {
+    // Detect separator: semicollon is common in ID local Excel exports, comma is standard CSV
+    const firstLine = lines[0] || ""
+    const sep = firstLine.includes(';') ? ';' : ','
+
+    let headerFound = false
+
+    for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim()
         if (!line) continue
 
-        // Split by semicolon
-        const cols = line.split(';')
-        if (cols.length < 5) continue
+        const cols = line.split(sep)
+        if (cols.length < 4) continue
 
-        // Columns: 0:NO, 1:ITEM DESIGN, 2:URAIAN DESIGN, 3:SATUAN, 4:HARGA (VENDOR/MANDOR)
+        // Skip header lines: The first column usually contains a number (NO) for data rows
+        // If it's not a number and we haven't found data yet, skip it.
+        const noValue = cols[0].trim()
+        if (!headerFound) {
+            if (isNaN(Number(noValue)) || noValue === "") {
+                continue
+            }
+            headerFound = true
+        }
+
         const itemCode = cols[1]?.trim()
         const description = cols[2]?.trim()
         const unit = cols[3]?.trim()
         const priceStr = cols[4]?.trim()
-        const mandorPriceStr = cols[5]?.trim() // Potential 6th column
+        const mandorPriceStr = cols[5]?.trim()
 
         if (!itemCode || !priceStr) continue
 
-        // Clean values
-        const priceVal = parseInt(priceStr.replace(/[^0-9]/g, ''))
-        let mandorPriceVal = mandorPriceStr ? parseInt(mandorPriceStr.replace(/[^0-9]/g, '')) : 0
+        // Robust Price Parsing:
+        // Handle Indonesian format (e.g. 1.234,50) where '.' is thousand and ',' is decimal
+        // AND handle standard format (e.g. 1,234.50)
+        let normalizedPrice = priceStr.replace(/Rp/gi, '').replace(/\s/g, '').trim()
 
+        if (normalizedPrice.includes(',') && normalizedPrice.includes('.')) {
+            // Mixed separators: Assume the last one is the decimal
+            if (normalizedPrice.lastIndexOf(',') > normalizedPrice.lastIndexOf('.')) {
+                normalizedPrice = normalizedPrice.replace(/\./g, '').replace(',', '.')
+            } else {
+                normalizedPrice = normalizedPrice.replace(/,/g, '')
+            }
+        } else if (normalizedPrice.includes(',')) {
+            // Only comma: Is it decimal (1,5) or thousand (1,000)?
+            const pieces = normalizedPrice.split(',')
+            if (pieces.length === 2 && pieces[1].length === 3) {
+                // Highly likely a thousand separator (e.g. 1,000)
+                normalizedPrice = normalizedPrice.replace(/,/g, '')
+            } else {
+                // Likely a decimal (e.g. 1,5 or 12,50)
+                normalizedPrice = normalizedPrice.replace(',', '.')
+            }
+        } else {
+            // Only dots or nothing: Treat dots as potential thousand separators
+            // Unless it's clearly a decimal (e.g. 1.5) - but in ID KHS, dots are almost always thousands
+            // Let's assume dots are thousands if they are followed by 3 digits
+            const pieces = normalizedPrice.split('.')
+            if (pieces.length > 1 && pieces[pieces.length - 1].length === 3) {
+                normalizedPrice = normalizedPrice.replace(/\./g, '')
+            }
+        }
+
+        const priceVal = parseFloat(normalizedPrice)
         if (isNaN(priceVal)) continue
 
         const item: any = {
@@ -78,16 +115,18 @@ export async function uploadKHS(formData: FormData) {
             unit: unit
         }
 
-        // Logic: 
-        // If uploading as 'vendor', set 'price'. 
-        // If uploading as 'mandor', set 'price_mandor'.
-        // If 6th column exists, we can use it to set both if we want, but let's stick to the toggle for safety.
         if (priceType === 'mandor') {
             item.price_mandor = priceVal
         } else {
             item.price = priceVal
-            if (!isNaN(mandorPriceVal) && mandorPriceVal > 0) {
-                item.price_mandor = mandorPriceVal
+            // Handle dual-price CSV (if mandor price is in 6th column)
+            if (mandorPriceStr) {
+                let mPriceNormalized = mandorPriceStr.replace(/Rp/gi, '').replace(/\s/g, '').trim()
+                // ... simplistic parse for the second column for now or reuse logic ...
+                const mPriceVal = parseFloat(mPriceNormalized.replace(/\./g, '').replace(',', '.'))
+                if (!isNaN(mPriceVal) && mPriceVal > 0) {
+                    item.price_mandor = mPriceVal
+                }
             }
         }
 
