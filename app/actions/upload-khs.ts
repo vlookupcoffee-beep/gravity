@@ -112,17 +112,25 @@ export async function uploadKHS(formData: FormData) {
     return { success: true, count: itemsToInsert.length }
 }
 
-// Delete ALL KHS items from a provider (for re-upload)
+// Delete a KHS provider and ALL its items
 export async function deleteAllKHSItems(providerId: string) {
     const supabase = await createClient()
 
+    // Deleting the provider will cascade to items because of the schema constraint (ON DELETE CASCADE)
     const { error } = await supabase
-        .from('khs_items')
+        .from('khs_providers')
         .delete()
-        .eq('provider_id', providerId)
+        .eq('id', providerId)
 
     if (error) {
-        return { success: false, error: error.message }
+        console.error('Delete Provider Error:', error)
+        // Fallback: try deleting items only if provider delete failed (though it shouldn't if cascaded correctly)
+        const { error: itemsError } = await supabase
+            .from('khs_items')
+            .delete()
+            .eq('provider_id', providerId)
+
+        if (itemsError) return { success: false, error: itemsError.message }
     }
 
     revalidatePath('/dashboard/khs')
