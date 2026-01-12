@@ -187,76 +187,87 @@ export default function FinanceMilestones({ projectId, projectValue, mandorValue
             {/* Add Milestone Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-                    <div className="bg-[#1E293B] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                    <div className="bg-[#1E293B] border border-gray-700 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                         <form onSubmit={handleAddMilestone}>
-                            <div className="p-6 border-b border-gray-700">
-                                <h3 className="text-xl font-bold text-white">Tambah Termin Baru</h3>
+                            <div className="p-6 border-b border-gray-700 bg-[#1e293b]">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <Plus className="text-blue-500" size={20} />
+                                    Tambah Termin Baru
+                                </h3>
                             </div>
-                            <div className="p-6 space-y-4">
+                            <div className="p-6 space-y-6">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Label</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Label Termin</label>
                                     <input
                                         type="text" required
                                         value={newMilestone.label}
                                         onChange={(e) => setNewMilestone({ ...newMilestone, label: e.target.value })}
-                                        className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-2.5 text-white"
+                                        className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                         placeholder="Contoh: DP 30%, BAST, dll"
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Persentase (%)</label>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="sm:col-span-1">
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Persentase (%)</label>
                                         <input
                                             type="number" required
                                             value={newMilestone.percentage}
                                             onChange={(e) => setNewMilestone({ ...newMilestone, percentage: e.target.value })}
-                                            className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-2.5 text-white"
+                                            className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                             placeholder="30"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tipe Termin</label>
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Tipe Termin</label>
                                         <select
                                             value={newMilestone.type}
                                             onChange={(e) => setNewMilestone({ ...newMilestone, type: e.target.value as 'IN' | 'OUT' })}
-                                            className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-2.5 text-white"
+                                            className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
                                         >
                                             <option value="IN">Revenue (Basis: Total Project)</option>
                                             <option value="OUT">Mandor (Basis: Budget Mandor)</option>
                                         </select>
-                                        <p className="text-[10px] text-gray-500 mt-1 italic">
-                                            Basis Perhitungan: <b className="text-gray-400">{formatIDR(newMilestone.type === 'OUT' ? (mandorValue || 0) : (projectValue || 0))}</b>
+                                        <p className="text-[10px] text-gray-500 mt-2 italic flex items-center gap-1">
+                                            <Calculator size={10} />
+                                            Basis Perhitungan: <b className="text-blue-400/80">{formatIDR(newMilestone.type === 'OUT' ? (mandorValue || 0) : (projectValue || 0))}</b>
                                         </p>
                                     </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Trigger</label>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Pemicu (Trigger)</label>
                                         <select
                                             value={newMilestone.trigger_condition}
                                             onChange={(e) => setNewMilestone({ ...newMilestone, trigger_condition: e.target.value })}
-                                            className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-2.5 text-white"
+                                            className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
                                         >
-                                            <option value="manual">Manual</option>
-                                            <option value="field_progress">RO Progress</option>
-                                            <option value="total_progress">Total Progress</option>
+                                            <option value="manual">Input Manual</option>
+                                            <option value="field_progress">Berdasarkan RO Progress</option>
+                                            <option value="total_progress">Berdasarkan Total Progress</option>
                                         </select>
                                     </div>
+
+                                    {newMilestone.trigger_condition !== 'manual' && (
+                                        <div className="animate-in slide-in-from-left-2 duration-300">
+                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Target Progres (%)</label>
+                                            <input
+                                                type="number" required
+                                                value={newMilestone.trigger_value}
+                                                onChange={(e) => setNewMilestone({ ...newMilestone, trigger_value: e.target.value })}
+                                                className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                                placeholder="Contoh: 60"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
-                                {newMilestone.trigger_condition !== 'manual' && (
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Ambang Batas Progres (%)</label>
-                                        <input
-                                            type="number" required
-                                            value={newMilestone.trigger_value}
-                                            onChange={(e) => setNewMilestone({ ...newMilestone, trigger_value: e.target.value })}
-                                            className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-2.5 text-white"
-                                            placeholder="Contoh: 60"
-                                        />
-                                    </div>
-                                )}
                             </div>
-                            <div className="p-6 bg-[#0F172A]/50 flex justify-end gap-3">
-                                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 text-gray-400 font-bold hover:text-white transition">Batal</button>
-                                <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-500 active:scale-95 transition-all">Simpan Termin</button>
+                            <div className="p-6 bg-[#0F172A]/50 flex justify-end gap-3 border-t border-gray-700/50">
+                                <button type="button" onClick={() => setShowAddModal(false)} className="px-6 py-2.5 text-gray-400 font-bold hover:text-white transition-all active:scale-95">Batal</button>
+                                <button type="submit" className="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-900/40 hover:bg-blue-500 active:scale-95 transition-all border border-blue-400/20">
+                                    Simpan Termin
+                                </button>
                             </div>
                         </form>
                     </div>
