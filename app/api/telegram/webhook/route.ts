@@ -407,47 +407,65 @@ export async function POST(request: NextRequest) {
         // --- ADMIN/OWNER ONLY COMMANDS ---
         if (authUser.is_admin) {
             // Command: /exp [Project] [Amount] [Description]
-            // Example: /exp SKRJ 50000 Beli bensin
+            // Example: /exp SKRJ 100000 Beli bensin
             if (text.startsWith('/exp')) {
                 const rawContent = text.replace('/exp', '').trim()
-                const parts = rawContent.split(' ')
+                const parts = rawContent.split(/\s+/) // Support multiple spaces
 
-                if (parts.length < 2) {
-                    await sendTelegramReply(chatId, "❓ **Gunakan Format:** `/exp [Project] [Nominal] [Deskripsi]`\nAtau: `/exp [Nominal] [Deskripsi]` (untuk umum)\n\nContoh: `/exp SKRJ 50000 Beli bensin`")
+                if (parts.length < 1 || (parts.length === 1 && !/\d/.test(parts[0]))) {
+                    await sendTelegramReply(chatId, "❓ **Gunakan Format:** `/exp [Project] [Nominal] [Deskripsi]`\nAtau: `/exp [Nominal] [Deskripsi]`\n\nContoh: `/exp SKRJ 50000 Beli bensin`")
                     return NextResponse.json({ success: true }, { status: 200 })
                 }
 
-                let projectNameOrAmount = parts[0]
                 let amountStr = ""
-                let description = ""
+                let amount = 0
+                let amountIndex = -1
                 let projectId = null
                 let matchedProjectName = "Umum/Overhead"
 
-                // Try to find if first part is a project
-                const { data: projects } = await supabase.from('projects').select('id, name').ilike('name', `%${projectNameOrAmount}%`)
-
-                if (projects && projects.length > 0) {
-                    projectId = projects[0].id
-                    matchedProjectName = projects[0].name
-                    amountStr = parts[1]?.replace(/[^0-9]/g, '')
-                    description = parts.slice(2).join(' ')
-                } else {
-                    // First part is probably amount
-                    amountStr = projectNameOrAmount.replace(/[^0-9]/g, '')
-                    description = parts.slice(1).join(' ')
+                // 1. Find the first part that contains digits (the amount)
+                for (let i = 0; i < parts.length; i++) {
+                    const cleaned = parts[i].replace(/[^0-9]/g, '')
+                    if (cleaned !== "" && !isNaN(Number(cleaned))) {
+                        amountStr = cleaned
+                        amount = Number(cleaned)
+                        amountIndex = i
+                        break
+                    }
                 }
 
-                const amount = Number(amountStr)
-
-                if (!amountStr || isNaN(amount)) {
-                    await sendTelegramReply(chatId, "❌ **Nominal tidak valid.** Gunakan angka saja.")
+                if (amountIndex === -1 || amount <= 0) {
+                    await sendTelegramReply(chatId, "❌ **Nominal tidak valid.** Gunakan angka saja sebagai nominal.")
                     return NextResponse.json({ success: true }, { status: 200 })
                 }
+
+                // 2. Identify Project Name (everything before the amount)
+                const potentialProjectName = parts.slice(0, amountIndex).join(' ').trim()
+                if (potentialProjectName) {
+                    const { data: projects } = await supabase
+                        .from('projects')
+                        .select('id, name')
+                        .ilike('name', `%${potentialProjectName}%`)
+                        .limit(1)
+
+                    if (projects && projects.length > 0) {
+                        projectId = projects[0].id
+                        matchedProjectName = projects[0].name
+                    } else {
+                        // If project name was provided but not found, we still use it as part of description if you want,
+                        // but for now let's just treat it as matched failed and keep it as Overhead or notify?
+                        // Let's just keep matchedProjectName as "Not Found" to give feedback
+                        matchedProjectName = `[?] ${potentialProjectName} (Tidak ditemukan)`
+                    }
+                }
+
+                // 3. Identify Description (everything after the amount)
+                const description = parts.slice(amountIndex + 1).join(' ').trim() || 'No description'
 
                 const { error: expError } = await supabase.from('expenses').insert({
                     project_id: projectId,
                     amount: amount,
-                    description: description || 'No description',
+                    description: description,
                     category: projectId ? 'Proyek' : 'Lainnya',
                     created_by: userId,
                     date: new Date().toISOString().split('T')[0]
