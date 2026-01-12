@@ -216,6 +216,7 @@ export default function FinancePage() {
                     <FinanceMilestones
                         projectId={selectedProjectId}
                         projectValue={projects.find(p => p.id === selectedProjectId)?.value || 0}
+                        mandorValue={projects.find(p => p.id === selectedProjectId)?.value_mandor || 0}
                     />
                 )}
             </div>

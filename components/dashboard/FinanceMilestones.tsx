@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react'
 import { getProjectMilestones, createMilestone, updateMilestonePayment, calculateProjectProgress } from '@/app/actions/finance-actions'
 import { CheckCircle2, Clock, AlertCircle, Plus, DollarSign, Calculator, Landmark } from 'lucide-react'
 
-export default function FinanceMilestones({ projectId, projectValue }: { projectId: string, projectValue: number }) {
+interface FinanceMilestonesProps {
+    projectId: string
+    projectValue: number
+    mandorValue?: number
+}
+
+export default function FinanceMilestones({ projectId, projectValue, mandorValue }: FinanceMilestonesProps) {
     const [milestones, setMilestones] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [progress, setProgress] = useState({ fieldProgress: 0, totalProgress: 0 })
@@ -36,7 +42,9 @@ export default function FinanceMilestones({ projectId, projectValue }: { project
     const handleAddMilestone = async (e: React.FormEvent) => {
         e.preventDefault()
         const percentage = Number(newMilestone.percentage)
-        const amount = (percentage / 100) * projectValue
+        // Use Mandor Value for OUT milestones, Project Value for IN milestones
+        const baseValue = newMilestone.type === 'OUT' ? (mandorValue || 0) : (projectValue || 0)
+        const amount = (baseValue * percentage) / 100
 
         const result = await createMilestone({
             project_id: projectId,
@@ -213,9 +221,12 @@ export default function FinanceMilestones({ projectId, projectValue }: { project
                                             onChange={(e) => setNewMilestone({ ...newMilestone, type: e.target.value as 'IN' | 'OUT' })}
                                             className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-2.5 text-white"
                                         >
-                                            <option value="IN">Revenue (Uang Masuk)</option>
-                                            <option value="OUT">Mandor (Uang Keluar)</option>
+                                            <option value="IN">Revenue (Basis: Total Project)</option>
+                                            <option value="OUT">Mandor (Basis: Budget Mandor)</option>
                                         </select>
+                                        <p className="text-[10px] text-gray-500 mt-1 italic">
+                                            Basis Perhitungan: <b className="text-gray-400">{formatIDR(newMilestone.type === 'OUT' ? (mandorValue || 0) : (projectValue || 0))}</b>
+                                        </p>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Trigger</label>
