@@ -61,49 +61,39 @@ export default function ProjectDetailPage() {
         <>
             <div className="space-y-6 print:hidden">
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-6">
-                    <Link href="/dashboard/projects" className="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-white transition">
-                        <ArrowLeft size={20} />
-                    </Link>
-                    <div className="flex-1">
-                        <h1 className="text-2xl font-bold text-white">{project.name}</h1>
-                        <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
-                            <select
-                                value={project.status || 'planning'}
-                                onChange={async (e) => {
-                                    const newStatus = e.target.value
-                                    // Optimistic update
-                                    setProject({ ...project, status: newStatus })
-
-                                    // Call server action
-                                    const { updateProjectStatus } = await import('@/app/actions/project-actions')
-                                    await updateProjectStatus(project.id, newStatus)
-                                }}
-                                className={`px-2 py-0.5 rounded-full text-xs font-medium border appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-[#1E293B] ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 focus:ring-green-500' :
-                                    project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 focus:ring-blue-500' :
-                                        'bg-gray-700/50 text-gray-400 border-gray-600 focus:ring-gray-500'
-                                    }`}
-                            >
-                                <option value="planning" className="bg-[#1E293B] text-gray-400">Planning</option>
-                                <option value="in-progress" className="bg-[#1E293B] text-blue-400">In Progress</option>
-                                <option value="completed" className="bg-[#1E293B] text-green-400">Completed</option>
-                            </select>
-                            <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 bg-[#1E293B]/40 p-4 rounded-2xl border border-gray-700/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <Link href="/dashboard/projects" className="p-2 hover:bg-gray-800 rounded-xl text-gray-400 hover:text-white transition-all bg-[#0F172A]/50 border border-gray-700/50">
+                            <ArrowLeft size={20} />
+                        </Link>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-xl sm:text-2xl font-black text-white truncate tracking-tight">{project.name}</h1>
+                            <div className="flex items-center gap-3 text-[10px] text-gray-500 mt-1 uppercase font-bold tracking-widest">
+                                <span className={`px-2 py-0.5 rounded-md border ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                    project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                        'bg-gray-700/50 text-gray-400 border-gray-600'
+                                    }`}>
+                                    {project.status || 'Planning'}
+                                </span>
+                                <span className="hidden xs:inline">•</span>
+                                <span className="hidden xs:inline">Created {new Date(project.created_at).toLocaleDateString()}</span>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex gap-3">
+
+                    <div className="flex gap-2 w-full sm:w-auto sm:ml-auto">
                         <button
                             onClick={() => setShowReport(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-blue-400 hover:bg-gray-800 transition shadow-sm"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20 active:scale-95 border border-blue-400/20"
                         >
                             <FileBarChart size={16} /> Laporan
                         </button>
                         {userRole !== 'mandor' && (
                             <button
                                 onClick={() => setIsEditModalOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-[#1E293B] border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition shadow-sm"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1E293B] border border-gray-700 rounded-xl text-gray-300 hover:bg-gray-800 hover:text-white transition-all font-bold text-xs active:scale-95"
                             >
-                                <Edit size={16} /> Edit Proyek
+                                <Edit size={16} /> Edit
                             </button>
                         )}
                     </div>

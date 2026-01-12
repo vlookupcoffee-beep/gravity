@@ -171,46 +171,75 @@ export default function FinancePage() {
                     </div>
                 </div>
 
-                {/* Table Content */}
+                {/* Content Area */}
                 {loading ? (
                     <div className="p-20 flex flex-col items-center justify-center gap-4 text-gray-500">
                         <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
                         <p className="font-medium animate-pulse">Memuat data keuangan...</p>
                     </div>
                 ) : activeTab === 'expenses' ? (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm border-separate border-spacing-0">
-                            <thead className="bg-[#0F172A]/80 text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-                                <tr>
-                                    <th className="px-6 py-4 border-b border-gray-700/50">Tanggal</th>
-                                    <th className="px-6 py-4 border-b border-gray-700/50">Proyek</th>
-                                    <th className="px-6 py-4 border-b border-gray-700/50">Kategori</th>
-                                    <th className="px-6 py-4 border-b border-gray-700/50">Deskripsi</th>
-                                    <th className="px-6 py-4 border-b border-gray-700/50 text-right">Nominal</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-800/50">
-                                {expenses.length === 0 ? (
+                    <div className="p-4 sm:p-0">
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-4">
+                            {expenses.length === 0 ? (
+                                <div className="py-10 text-center text-gray-500 italic">Belum ada catatan pengeluaran.</div>
+                            ) : (
+                                expenses.map((exp) => (
+                                    <div key={exp.id} className="bg-[#0F172A]/40 border border-gray-700/30 rounded-2xl p-4 space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{new Date(exp.date).toLocaleDateString('id-ID')}</p>
+                                                <h4 className="text-white font-bold mt-1">{exp.projects?.name || 'Overhead / Office'}</h4>
+                                            </div>
+                                            <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded-md text-[10px] font-black uppercase border border-blue-500/20">
+                                                {exp.category}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-400 italic">"{exp.description}"</p>
+                                        <div className="pt-3 border-t border-gray-800 flex justify-between items-center">
+                                            <span className="text-[10px] font-black text-gray-600 uppercase">NOMINAL</span>
+                                            <span className="text-lg font-black text-red-400">{formatIDR(exp.amount)}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-left text-sm border-separate border-spacing-0">
+                                <thead className="bg-[#0F172A]/80 text-gray-400 font-bold uppercase tracking-widest text-[10px]">
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-10 text-center text-gray-500 italic">Belum ada catatan pengeluaran.</td>
+                                        <th className="px-6 py-4 border-b border-gray-700/50">Tanggal</th>
+                                        <th className="px-6 py-4 border-b border-gray-700/50">Proyek</th>
+                                        <th className="px-6 py-4 border-b border-gray-700/50">Kategori</th>
+                                        <th className="px-6 py-4 border-b border-gray-700/50">Deskripsi</th>
+                                        <th className="px-6 py-4 border-b border-gray-700/50 text-right">Nominal</th>
                                     </tr>
-                                ) : (
-                                    expenses.map((exp) => (
-                                        <tr key={exp.id} className="hover:bg-white/[0.02] transition-colors group">
-                                            <td className="px-6 py-4 text-gray-400 font-mono text-xs">{new Date(exp.date).toLocaleDateString('id-ID')}</td>
-                                            <td className="px-6 py-4 text-white font-bold">{exp.projects?.name || 'Overhead'}</td>
-                                            <td className="px-6 py-4">
-                                                <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded-md text-[10px] font-bold uppercase border border-blue-500/20">
-                                                    {exp.category}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-300 italic">"{exp.description}"</td>
-                                            <td className="px-6 py-4 text-right font-bold text-red-400">{formatIDR(exp.amount)}</td>
+                                </thead>
+                                <tbody className="divide-y divide-gray-800/50">
+                                    {expenses.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-10 text-center text-gray-500 italic">Belum ada catatan pengeluaran.</td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                    ) : (
+                                        expenses.map((exp) => (
+                                            <tr key={exp.id} className="hover:bg-white/[0.02] transition-colors group">
+                                                <td className="px-6 py-4 text-gray-400 font-mono text-xs">{new Date(exp.date).toLocaleDateString('id-ID')}</td>
+                                                <td className="px-6 py-4 text-white font-bold">{exp.projects?.name || 'Overhead'}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded-md text-[10px] font-bold uppercase border border-blue-500/20">
+                                                        {exp.category}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-300 italic">"{exp.description}"</td>
+                                                <td className="px-6 py-4 text-right font-bold text-red-400">{formatIDR(exp.amount)}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 ) : (
                     <FinanceMilestones

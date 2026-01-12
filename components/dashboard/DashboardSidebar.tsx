@@ -56,13 +56,13 @@ export default function DashboardSidebar() {
 
     return (
         <>
-            {/* Mobile Hamburger Toggle */}
-            <div className="lg:hidden fixed top-4 left-4 z-50">
+            {/* Mobile Bottom Navigation or Floating Hamburger? Let's use a Floating Hamburger with better visibility */}
+            <div className="lg:hidden fixed bottom-6 right-6 z-50">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="p-3 bg-[#1E293B] border border-gray-700/50 rounded-xl text-white shadow-xl backdrop-blur-md active:scale-95 transition-all"
+                    className="w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center active:scale-90 transition-all border border-blue-400/20"
                 >
-                    {isOpen ? <X size={24} /> : <Menu size={24} />}
+                    {isOpen ? <X size={28} /> : <Menu size={28} />}
                 </button>
             </div>
 

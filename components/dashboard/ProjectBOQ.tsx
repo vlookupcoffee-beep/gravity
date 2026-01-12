@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, Trash2, Save, X, Upload } from 'lucide-react' // Added Upload icon
+import { Plus, Search, Trash2, Save, X, Upload, Package, FileSpreadsheet } from 'lucide-react'
 import { getKHSItems, addProjectItem, getProjectItems, deleteProjectItem, deleteAllProjectItems } from '@/app/actions/boq-actions'
 import { getKHSProviders } from '@/app/actions/get-khs-providers'
 
@@ -196,65 +196,106 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
             </div>
 
             {items.length === 0 ? (
-                <div className="p-8 text-center">
-                    <p className="text-gray-400 font-medium">No items added yet</p>
-                    <p className="text-sm text-gray-500 mt-1">Add items manually or import from CSV.</p>
+                <div className="p-12 text-center">
+                    <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
+                        <Package size={24} className="text-gray-600" />
+                    </div>
+                    <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Belum Ada Item</p>
+                    <p className="text-[10px] text-gray-500 mt-2 uppercase tracking-tighter">Tambahkan item secara manual atau impor dari CSV.</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-[#0F172A] text-gray-400 font-medium border-b border-gray-700">
-                            <tr>
-                                <th className="px-4 py-3">Item Code</th>
-                                <th className="px-4 py-3">Description</th>
-                                {userRole !== 'mandor' && (
-                                    <>
-                                        <th className="px-4 py-3 text-right bg-green-500/5">Vendor Price</th>
-                                        <th className="px-4 py-3 text-center bg-green-500/5">Qty Vendor</th>
-                                    </>
-                                )}
-                                <th className="px-4 py-3 text-right bg-blue-500/5">Mandor Price</th>
-                                <th className="px-4 py-3 text-center bg-blue-500/5">Qty Mandor</th>
-                                {userRole !== 'mandor' && <th className="px-4 py-3">Actions</th>}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-700">
-                            {items.map((item) => (
-                                <tr key={item.id} className="hover:bg-gray-800/50">
-                                    <td className="px-4 py-3 text-white font-mono text-xs">{item.item_code}</td>
-                                    <td className="px-4 py-3 text-gray-300">{item.description}</td>
-
-                                    {/* Vendor Columns */}
+                <>
+                    {/* Desktop/Tablet View */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-[#0F172A] text-gray-400 font-bold uppercase tracking-[0.2em] text-[10px] border-b border-gray-700/50">
+                                <tr>
+                                    <th className="px-6 py-4">Item Code</th>
+                                    <th className="px-6 py-4">Description</th>
                                     {userRole !== 'mandor' && (
                                         <>
-                                            <td className="px-4 py-3 text-right text-gray-400 bg-green-500/5">{formatCurrency(item.unit_price)}</td>
-                                            <td className="px-4 py-3 text-center text-white font-semibold bg-green-500/5">
-                                                {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity || 0)} {item.unit}
-                                            </td>
+                                            <th className="px-6 py-4 text-right bg-green-500/[0.02]">Vendor Price</th>
+                                            <th className="px-6 py-4 text-center bg-green-500/[0.02]">Qty Vendor</th>
                                         </>
                                     )}
-
-                                    {/* Mandor Columns */}
-                                    <td className="px-4 py-3 text-right text-gray-400 bg-blue-500/5">{formatCurrency(item.unit_price_mandor || 0)}</td>
-                                    <td className="px-4 py-3 text-center text-white font-semibold bg-blue-500/5">
-                                        {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity_mandor || 0)} {item.unit}
-                                    </td>
-
-                                    {userRole !== 'mandor' && (
-                                        <td className="px-4 py-3">
-                                            <button
-                                                onClick={() => handleDelete(item.id)}
-                                                className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-900/20"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </td>
-                                    )}
+                                    <th className="px-6 py-4 text-right bg-blue-500/[0.02]">Mandor Price</th>
+                                    <th className="px-6 py-4 text-center bg-blue-500/[0.02]">Qty Mandor</th>
+                                    {userRole !== 'mandor' && <th className="px-6 py-4">Actions</th>}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="divide-y divide-gray-800/50">
+                                {items.map((item) => (
+                                    <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
+                                        <td className="px-6 py-4 text-blue-400 font-mono text-[11px] font-black">{item.item_code}</td>
+                                        <td className="px-6 py-4 text-gray-300 font-medium">{item.description}</td>
+
+                                        {userRole !== 'mandor' && (
+                                            <>
+                                                <td className="px-6 py-4 text-right text-gray-500 bg-green-500/[0.02] font-mono">{formatCurrency(item.unit_price)}</td>
+                                                <td className="px-6 py-4 text-center text-white font-black bg-green-500/[0.02]">
+                                                    {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity || 0)} <span className="text-[10px] text-gray-500">{item.unit}</span>
+                                                </td>
+                                            </>
+                                        )}
+
+                                        <td className="px-6 py-4 text-right text-gray-500 bg-blue-500/[0.02] font-mono">{formatCurrency(item.unit_price_mandor || 0)}</td>
+                                        <td className="px-6 py-4 text-center text-white font-black bg-blue-500/[0.02]">
+                                            {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity_mandor || 0)} <span className="text-[10px] text-gray-500">{item.unit}</span>
+                                        </td>
+
+                                        {userRole !== 'mandor' && (
+                                            <td className="px-6 py-4">
+                                                <button
+                                                    onClick={() => handleDelete(item.id)}
+                                                    className="text-red-900 group-hover:text-red-500 transition-colors p-2 rounded-lg hover:bg-red-500/10"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile View (Cards) */}
+                    <div className="md:hidden divide-y divide-gray-800/50">
+                        {items.map((item) => (
+                            <div key={item.id} className="p-4 space-y-4">
+                                <div className="flex justify-between items-start gap-2">
+                                    <div className="min-w-0">
+                                        <span className="text-[9px] font-black bg-gray-900 border border-gray-800 text-blue-400 px-1.5 py-0.5 rounded-md uppercase tracking-wider">{item.item_code}</span>
+                                        <h4 className="text-sm font-bold text-white mt-1 leading-tight">{item.description}</h4>
+                                    </div>
+                                    {userRole !== 'mandor' && (
+                                        <button
+                                            onClick={() => handleDelete(item.id)}
+                                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-xl transition"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    {userRole !== 'mandor' && (
+                                        <div className="bg-green-500/5 border border-green-500/10 p-3 rounded-2xl">
+                                            <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Vendor Side</p>
+                                            <p className="text-white font-black text-sm">{new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity || 0)} {item.unit}</p>
+                                            <p className="text-[10px] text-gray-500 mt-0.5">{formatCurrency(item.unit_price)}</p>
+                                        </div>
+                                    )}
+                                    <div className={`bg-blue-500/5 border border-blue-500/10 p-3 rounded-2xl ${userRole === 'mandor' ? 'col-span-2' : ''}`}>
+                                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Mandor Side</p>
+                                        <p className="text-white font-black text-sm">{new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity_mandor || 0)} {item.unit}</p>
+                                        <p className="text-[10px] text-gray-500 mt-0.5">{formatCurrency(item.unit_price_mandor || 0)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
             )}
 
             {/* ADD ITEM MODAL */}

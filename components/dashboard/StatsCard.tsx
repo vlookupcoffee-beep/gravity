@@ -23,7 +23,7 @@ export default function StatsCard({ label, value, icon: Icon, subtext, className
                    + text-xl (slightly smaller than 2xl) to fit easier.
                 */}
                 <div className="overflow-x-auto scrollbar-hide">
-                    <p className="text-xl font-bold text-white whitespace-nowrap">
+                    <p className="text-lg xs:text-xl font-black text-white whitespace-nowrap tracking-tight">
                         {value}
                     </p>
                 </div>

@@ -175,73 +175,140 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
 
             {/* Task List */}
             {loading ? (
-                <div className="p-8 text-center text-gray-400">Loading tasks...</div>
+                <div className="p-8 text-center text-gray-500 animate-pulse uppercase tracking-[0.2em] text-[10px] font-black">Memuat Task...</div>
             ) : tasks.length === 0 ? (
-                <div className="p-8 text-center">
-                    <p className="text-gray-400 font-medium">No tasks added yet</p>
-                    <p className="text-sm text-gray-500 mt-1">Create your first task to start planning.</p>
+                <div className="p-12 text-center">
+                    <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
+                        <Clock size={24} className="text-gray-600" />
+                    </div>
+                    <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Belum Ada Rencana Kerja</p>
+                    <p className="text-[10px] text-gray-500 mt-2 uppercase tracking-tighter">Tambahkan task untuk mulai memantau progres.</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-[#0F172A] text-gray-400 font-medium border-b border-gray-700">
-                            <tr>
-                                <th className="px-4 py-3">Task Name</th>
-                                <th className="px-4 py-3">Duration</th>
-                                <th className="px-4 py-3">Start Date</th>
-                                <th className="px-4 py-3">End Date</th>
-                                <th className="px-4 py-3">Progress</th>
-                                <th className="px-4 py-3">Status</th>
-                                <th className="px-4 py-3">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-700">
-                            {tasks.map((task) => (
-                                <tr key={task.id} className="hover:bg-gray-800/50">
-                                    <td className="px-4 py-3">
-                                        <div>
-                                            <p className="text-white font-medium">{task.task_name}</p>
-                                            {task.description && (
-                                                <p className="text-xs text-gray-500 truncate max-w-xs">{task.description}</p>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-400">{task.duration_days} days</td>
-                                    <td className="px-4 py-3 text-gray-400">{formatDate(task.start_date)}</td>
-                                    <td className="px-4 py-3 text-gray-400">{formatDate(task.end_date)}</td>
-                                    <td className="px-4 py-3">
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="100"
-                                            value={task.progress}
-                                            onChange={(e) => handleProgressChange(task.id, parseInt(e.target.value))}
-                                            className="w-24 accent-blue-500"
-                                        />
-                                        <span className="ml-2 text-xs text-gray-400">{task.progress}%</span>
-                                    </td>
-                                    <td className="px-4 py-3">{getStatusBadge(task.status)}</td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => openModal(task)}
-                                                className="text-blue-400 hover:text-blue-300 p-1 rounded hover:bg-blue-900/20"
-                                            >
-                                                <Edit size={14} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(task.id)}
-                                                className="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-900/20"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-                                    </td>
+                <>
+                    {/* Desktop View */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left text-sm border-separate border-spacing-0">
+                            <thead className="bg-[#0F172A] text-gray-400 font-bold uppercase tracking-[0.2em] text-[9px] border-b border-gray-700/50">
+                                <tr>
+                                    <th className="px-6 py-4">Task Name & Description</th>
+                                    <th className="px-6 py-4">Timeline</th>
+                                    <th className="px-6 py-4 text-center">Progress</th>
+                                    <th className="px-6 py-4 text-center">Status</th>
+                                    <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="divide-y divide-gray-800/50">
+                                {tasks.map((task) => (
+                                    <tr key={task.id} className="hover:bg-white/[0.02] transition-colors group">
+                                        <td className="px-6 py-4">
+                                            <div>
+                                                <p className="text-white font-black text-sm tracking-tight">{task.task_name}</p>
+                                                {task.description && (
+                                                    <p className="text-[10px] text-gray-500 truncate max-w-xs mt-0.5">{task.description}</p>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] text-gray-300 font-bold">{formatDate(task.start_date)}</span>
+                                                <span className="text-[9px] text-gray-600 font-medium uppercase tracking-tighter">Durasi: {task.duration_days} Hari</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col items-center gap-1.5 min-w-[120px]">
+                                                <div className="flex justify-between w-full px-1">
+                                                    <span className="text-[10px] font-black text-blue-400">{task.progress}%</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="100"
+                                                    value={task.progress}
+                                                    onChange={(e) => handleProgressChange(task.id, parseInt(e.target.value))}
+                                                    className="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                                />
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="inline-flex justify-center">
+                                                {getStatusBadge(task.status)}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex justify-end gap-1">
+                                                <button
+                                                    onClick={() => openModal(task)}
+                                                    className="p-2 text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(task.id)}
+                                                    className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile View (Cards) */}
+                    <div className="md:hidden divide-y divide-gray-800/50">
+                        {tasks.map((task) => (
+                            <div key={task.id} className="p-4 space-y-4">
+                                <div className="flex justify-between items-start gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <h4 className="font-black text-white text-sm leading-tight">{task.task_name}</h4>
+                                            {getStatusBadge(task.status)}
+                                        </div>
+                                        {task.description && (
+                                            <p className="text-[10px] text-gray-500 mt-1 leading-normal">{task.description}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex gap-1 shrink-0">
+                                        <button onClick={() => openModal(task)} className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-xl transition">
+                                            <Edit size={18} />
+                                        </button>
+                                        <button onClick={() => handleDelete(task.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded-xl transition">
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-gray-900/50 border border-gray-800 p-3 rounded-2xl">
+                                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Timeline</p>
+                                        <div className="flex items-center gap-1.5 text-gray-300">
+                                            <Calendar size={12} className="text-blue-500" />
+                                            <span className="text-[10px] font-bold">{formatDate(task.start_date)}</span>
+                                        </div>
+                                        <p className="text-[9px] text-gray-600 mt-1 uppercase font-medium">{task.duration_days} Hari Kerja</p>
+                                    </div>
+                                    <div className="bg-gray-900/50 border border-gray-800 p-3 rounded-2xl">
+                                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Update Progres</p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[11px] font-black text-blue-400 w-8">{task.progress}%</span>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                value={task.progress}
+                                                onChange={(e) => handleProgressChange(task.id, parseInt(e.target.value))}
+                                                className="flex-1 h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
             )}
 
             {/* Add/Edit Modal */}
