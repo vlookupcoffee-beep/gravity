@@ -78,14 +78,14 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         return { success: false, error: 'No KHS items found for this provider' }
     }
 
-    const khsMap = new Map(khsItems.map(i => [i.item_code.trim(), i]))
+    const khsMap = new Map(khsItems.map(i => [i.item_code.trim().toUpperCase(), i]))
 
     // 2. Parse CSV
     const text = await file.text()
     const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0)
 
     // Skip header
-    const startIndex = lines[0].toLowerCase().includes('item') ? 1 : 0
+    const startIndex = lines[0].toLowerCase().includes('item') || lines[0].toLowerCase().includes('design') ? 1 : 0
 
     // 3. Get Existing Project Items to MERGE by item_code
     const { data: existingProjectItems } = await supabase
@@ -93,9 +93,10 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         .select('*')
         .eq('project_id', projectId)
 
-    const existingMap = new Map((existingProjectItems || []).map(i => [i.item_code, i]))
+    const existingMap = new Map((existingProjectItems || []).map(i => [i.item_code.trim().toUpperCase(), i]))
     const itemsToUpsert = []
     let skippedCount = 0
+    let skippedCodes: string[] = []
 
     const uploadType = formData.get('uploadType') as string || 'vendor'
 
@@ -104,29 +105,24 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         const parts = line.includes(';') ? line.split(';') : line.split(',')
         if (parts.length < 2) continue
 
-        const code = parts[0].trim()
+        // Clean code: remove non-printable characters and trim
+        const code = parts[0].replace(/[^\x20-\x7E]/g, '').trim()
         const qtyStr = parts[1].trim()
 
         // Robust Parsing Logic:
-        // 1. If it has a comma AND a dot (e.g. 1.234,56 or 1,234.56)
-        // 2. If it has only a comma and it's followed by 3 digits (e.g. 1,000 -> 1000)
         let normalizedQty = qtyStr.replace(/\s/g, '')
 
         if (normalizedQty.includes(',') && normalizedQty.includes('.')) {
-            // Mixed separators: Assume the last one is the decimal
             if (normalizedQty.lastIndexOf(',') > normalizedQty.lastIndexOf('.')) {
                 normalizedQty = normalizedQty.replace(/\./g, '').replace(',', '.')
             } else {
                 normalizedQty = normalizedQty.replace(/,/g, '')
             }
         } else if (normalizedQty.includes(',')) {
-            // Only comma: Is it decimal (1,5) or thousand (1,000)?
             const pieces = normalizedQty.split(',')
             if (pieces.length === 2 && pieces[1].length === 3) {
-                // Highly likely a thousand separator (e.g. 1,000)
                 normalizedQty = normalizedQty.replace(/,/g, '')
             } else {
-                // Likely a decimal (e.g. 1,5 or 12,50)
                 normalizedQty = normalizedQty.replace(',', '.')
             }
         }
@@ -138,9 +134,9 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
             continue
         }
 
-        const khsItem = khsMap.get(code)
+        const khsItem = khsMap.get(code.toUpperCase())
         if (khsItem) {
-            const existing = existingMap.get(code)
+            const existing = existingMap.get(code.toUpperCase())
 
             const itemData = {
                 project_id: projectId,
@@ -158,6 +154,7 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
             itemsToUpsert.push(itemData)
         } else {
             skippedCount++
+            if (skippedCodes.length < 5) skippedCodes.push(code)
         }
     }
 
@@ -179,7 +176,7 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
     await updateProjectValue(projectId)
     revalidatePath(`/dashboard/projects/${projectId}`)
 
-    return { success: true, count: itemsToUpsert.length, skipped: skippedCount }
+    return { success: true, count: itemsToUpsert.length, skipped: skippedCount, skippedCodes }
 }
 
 // Add an item to the Project BOQ

@@ -129,7 +129,10 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
         setUploading(false)
 
         if (result.success) {
-            alert(`Successfully imported ${result.count || 0} items!${result.skipped ? ` (${result.skipped} items were skipped - code not found in KHS)` : ''}`)
+            const skippedMsg = result.skipped
+                ? `\n\n${result.skipped} item dilewati (Kode tidak ditemukan di KHS): \n${result.skippedCodes?.join(', ')}${result.skipped > 5 ? '...' : ''}`
+                : ''
+            alert(`✅ Sukses mengimpor ${result.count || 0} item!${skippedMsg}`)
             setIsUploadModalOpen(false)
             loadProjectItems()
             onUpdate?.()
