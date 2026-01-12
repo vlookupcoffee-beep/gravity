@@ -97,6 +97,7 @@ export async function createMilestone(milestoneData: any) {
                 amount: milestoneData.amount,
                 trigger_condition: milestoneData.trigger_condition,
                 trigger_value: milestoneData.trigger_value,
+                type: milestoneData.type || 'IN',
                 is_paid: false
             })
             .select()
@@ -116,6 +117,25 @@ export async function updateMilestonePayment(milestoneId: string, isPaid: boolea
 
     try {
         await checkOwnerRole()
+
+        // If it's a Mandor Payment (OUT), we also record it as an expense when paid
+        if (isPaid) {
+            const { data: milestone } = await supabase
+                .from('project_payment_milestones')
+                .select('*, projects(name)')
+                .eq('id', milestoneId)
+                .single()
+
+            if (milestone && milestone.type === 'OUT') {
+                await supabase.from('expenses').insert({
+                    project_id: milestone.project_id,
+                    amount: milestone.amount,
+                    category: 'Termin Mandor',
+                    description: `Pembayaran ${milestone.label} - ${milestone.projects?.name}`,
+                    date: new Date().toISOString().split('T')[0]
+                })
+            }
+        }
 
         const { error } = await supabase
             .from('project_payment_milestones')

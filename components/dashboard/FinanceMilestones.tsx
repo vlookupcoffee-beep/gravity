@@ -13,7 +13,8 @@ export default function FinanceMilestones({ projectId, projectValue }: { project
         label: '',
         percentage: '',
         trigger_condition: 'manual',
-        trigger_value: ''
+        trigger_value: '',
+        type: 'IN' as 'IN' | 'OUT'
     })
 
     const loadData = async () => {
@@ -47,7 +48,7 @@ export default function FinanceMilestones({ projectId, projectValue }: { project
 
         if (result.success) {
             setShowAddModal(false)
-            setNewMilestone({ label: '', percentage: '', trigger_condition: 'manual', trigger_value: '' })
+            setNewMilestone({ label: '', percentage: '', trigger_condition: 'manual', trigger_value: '', type: 'IN' })
             loadData()
         } else {
             alert('Gagal menambah termin: ' + result.error)
@@ -142,6 +143,9 @@ export default function FinanceMilestones({ projectId, projectValue }: { project
                                         <div className="flex items-center gap-2">
                                             <h4 className="font-bold text-white">{m.label}</h4>
                                             <span className="text-[10px] font-black px-1.5 py-0.5 bg-gray-800 rounded text-gray-400">{m.percentage}%</span>
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${m.type === 'OUT' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`}>
+                                                {m.type === 'OUT' ? 'MANDOR' : 'CLIENT'}
+                                            </span>
                                         </div>
                                         <p className="text-xs text-gray-500">
                                             Trigger: {m.trigger_condition === 'manual' ? 'Manual' : `${m.trigger_condition === 'field_progress' ? 'RO' : 'Total'} Progres ${m.trigger_value}%`}
@@ -150,12 +154,12 @@ export default function FinanceMilestones({ projectId, projectValue }: { project
                                 </div>
 
                                 <div className="text-right">
-                                    <p className="text-lg font-black text-white">{formatIDR(m.amount)}</p>
+                                    <p className={`text-lg font-black ${m.type === 'OUT' ? 'text-red-400' : 'text-white'}`}>{formatIDR(m.amount)}</p>
                                     {m.is_paid ? (
-                                        <p className="text-[10px] font-bold text-green-500 transition-all">DIBAYAR PADA {new Date(m.paid_at).toLocaleDateString('id-ID')}</p>
+                                        <p className="text-[10px] font-bold text-green-500 transition-all uppercase">{m.type === 'OUT' ? 'DIBAYARKAN' : 'DITERIMA'} PADA {new Date(m.paid_at).toLocaleDateString('id-ID')}</p>
                                     ) : (
                                         <p className={`text-[10px] font-bold px-2 py-0.5 rounded ${isTriggered ? 'bg-blue-500/20 text-blue-400 animate-pulse' : 'bg-gray-800 text-gray-500'}`}>
-                                            {isTriggered ? 'SIAP DITAGIH' : 'MENUNGGU PROGRES'}
+                                            {isTriggered ? (m.type === 'OUT' ? 'SIAP BAYAR' : 'SIAP TAGIH') : 'MENUNGGU PROGRES'}
                                         </p>
                                     )}
                                 </div>
@@ -201,6 +205,17 @@ export default function FinanceMilestones({ projectId, projectValue }: { project
                                             className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-2.5 text-white"
                                             placeholder="30"
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Tipe Termin</label>
+                                        <select
+                                            value={newMilestone.type}
+                                            onChange={(e) => setNewMilestone({ ...newMilestone, type: e.target.value as 'IN' | 'OUT' })}
+                                            className="w-full bg-[#0F172A] border border-gray-700 rounded-xl px-4 py-2.5 text-white"
+                                        >
+                                            <option value="IN">Revenue (Uang Masuk)</option>
+                                            <option value="OUT">Mandor (Uang Keluar)</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Trigger</label>

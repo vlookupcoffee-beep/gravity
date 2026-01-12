@@ -406,32 +406,58 @@ export async function POST(request: NextRequest) {
 
         // --- ADMIN/OWNER ONLY COMMANDS ---
         if (authUser.is_admin) {
-            // Command: /exp [Amount] [Description]
-            // Example: /exp 50000 Beli bensin
+            // Command: /exp [Project] [Amount] [Description]
+            // Example: /exp SKRJ 50000 Beli bensin
             if (text.startsWith('/exp')) {
-                const parts = text.replace('/exp', '').trim().split(' ')
-                const amountStr = parts[0]?.replace(/[^0-9]/g, '')
-                const amount = Number(amountStr)
-                const description = parts.slice(1).join(' ')
+                const rawContent = text.replace('/exp', '').trim()
+                const parts = rawContent.split(' ')
 
-                if (!amount || isNaN(amount)) {
-                    await sendTelegramReply(chatId, "❓ **Gunakan Format:** `/exp [Nominal] [Deskripsi]`\nContoh: `/exp 50000 Beli bensin`")
+                if (parts.length < 2) {
+                    await sendTelegramReply(chatId, "❓ **Gunakan Format:** `/exp [Project] [Nominal] [Deskripsi]`\nAtau: `/exp [Nominal] [Deskripsi]` (untuk umum)\n\nContoh: `/exp SKRJ 50000 Beli bensin`")
+                    return NextResponse.json({ success: true }, { status: 200 })
+                }
+
+                let projectNameOrAmount = parts[0]
+                let amountStr = ""
+                let description = ""
+                let projectId = null
+                let matchedProjectName = "Umum/Overhead"
+
+                // Try to find if first part is a project
+                const { data: projects } = await supabase.from('projects').select('id, name').ilike('name', `%${projectNameOrAmount}%`)
+
+                if (projects && projects.length > 0) {
+                    projectId = projects[0].id
+                    matchedProjectName = projects[0].name
+                    amountStr = parts[1]?.replace(/[^0-9]/g, '')
+                    description = parts.slice(2).join(' ')
+                } else {
+                    // First part is probably amount
+                    amountStr = projectNameOrAmount.replace(/[^0-9]/g, '')
+                    description = parts.slice(1).join(' ')
+                }
+
+                const amount = Number(amountStr)
+
+                if (!amountStr || isNaN(amount)) {
+                    await sendTelegramReply(chatId, "❌ **Nominal tidak valid.** Gunakan angka saja.")
                     return NextResponse.json({ success: true }, { status: 200 })
                 }
 
                 const { error: expError } = await supabase.from('expenses').insert({
+                    project_id: projectId,
                     amount: amount,
                     description: description || 'No description',
-                    category: 'Lainnya',
+                    category: projectId ? 'Proyek' : 'Lainnya',
                     created_by: userId,
                     date: new Date().toISOString().split('T')[0]
                 })
 
                 if (expError) {
-                    await sendTelegramReply(chatId, `❌ **Gagal mencatat pengeluaran:**\n${expError.message}`)
+                    await sendTelegramReply(chatId, `❌ **Gagal mencatat:**\n${expError.message}`)
                 } else {
                     const formattedAmount = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount)
-                    await sendTelegramReply(chatId, `✅ **Pengeluaran Tercatat!**\n\nNominal: *${formattedAmount}*\nCatatan: _${description}_`)
+                    await sendTelegramReply(chatId, `✅ **Pengeluaran Tercatat!**\n\n📌 Proyek: *${matchedProjectName}*\n💵 Nominal: *${formattedAmount}*\n📝 Catatan: _${description}_`)
                 }
                 return NextResponse.json({ success: true }, { status: 200 })
             }
