@@ -3,6 +3,50 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { checkOwnerRole } from './auth-actions'
+import { STANDARD_POW_TASKS } from '@/utils/pow-constants'
+
+export async function initializeProjectPow(projectId: string) {
+    const supabase = await createClient()
+
+    try {
+        await checkOwnerRole()
+
+        // 1. Check if tasks already exist
+        const { data: existing } = await supabase
+            .from('pow_tasks')
+            .select('id')
+            .eq('project_id', projectId)
+            .limit(1)
+
+        if (existing && existing.length > 0) {
+            return { success: false, error: 'Tasks already exist for this project' }
+        }
+
+        // 2. Insert standard tasks
+        const tasksToInsert = STANDARD_POW_TASKS.map(t => ({
+            project_id: projectId,
+            task_name: t.name,
+            order_index: t.order,
+            status: 'not-started',
+            progress: 0
+        }))
+
+        const { error } = await supabase
+            .from('pow_tasks')
+            .insert(tasksToInsert)
+
+        if (error) throw error
+
+        // Sync project progress (will be 0)
+        await syncProjectProgress(projectId)
+
+        revalidatePath(`/dashboard/projects/${projectId}`)
+        return { success: true }
+    } catch (e: any) {
+        console.error('Error initializing PoW:', e)
+        return { success: false, error: e.message }
+    }
+}
 
 export async function getPowTasks(projectId: string) {
     const supabase = await createClient()

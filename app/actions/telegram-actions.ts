@@ -16,9 +16,16 @@ export async function formatProjectReport(data: any) {
     message += `---------------------------\n\n`;
 
     const allowedCategories = [
-        "3.3 Penanaman Tiang dan Pembuatan HH",
-        "3.4 Penarikan Kabel Duct",
-        "3.5 Joint dan Terminasi"
+        "01.KICK OFF",
+        "02.SURVEY / AANWIJZHING LAPANGAN",
+        "03.DESIGN REVIEW MEETING",
+        "04.PERIJINAN",
+        "05.DELIVERY MATERIAL",
+        "06.PENARIKAN KABEL & TANAM TIANG",
+        "07.INSTALASI ODP",
+        "08.DONE INSTALASI",
+        "09.SUBMIT ABD V4",
+        "10.ATP"
     ];
 
     if (data.powTasks?.length > 0) {

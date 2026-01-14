@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Edit, Calendar, TrendingUp, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
-import { getPowTasks, createPowTask, updatePowTask, deletePowTask, updateTaskProgress } from '@/app/actions/pow-actions'
+import { getPowTasks, createPowTask, updatePowTask, deletePowTask, updateTaskProgress, initializeProjectPow } from '@/app/actions/pow-actions'
+import { STANDARD_POW_TASKS } from '@/utils/pow-constants'
 
 interface Props {
     projectId: string
@@ -138,12 +139,28 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
                         {tasks.length} tasks • Overall Progress: <span className="text-blue-400 font-semibold">{totalProgress}%</span>
                     </p>
                 </div>
-                <button
-                    onClick={() => openModal()}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2"
-                >
-                    <Plus size={16} /> Add Task
-                </button>
+                <div className="flex gap-2">
+                    {tasks.length === 0 && !loading && (
+                        <button
+                            onClick={async () => {
+                                if (confirm('Initialize standard 10-step PoW for this project?')) {
+                                    await initializeProjectPow(projectId)
+                                    loadTasks()
+                                    onUpdate?.()
+                                }
+                            }}
+                            className="bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center gap-2 border border-gray-600"
+                        >
+                            <CheckCircle2 size={16} /> Initialize PoW
+                        </button>
+                    )}
+                    <button
+                        onClick={() => openModal()}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2"
+                    >
+                        <Plus size={16} /> Add Task
+                    </button>
+                </div>
             </div>
 
             {/* Timeline Visualization */}
@@ -332,29 +349,10 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
                                         }}
                                         defaultValue=""
                                     >
-                                        <option value="">-- Select from template --</option>
-                                        <optgroup label="1. PREPARING">
-                                            <option value="1.2 Kick Off Meeting (KOM)">1.2 Kick Off Meeting (KOM)</option>
-                                            <option value="1.3 Survey">1.3 Survey</option>
-                                            <option value="1.4 Design Review Meeting (DRM)">1.4 Design Review Meeting (DRM)</option>
-                                        </optgroup>
-                                        <optgroup label="2. MATERIAL DELIVERY">
-                                            <option value="2.1 Fabrikasi Material">2.1 Fabrikasi Material</option>
-                                            <option value="2.2 Delivery Material HDPE">2.2 Delivery Material HDPE</option>
-                                            <option value="2.3 Delivery Material Kabel">2.3 Delivery Material Kabel</option>
-                                            <option value="2.4 Delivery Material Tiang">2.4 Delivery Material Tiang</option>
-                                        </optgroup>
-                                        <optgroup label="3. INSTALASI & COMMISSIONING TEST">
-                                            <option value="3.1 Pengurusan Ijin Kerja">3.1 Pengurusan Ijin Kerja</option>
-                                            <option value="3.2 Penggalian Tanah dan Penanaman HDPE">3.2 Penggalian Tanah dan Penanaman HDPE</option>
-                                            <option value="3.3 Penanaman Tiang dan Pembuatan HH">3.3 Penanaman Tiang dan Pembuatan HH</option>
-                                            <option value="3.4 Penarikan Kabel Duct">3.4 Penarikan Kabel Duct</option>
-                                            <option value="3.5 Joint dan Terminasi">3.5 Joint dan Terminasi</option>
-                                            <option value="3.6 Test Commisioning">3.6 Test Commisioning</option>
-                                        </optgroup>
-                                        <optgroup label="4. CLOSING">
-                                            <option value="4.1 ATP">4.1 ATP</option>
-                                        </optgroup>
+                                        <option value="">-- Select from standard steps --</option>
+                                        {STANDARD_POW_TASKS.map(t => (
+                                            <option key={t.name} value={t.name}>{t.name}</option>
+                                        ))}
                                     </select>
                                 </div>
 

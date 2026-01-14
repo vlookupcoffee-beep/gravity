@@ -4,27 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { getProjectMaterialSummary } from './material-actions'
 import { revalidatePath } from 'next/cache'
 
-const TASK_MATERIAL_MAPPING = {
-    "3.3 Penanaman Tiang dan Pembuatan HH": [
-        "NP-7.0-140-2S",
-        "NP-7.0-140-3S"
-    ],
-    "3.4 Penarikan Kabel": [
-        "AC-ADSS-SM-12C",
-        "AC-ADSS-SM-24C",
-        "AC-ADSS-SM-48C",
-        "ACC-STAINLESS BELT",
-        "ACC-Bracket",
-        "ACC-HELLICAL",
-        "RP-GALVANIS",
-        "FDT-STDG-288C"
-    ],
-    "3.5 Joint dan Terminasi": [
-        "FAT-PB-16C-SOLID",
-        "PS-1-16-FAT",
-        "JC-OF-SM-48C"
-    ]
-}
+import { TASK_MATERIAL_MAPPING } from '@/utils/pow-constants'
 
 export async function syncPowProgressWithMaterials(projectId: string) {
     const supabase = await createClient()

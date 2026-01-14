@@ -709,10 +709,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Case 2: /lapor command
-        const laporMatch = text.match(/^\/lapor(@\w+)?(?:\s+(.*))?$/s);
-        if (laporMatch) {
-            const botMention = laporMatch[1];
-            const content = laporMatch[2]?.trim();
+        if (text.startsWith('/lapor')) {
+            const commandPart = text.split(/\s+/)[0];
+            const content = text.slice(commandPart.length).trim();
 
             // Sub-case A: Just /lapor or /lapor@botname -> Show Project Buttons
             if (!content) {
@@ -773,7 +772,7 @@ export async function POST(request: NextRequest) {
             }
 
             // Sub-case C: /lapor [Full Report Content] -> Proceed to parsing below
-        } else if (!text.startsWith('/lapor')) {
+        } else {
             return NextResponse.json({ message: 'Not a recognized command' }, { status: 200 })
         }
 
