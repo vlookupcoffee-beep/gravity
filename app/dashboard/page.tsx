@@ -15,9 +15,6 @@ export default function DashboardPage() {
     const [projects, setProjects] = useState<any[]>([])
     const [powTasks, setPowTasks] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
-    const [renamingId, setRenamingId] = useState<string | null>(null)
-    const [newName, setNewName] = useState('')
-    const [isRenaming, setIsRenaming] = useState(false)
     const [showReport, setShowReport] = useState(false)
     const [userRole, setUserRole] = useState<string | null>(null)
 
@@ -38,20 +35,6 @@ export default function DashboardPage() {
         load()
     }, [])
 
-    const handleRename = async () => {
-        if (!renamingId || !newName.trim()) return
-
-        setIsRenaming(true)
-        const result = await renameProject(renamingId, newName)
-        if (result.success) {
-            setRenamingId(null)
-            setNewName('')
-            load()
-        } else {
-            alert('Failed to rename project: ' + result.error)
-        }
-        setIsRenaming(false)
-    }
 
     const totalProjects = projects.length
     const completedProjects = projects.filter(p => p.status === 'completed').length
@@ -281,18 +264,6 @@ export default function DashboardPage() {
                                                     <Link href={`/dashboard/projects/${project.id}`} className="text-gray-300 group-hover/tr:text-white font-bold text-xs tracking-[0.15em] block truncate pr-4 transition-all uppercase">
                                                         {siteId}
                                                     </Link>
-                                                    <div className="flex items-center gap-1 opacity-0 group-hover/tr:opacity-100 transition-opacity">
-                                                        <button
-                                                            onClick={() => {
-                                                                setRenamingId(project.id)
-                                                                setNewName(project.name)
-                                                            }}
-                                                            className="text-gray-500 hover:text-white transition-all p-1.5 hover:bg-white/5 rounded-lg"
-                                                            title="Rename Project"
-                                                        >
-                                                            <Pencil size={11} />
-                                                        </button>
-                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 sticky left-[294px] bg-[#0F172A] group-hover/tr:bg-[#131b2e] z-10 border-r border-gray-800/30 transition-colors">
@@ -338,46 +309,6 @@ export default function DashboardPage() {
                 )}
             </div>
 
-            {/* Rename Modal */}
-            {renamingId && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                    <div className="bg-[#1E293B] border border-gray-700 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-                        <div className="p-6 border-b border-gray-700">
-                            <h3 className="text-xl font-bold text-white">Rename Project</h3>
-                            <p className="text-sm text-gray-400 mt-1">Change the project display name.</p>
-                        </div>
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-2">New Name</label>
-                                <input
-                                    type="text"
-                                    value={newName}
-                                    onChange={(e) => setNewName(e.target.value)}
-                                    autoFocus
-                                    className="w-full bg-[#0F172A] border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                    placeholder="Enter project name..."
-                                />
-                            </div>
-                        </div>
-                        <div className="p-6 bg-[#0F172A]/50 flex justify-end gap-3">
-                            <button
-                                onClick={() => setRenamingId(null)}
-                                className="px-4 py-2 text-gray-400 hover:text-white transition"
-                                disabled={isRenaming}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleRename}
-                                disabled={isRenaming || !newName.trim()}
-                                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-medium transition shadow-lg shadow-blue-900/20"
-                            >
-                                {isRenaming ? 'Saving...' : 'Save Changes'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Report Modal */}
             {showReport && (
