@@ -153,13 +153,32 @@ export async function POST(request: NextRequest) {
                     }
                 }
 
-                // Sync PoW
-                if (report.project_id) {
-                    await syncPowProgressWithMaterials(report.project_id)
-                }
+                // --- OPTION 2: MILESTONE SELECTION ---
+                const { data: milestones } = await supabase
+                    .from('pow_tasks')
+                    .select('id, task_name')
+                    .eq('project_id', report.project_id)
+                    .lt('progress', 100)
+                    .order('order_index')
+
+                const milestoneButtons = milestones?.map(m => ([{
+                    text: `📍 ${m.task_name}`,
+                    callback_data: `ms_upd:${report.project_id}:${m.id}:${reportId}`
+                }])) || []
+
+                milestoneButtons.push([{ text: "🏁 Selesai & Tutup", callback_data: `ms_done:${reportId}` }])
 
                 await answerCallbackQuery(callbackQuery.id, "✅ Laporan Disetujui!")
-                await editTelegramMessage(chatId, messageId, `✅ **LAPORAN DISETUJUI**\n\nProject: *${report.projects?.name}*\nDistribusi: *${report.distribusi_name || '-'}*\n\nStatus: \`APPROVED\`\nStock updated for ${updatedItemsCount} items.`)
+                await editTelegramMessage(chatId, messageId,
+                    `✅ **LAPORAN DISETUJUI**\n\n` +
+                    `Project: *${report.projects?.name}*\n` +
+                    `Distribusi: *${report.distribusi_name || '-'}*\n\n` +
+                    `Status: \`APPROVED\`\n` +
+                    `Stock updated for ${updatedItemsCount} items.\n\n` +
+                    `💡 **Milestone selesai hari ini?**\n` +
+                    `(Klik untuk tandai 100%)`,
+                    { inline_keyboard: milestoneButtons }
+                )
 
                 // Notify original sender if we had their ID (we don't store it in daily_reports yet, but we could if we wanted to)
                 // For now, just finish.
@@ -176,6 +195,60 @@ export async function POST(request: NextRequest) {
 
                 await answerCallbackQuery(callbackQuery.id, "❌ Laporan Ditolak.")
                 await editTelegramMessage(chatId, messageId, `❌ **LAPORAN DITOLAK**\n\nProject: *${report.projects?.name}*\n\nStatus: \`REJECTED\``)
+            }
+
+            // Callback Logic: ms_upd:[projectId]:[taskId]:[reportId]
+            if (data.startsWith('ms_upd:')) {
+                const [_, projectId, taskId, reportId] = data.split(':')
+
+                // Update Milestone
+                await supabase.from('pow_tasks').update({ progress: 100, status: 'completed' }).eq('id', taskId)
+
+                // Force sync project progress percentage
+                await syncPowProgressWithMaterials(projectId)
+
+                // Re-fetch remaining for buttons
+                const { data: milestones } = await supabase
+                    .from('pow_tasks')
+                    .select('id, task_name')
+                    .eq('project_id', projectId)
+                    .lt('progress', 100)
+                    .order('order_index')
+
+                const { data: report } = await supabase.from('daily_reports').select('*, projects(name)').eq('id', reportId).single()
+
+                const milestoneButtons = milestones?.map(m => ([{
+                    text: `📍 ${m.task_name}`,
+                    callback_data: `ms_upd:${projectId}:${m.id}:${reportId}`
+                }])) || []
+
+                milestoneButtons.push([{ text: "🏁 Selesai & Tutup", callback_data: `ms_done:${reportId}` }])
+
+                await answerCallbackQuery(callbackQuery.id, "📍 Milestone Updated!")
+                await editTelegramMessage(chatId, messageId,
+                    `✅ **LAPORAN DISETUJUI**\n\n` +
+                    `Project: *${report?.projects?.name}*\n` +
+                    `Distribusi: *${report?.distribusi_name || '-'}*\n\n` +
+                    `Status: \`APPROVED\`\n\n` +
+                    `💡 **Milestone selesai hari ini?**\n` +
+                    `(Klik untuk tandai 100%)`,
+                    { inline_keyboard: milestoneButtons }
+                )
+            }
+
+            // Callback Logic: ms_done:[reportId]
+            if (data.startsWith('ms_done:')) {
+                const reportId = data.split(':')[1]
+                const { data: report } = await supabase.from('daily_reports').select('*, projects(name)').eq('id', reportId).single()
+
+                await answerCallbackQuery(callbackQuery.id, "✅ Selesai!")
+                await editTelegramMessage(chatId, messageId,
+                    `✅ **LAPORAN DISETUJUI**\n\n` +
+                    `Project: *${report?.projects?.name}*\n` +
+                    `Distribusi: *${report?.distribusi_name || '-'}*\n\n` +
+                    `Status: \`APPROVED\`\n\n` +
+                    `✨ Semua milestone hari ini telah dicatat.`
+                )
             }
 
             // --- RESTORED ORIGINAL CALLBACKS ---
