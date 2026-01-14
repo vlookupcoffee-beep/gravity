@@ -54,34 +54,47 @@ export async function bulkInitializeAllProjectsPow() {
     try {
         await checkOwnerRole()
 
-        // 1. Get all projects
+        // 1. DANGEROUS: Delete ALL existing PoW tasks for ALL projects
+        const { error: deleteError } = await supabase
+            .from('pow_tasks')
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000') // Efficient "delete all"
+
+        if (deleteError) throw deleteError
+
+        // 2. Get all projects
         const { data: projects } = await supabase.from('projects').select('id, name')
         if (!projects) return { success: false, error: 'No projects found' }
 
         let initializedCount = 0
         const errors = []
 
+        // 3. Initialize each project with standard tasks
         for (const project of projects) {
-            // Check if tasks exist
-            const { data: existing } = await supabase
-                .from('pow_tasks')
-                .select('id')
-                .eq('project_id', project.id)
-                .limit(1)
+            // Re-use logic for consistency
+            const tasksToInsert = STANDARD_POW_TASKS.map(t => ({
+                project_id: project.id,
+                task_name: t.name,
+                order_index: t.order,
+                status: 'not-started',
+                progress: 0
+            }))
 
-            if (!existing || existing.length === 0) {
-                const result = await initializeProjectPow(project.id)
-                if (result.success) {
-                    initializedCount++
-                } else {
-                    errors.push(`Failed for ${project.name}: ${result.error}`)
-                }
+            const { error: insertError } = await supabase
+                .from('pow_tasks')
+                .insert(tasksToInsert)
+
+            if (insertError) {
+                errors.push(`Failed for ${project.name}: ${insertError.message}`)
+            } else {
+                initializedCount++
             }
         }
 
         revalidatePath('/dashboard')
         return { success: true, count: initializedCount, errors: errors.length > 0 ? errors : undefined }
     } catch (e: any) {
+        console.error('Error in bulk reset:', e)
         return { success: false, error: e.message }
     }
 }

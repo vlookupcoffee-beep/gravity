@@ -127,11 +127,26 @@ export async function syncPowProgressWithMaterials(projectId: string) {
 
     if (updates.length > 0) {
         await Promise.all(updates)
-        revalidatePath(`/dashboard/projects/${projectId}`)
-        return { success: true, updatedCount: updates.length }
     }
 
-    return { success: true, updatedCount: 0 }
+    // --- LOGIC 5: Sync Overall Project Progress ---
+    const { data: latestTasks } = await supabase
+        .from('pow_tasks')
+        .select('progress')
+        .eq('project_id', projectId)
+
+    if (latestTasks && latestTasks.length > 0) {
+        const total = latestTasks.reduce((acc, t) => acc + (t.progress || 0), 0)
+        const overallProgress = Math.round(total / latestTasks.length)
+
+        await supabase
+            .from('projects')
+            .update({ progress: overallProgress })
+            .eq('id', projectId)
+    }
+
+    revalidatePath(`/dashboard/projects/${projectId}`)
+    return { success: true, updatedCount: updates.length }
 }
 
 

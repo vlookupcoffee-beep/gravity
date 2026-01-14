@@ -35,14 +35,14 @@ export default function DashboardPage() {
     }
 
     const handleBulkSync = async () => {
-        if (!confirm('Apakah Anda yakin ingin mensinkronisasi PoW untuk semua proyek? Ini akan memakan waktu beberapa saat.')) return
+        if (!confirm('PERINGATAN: Ini akan MENGHAPUS semua tugas PoW lama dan menggantinya dengan 10 tahap standar di SEMUA proyek. Progres akan dihitung ulang otomatis dari laporan. Lanjutkan?')) return
 
         setIsSyncing(true)
         const result = await bulkSyncAllProjectsPow()
         setIsSyncing(false)
 
         if (result.success) {
-            alert(`Berhasil! ${result.totalUpdated} perubahan diterapkan pada ${result.projectCount} proyek.`)
+            alert(`Berhasil reset dan sinkronisasi! ${result.totalUpdated} perubahan diterapkan pada ${result.projectCount} proyek.`)
             load()
         } else {
             alert('Gagal melakukan sinkronisasi: ' + result.error)
@@ -86,7 +86,7 @@ export default function DashboardPage() {
                                     className="bg-emerald-600/10 text-emerald-400 px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-emerald-600/20 transition-all border border-emerald-600/20 shadow-lg active:scale-95 disabled:opacity-50"
                                 >
                                     <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
-                                    <span className="font-semibold text-sm">{isSyncing ? 'Syncing...' : 'Sync All PoW'}</span>
+                                    <span className="font-semibold text-sm">{isSyncing ? 'Resetting...' : 'Reset & Sync All PoW'}</span>
                                 </button>
                             )}
                             <button
