@@ -137,13 +137,13 @@ export default function DashboardPage() {
 
             {/* PoW Table Widget */}
             <div className="bg-[#1E293B]/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 overflow-hidden shadow-2xl">
-                <div className="p-8 border-b border-gray-700/50 bg-[#1E293B]/20">
-                    <div className="flex justify-between items-center mb-6">
+                <div className="p-4 md:p-8 border-b border-gray-700/50 bg-[#1E293B]/20">
+                    <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
                         <div className="flex items-center gap-3">
                             <div className="w-1.5 h-8 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
                             <h2 className="text-xl font-bold text-white tracking-tight italic">Roadmap Operasional</h2>
                         </div>
-                        <Link href="/dashboard/projects" className="bg-[#0F172A]/50 border border-gray-700/50 text-blue-400 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-500/10 transition-all uppercase tracking-widest">
+                        <Link href="/dashboard/projects" className="bg-[#0F172A]/50 border border-gray-700/50 text-blue-400 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-500/10 transition-all uppercase tracking-widest text-center self-start md:self-auto">
                             Arsip Daftar
                         </Link>
                     </div>
