@@ -92,24 +92,37 @@ export async function syncPowProgressWithMaterials(projectId: string) {
         }
 
         // 3. Check for Material Usage match
-        let foundUsage = false
+        let matchedKeywords = []
         for (const [kw, linkedMaterials] of Object.entries(TASK_MATERIAL_KW_MAPPING)) {
             if (upperName.includes(kw) || (kw === "KABEL" && upperName.includes("PENARIKAN")) || (kw === "TIANG" && upperName.includes("PENANAMAN"))) {
-                foundUsage = true
-                const linkedSummary = materialSummary.filter(m => linkedMaterials.includes(m.name) || m.name.includes(kw))
-
-                let totalNeeded = linkedSummary.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
-                let totalUsed = linkedSummary.reduce((acc, m) => acc + (m.total_out || 0), 0)
-                const progress = totalNeeded > 0 ? Math.min(100, Math.round((totalUsed / totalNeeded) * 100)) : 0
-
-                if (progress !== task.progress) {
-                    updates.push(
-                        supabase.from('pow_tasks').update({ progress, status: progress === 100 ? 'completed' : 'in-progress' }).eq('id', task.id)
-                    )
-                    taskProgressMap.set(task.id, progress)
-                }
-                break
+                matchedKeywords.push(kw)
             }
+        }
+
+        if (matchedKeywords.length > 0) {
+            let allLinkedMaterials: string[] = []
+            for (const kw of matchedKeywords) {
+                // @ts-ignore
+                allLinkedMaterials = [...allLinkedMaterials, ...(TASK_MATERIAL_KW_MAPPING[kw] || [])]
+            }
+
+            // Filter materials that belong to ANY of the matched keywords
+            const linkedSummary = materialSummary.filter(m =>
+                allLinkedMaterials.includes(m.name) ||
+                matchedKeywords.some(kw => m.name.includes(kw))
+            )
+
+            let totalNeeded = linkedSummary.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
+            let totalUsed = linkedSummary.reduce((acc, m) => acc + (m.total_out || 0), 0)
+            const progress = totalNeeded > 0 ? Math.min(100, Math.round((totalUsed / totalNeeded) * 100)) : 0
+
+            if (progress !== task.progress) {
+                updates.push(
+                    supabase.from('pow_tasks').update({ progress, status: progress === 100 ? 'completed' : 'in-progress' }).eq('id', task.id)
+                )
+                taskProgressMap.set(task.id, progress)
+            }
+            continue
         }
     }
 
