@@ -445,12 +445,19 @@ export async function POST(request: NextRequest) {
         const isAuthorized = authUser && authUser.is_active
 
         // Fetch allowed projects for this user
-        const { data: allowedProjectsData } = await supabase
-            .from('telegram_user_projects')
-            .select('project_id')
-            .eq('telegram_id', userId)
+        // IF USER IS ADMIN: Allow ALL projects automatically ("All Role Open")
+        let allowedProjectIds: string[] = []
 
-        const allowedProjectIds = allowedProjectsData?.map(p => p.project_id) || []
+        if (authUser?.is_admin) {
+            const { data: allProjects } = await supabase.from('projects').select('id')
+            allowedProjectIds = allProjects?.map(p => p.id) || []
+        } else {
+            const { data: allowedProjectsData } = await supabase
+                .from('telegram_user_projects')
+                .select('project_id')
+                .eq('telegram_id', userId)
+            allowedProjectIds = allowedProjectsData?.map(p => p.project_id) || []
+        }
 
         // Case: /start command - Show Telegram ID & Help
         if (text.startsWith('/start')) {
@@ -479,7 +486,13 @@ export async function POST(request: NextRequest) {
                 startMessage += `Today Activity : [Kegiatan]\n`
                 startMessage += `Tomorrow Plan : [Rencana]\n\n`
                 startMessage += `[Material] : [HariIni]/[Total]/[Scope]\n`
-                startMessage += `\`\`\``
+                startMessage += `\`\`\`\n\n`
+
+                startMessage += `✨ **FITUR BARU: APPROVE & MILESTONE**\n`
+                startMessage += `Saat Admin menyetujui laporan:\n`
+                startMessage += `1. Klik tombol **✅ Approve**\n`
+                startMessage += `2. Bot akan menampilkan tombol Milestone (Kick Off, Survey, dll)\n`
+                startMessage += `3. Klik milestone yang selesai untuk tandai 100% secara instan.\n`
 
                 await sendTelegramReply(chatId, startMessage)
             } else {
