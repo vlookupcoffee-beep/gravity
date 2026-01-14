@@ -171,169 +171,229 @@ export default function DashboardPage() {
                 {projects.length === 0 ? (
                     <div className="p-8 text-center text-gray-400">No projects available.</div>
                 ) : (
-                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                        <table className="w-full text-left text-sm border-separate border-spacing-0">
-                            <thead className="bg-[#0F172A]/80 backdrop-blur-md text-gray-400 font-bold border-b border-gray-700/50 uppercase tracking-widest text-[10px]">
-                                <tr>
-                                    <th className="px-6 py-4 sticky left-0 bg-[#0F172A] z-20 border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">No</th>
-                                    <th className="px-6 py-4 sticky left-14 bg-[#0F172A] z-20 min-w-[240px] border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">Penamaan Proyek</th>
-                                    <th className="px-6 py-4 sticky left-[294px] bg-[#0F172A] z-20 text-center border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">Progres</th>
-                                    <th className="px-4 py-4 text-center bg-blue-500/10 border-l border-gray-700 group/h" colSpan={3}>
-                                        <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
-                                            <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse"></span>
-                                            TAHAP 1: PERSIAPAN
-                                        </div>
-                                    </th>
-                                    <th className="px-4 py-4 text-center bg-purple-500/10 border-l border-gray-700 group/h" colSpan={4}>
-                                        <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
-                                            <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)] animate-pulse"></span>
-                                            TAHAP 2: LOGISTIK
-                                        </div>
-                                    </th>
-                                    <th className="px-4 py-4 text-center bg-orange-500/10 border-l border-gray-700 group/h" colSpan={6}>
-                                        <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
-                                            <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse"></span>
-                                            TAHAP 3: PEMASANGAN
-                                        </div>
-                                    </th>
-                                    <th className="px-4 py-4 text-center bg-green-500/10 border-l border-gray-700 group/h">
-                                        <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
-                                            <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></span>
-                                            TAHAP 4: PENUTUPAN
-                                        </div>
-                                    </th>
-                                </tr>
-                                <tr className="text-[9px] bg-[#0F172A]/40">
-                                    <th className="px-6 py-2 sticky left-0 bg-[#0F172A] z-20 border-r border-gray-700/50 shadow-[2px_0_10px_rgba(0,0,0,0.3)]"></th>
-                                    <th className="px-6 py-2 sticky left-14 bg-[#0F172A] z-20 border-r border-gray-700/50 shadow-[2px_0_10px_rgba(0,0,0,0.3)]"></th>
-                                    <th className="px-6 py-2 sticky left-[294px] bg-[#0F172A] z-20 border-r border-gray-700/50 shadow-[2px_0_10px_rgba(0,0,0,0.3)]"></th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/30">KOM</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">SURVEY</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">DRM</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/30">FABRIKASI</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">HDPE</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">KABEL</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">TIANG</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/30">IJIN</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">HDPE</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">TIANG</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">KABEL</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">JOINT</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/10">TEST</th>
-                                    <th className="px-2 py-3 text-center border-l border-gray-700/30">ATP</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                                {projects.map((project, index) => {
-                                    // Get tasks for this project
-                                    const projectTasks = powTasks.filter((t: any) => t.projects?.id === project.id)
+                    <>
+                        {/* Desktop Table */}
+                        <div className="hidden md:block overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                            <table className="w-full text-left text-sm border-separate border-spacing-0">
+                                <thead className="bg-[#0F172A]/80 backdrop-blur-md text-gray-400 font-bold border-b border-gray-700/50 uppercase tracking-widest text-[10px]">
+                                    <tr>
+                                        <th className="px-6 py-4 sticky left-0 bg-[#0F172A] z-20 border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">No</th>
+                                        <th className="px-6 py-4 sticky left-14 bg-[#0F172A] z-20 min-w-[240px] border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">Penamaan Proyek</th>
+                                        <th className="px-6 py-4 sticky left-[294px] bg-[#0F172A] z-20 text-center border-r border-gray-700 shadow-[2px_0_10px_rgba(0,0,0,0.3)]">Progres</th>
+                                        <th className="px-4 py-4 text-center bg-blue-500/10 border-l border-gray-700 group/h" colSpan={3}>
+                                            <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
+                                                <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse"></span>
+                                                TAHAP 1: PERSIAPAN
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-4 text-center bg-purple-500/10 border-l border-gray-700 group/h" colSpan={4}>
+                                            <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
+                                                <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)] animate-pulse"></span>
+                                                TAHAP 2: LOGISTIK
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-4 text-center bg-orange-500/10 border-l border-gray-700 group/h" colSpan={6}>
+                                            <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
+                                                <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse"></span>
+                                                TAHAP 3: PEMASANGAN
+                                            </div>
+                                        </th>
+                                        <th className="px-4 py-4 text-center bg-green-500/10 border-l border-gray-700 group/h">
+                                            <div className="flex items-center justify-center gap-2 group-hover/h:scale-105 transition-transform">
+                                                <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse"></span>
+                                                TAHAP 4: PENUTUPAN
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr className="text-[9px] bg-[#0F172A]/40">
+                                        <th className="px-6 py-2 sticky left-0 bg-[#0F172A] z-20 border-r border-gray-700/50 shadow-[2px_0_10px_rgba(0,0,0,0.3)]"></th>
+                                        <th className="px-6 py-2 sticky left-14 bg-[#0F172A] z-20 border-r border-gray-700/50 shadow-[2px_0_10px_rgba(0,0,0,0.3)]"></th>
+                                        <th className="px-6 py-2 sticky left-[294px] bg-[#0F172A] z-20 border-r border-gray-700/50 shadow-[2px_0_10px_rgba(0,0,0,0.3)]"></th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/30">KOM</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">SURVEY</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">DRM</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/30">FABRIKASI</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">HDPE</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">KABEL</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">TIANG</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/30">IJIN</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">HDPE</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">TIANG</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">KABEL</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">JOINT</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/10">TEST</th>
+                                        <th className="px-2 py-3 text-center border-l border-gray-700/30">ATP</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-700">
+                                    {projects.map((project, index) => {
+                                        // Get tasks for this project
+                                        const projectTasks = powTasks.filter((t: any) => t.projects?.id === project.id)
 
-                                    // Calculate overall progress from average of task progress
-                                    const totalProgress = projectTasks.reduce((acc: number, t: any) => acc + (t.progress || 0), 0)
-                                    const overallProgress = projectTasks.length > 0 ? Math.round(totalProgress / projectTasks.length) : 0
+                                        // Calculate overall progress from average of task progress
+                                        const totalProgress = projectTasks.reduce((acc: number, t: any) => acc + (t.progress || 0), 0)
+                                        const overallProgress = projectTasks.length > 0 ? Math.round(totalProgress / projectTasks.length) : 0
 
-                                    // Project identifier abstraction
-                                    const siteId = `SITE-${project.id.slice(0, 4).toUpperCase()}`
+                                        // Project identifier abstraction
+                                        const siteId = `SITE-${project.id.slice(0, 4).toUpperCase()}`
 
-                                    // Helper to get task status icon
-                                    const getTaskIcon = (taskName: string) => {
-                                        const task = projectTasks.find((t: any) => t.task_name.includes(taskName))
-                                        if (!task) return <span className="text-gray-700/30">/</span>
+                                        // Helper to get task status icon
+                                        const getTaskIcon = (taskName: string) => {
+                                            const task = projectTasks.find((t: any) => t.task_name.includes(taskName))
+                                            if (!task) return <span className="text-gray-700/30">/</span>
 
-                                        const icon = (() => {
-                                            if (task.status === 'completed') return <CheckCircle2 className="text-blue-400 mx-auto" size={16} />
-                                            if (task.status === 'in-progress') return <TrendingUp className="text-blue-400/60 mx-auto" size={16} />
-                                            if (task.status === 'delayed') return <AlertCircle className="text-red-400/60 mx-auto" size={16} />
-                                            return <Clock className="text-gray-600 mx-auto" size={14} />
-                                        })()
+                                            const icon = (() => {
+                                                if (task.status === 'completed') return <CheckCircle2 className="text-blue-400 mx-auto" size={16} />
+                                                if (task.status === 'in-progress') return <TrendingUp className="text-blue-400/60 mx-auto" size={16} />
+                                                if (task.status === 'delayed') return <AlertCircle className="text-red-400/60 mx-auto" size={16} />
+                                                return <Clock className="text-gray-600 mx-auto" size={14} />
+                                            })()
+
+                                            return (
+                                                <div className="relative group flex justify-center items-center cursor-help">
+                                                    {icon}
+                                                    {/* Tooltip */}
+                                                    <div className="absolute bottom-full mb-2 hidden group-hover:block z-50 min-w-[200px] p-3 bg-gray-900/98 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl text-left animate-in fade-in slide-in-from-bottom-1">
+                                                        <div className="font-bold text-white text-[11px] mb-2 border-b border-gray-800 pb-2 tracking-tight uppercase">{task.task_name}</div>
+                                                        <div className="space-y-1.5">
+                                                            <div className="flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                                                <span>Status</span>
+                                                                <span className={
+                                                                    task.status === 'completed' ? 'text-blue-400' :
+                                                                        task.status === 'in-progress' ? 'text-blue-400/70' :
+                                                                            task.status === 'delayed' ? 'text-red-400' : 'text-gray-500'
+                                                                }>{task.status.replace('-', ' ')}</span>
+                                                            </div>
+                                                            <div className="flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                                                <span>Progres</span>
+                                                                <span className="text-white font-black">{task.progress || 0}%</span>
+                                                            </div>
+                                                            {task.description && (
+                                                                <div className="pt-2 mt-1 border-t border-gray-800 text-[9px] text-gray-500 leading-relaxed italic">
+                                                                    {task.description}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Arrow */}
+                                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900/98"></div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
 
                                         return (
-                                            <div className="relative group flex justify-center items-center cursor-help">
-                                                {icon}
-                                                {/* Tooltip */}
-                                                <div className="absolute bottom-full mb-2 hidden group-hover:block z-50 min-w-[200px] p-3 bg-gray-900/98 backdrop-blur-md border border-gray-700/50 rounded-xl shadow-2xl text-left animate-in fade-in slide-in-from-bottom-1">
-                                                    <div className="font-bold text-white text-[11px] mb-2 border-b border-gray-800 pb-2 tracking-tight uppercase">{task.task_name}</div>
-                                                    <div className="space-y-1.5">
-                                                        <div className="flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                                                            <span>Status</span>
-                                                            <span className={
-                                                                task.status === 'completed' ? 'text-blue-400' :
-                                                                    task.status === 'in-progress' ? 'text-blue-400/70' :
-                                                                        task.status === 'delayed' ? 'text-red-400' : 'text-gray-500'
-                                                            }>{task.status.replace('-', ' ')}</span>
-                                                        </div>
-                                                        <div className="flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                                                            <span>Progres</span>
-                                                            <span className="text-white font-black">{task.progress || 0}%</span>
-                                                        </div>
-                                                        {task.description && (
-                                                            <div className="pt-2 mt-1 border-t border-gray-800 text-[9px] text-gray-500 leading-relaxed italic">
-                                                                {task.description}
-                                                            </div>
-                                                        )}
+                                            <tr
+                                                key={project.id}
+                                                className="group/tr hover:bg-blue-600/[0.02] transition-colors duration-300 border-b border-gray-800/20"
+                                                data-project-row
+                                                data-project-name={project.name}
+                                            >
+                                                <td className="px-6 py-4 text-gray-600 font-mono text-[10px] sticky left-0 bg-[#0F172A] group-hover/tr:bg-[#131b2e] z-10 border-r border-gray-800/30 transition-colors uppercase tracking-widest">{String(index + 1).padStart(2, '0')}</td>
+                                                <td className="px-6 py-4 sticky left-14 bg-[#0F172A] group-hover/tr:bg-[#131b2e] z-10 border-r border-gray-800/30 transition-colors">
+                                                    <div className="flex items-center justify-between group/name">
+                                                        <Link href={`/dashboard/projects/${project.id}`} className="text-gray-300 group-hover/tr:text-white font-bold text-xs tracking-[0.15em] block truncate pr-4 transition-all uppercase">
+                                                            {siteId}
+                                                        </Link>
                                                     </div>
-                                                    {/* Arrow */}
-                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900/98"></div>
-                                                </div>
-                                            </div>
+                                                </td>
+                                                <td className="px-6 py-4 sticky left-[294px] bg-[#0F172A] group-hover/tr:bg-[#131b2e] z-10 border-r border-gray-800/30 transition-colors">
+                                                    <div className="flex items-center gap-3 w-full min-w-[120px]">
+                                                        <div className="flex-1 bg-gray-900 rounded-full h-1 overflow-hidden">
+                                                            <div
+                                                                className={`h-full rounded-full transition-all duration-1000 ease-out ${overallProgress === 100 ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.3)]' :
+                                                                    overallProgress >= 50 ? 'bg-blue-500/60' :
+                                                                        overallProgress > 0 ? 'bg-blue-500/30' : 'bg-gray-800'
+                                                                    }`}
+                                                                style={{ width: `${overallProgress}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className={`text-[10px] font-black w-8 text-right ${overallProgress === 100 ? 'text-blue-400' : 'text-gray-400'}`}>
+                                                            {overallProgress}%
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                {/* PREPARING */}
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('1.2')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('1.3')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('1.4')}</td>
+                                                {/* MATERIAL DELIVERY */}
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('2.1')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('2.2')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('2.3')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('2.4')}</td>
+                                                {/* INSTALASI & COMMISSIONING */}
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.1')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.2')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.3')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.4')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.5')}</td>
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.6')}</td>
+                                                {/* CLOSING */}
+                                                <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('4.1')}</td>
+                                            </tr>
                                         )
-                                    }
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
 
-                                    return (
-                                        <tr
-                                            key={project.id}
-                                            className="group/tr hover:bg-blue-600/[0.02] transition-colors duration-300 border-b border-gray-800/20"
-                                            data-project-row
-                                            data-project-name={project.name}
+                        {/* Mobile Card View */}
+                        <div className="md:hidden p-4 space-y-4">
+                            {projects.map((project, index) => {
+                                // Logic duplicated slightly for mobile, cleaner than prop drilling for this complexity
+                                const projectTasks = powTasks.filter((t: any) => t.projects?.id === project.id)
+                                const totalProgress = projectTasks.reduce((acc: number, t: any) => acc + (t.progress || 0), 0)
+                                const overallProgress = projectTasks.length > 0 ? Math.round(totalProgress / projectTasks.length) : 0
+                                const siteId = `SITE-${project.id.slice(0, 4).toUpperCase()}`
+
+                                return (
+                                    <div
+                                        key={project.id}
+                                        className="bg-[#1E293B]/60 backdrop-blur-md border border-gray-700/50 rounded-2xl p-5 shadow-lg active:scale-[0.98] transition-all duration-200"
+                                        data-project-row
+                                        data-project-name={project.name}
+                                    >
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase">
+                                                {siteId}
+                                            </div>
+                                            <div className={`
+                                                px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
+                                                ${project.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                                                    project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                                                        'bg-gray-700/30 text-gray-400 border border-gray-700'}
+                                            `}>
+                                                {project.status || 'Active'}
+                                            </div>
+                                        </div>
+
+                                        <h3 className="text-white font-bold text-lg mb-4 truncate">{project.name}</h3>
+
+                                        <div className="space-y-2 mb-5">
+                                            <div className="flex justify-between text-xs text-gray-400 font-bold uppercase tracking-wider">
+                                                <span>Overall Progress</span>
+                                                <span className={overallProgress === 100 ? 'text-blue-400' : 'text-white'}>{overallProgress}%</span>
+                                            </div>
+                                            <div className="h-2 bg-gray-900 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full rounded-full transition-all duration-1000 ${overallProgress === 100 ? 'bg-blue-500' : 'bg-blue-600'
+                                                        }`}
+                                                    style={{ width: `${overallProgress}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <Link
+                                            href={`/dashboard/projects/${project.id}`}
+                                            className="block w-full text-center bg-[#0F172A] border border-gray-700/50 text-gray-300 py-3 rounded-xl text-sm font-bold hover:bg-blue-600 hover:text-white hover:border-blue-500/50 transition-all uppercase tracking-wide"
                                         >
-                                            <td className="px-6 py-4 text-gray-600 font-mono text-[10px] sticky left-0 bg-[#0F172A] group-hover/tr:bg-[#131b2e] z-10 border-r border-gray-800/30 transition-colors uppercase tracking-widest">{String(index + 1).padStart(2, '0')}</td>
-                                            <td className="px-6 py-4 sticky left-14 bg-[#0F172A] group-hover/tr:bg-[#131b2e] z-10 border-r border-gray-800/30 transition-colors">
-                                                <div className="flex items-center justify-between group/name">
-                                                    <Link href={`/dashboard/projects/${project.id}`} className="text-gray-300 group-hover/tr:text-white font-bold text-xs tracking-[0.15em] block truncate pr-4 transition-all uppercase">
-                                                        {siteId}
-                                                    </Link>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 sticky left-[294px] bg-[#0F172A] group-hover/tr:bg-[#131b2e] z-10 border-r border-gray-800/30 transition-colors">
-                                                <div className="flex items-center gap-3 w-full min-w-[120px]">
-                                                    <div className="flex-1 bg-gray-900 rounded-full h-1 overflow-hidden">
-                                                        <div
-                                                            className={`h-full rounded-full transition-all duration-1000 ease-out ${overallProgress === 100 ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.3)]' :
-                                                                overallProgress >= 50 ? 'bg-blue-500/60' :
-                                                                    overallProgress > 0 ? 'bg-blue-500/30' : 'bg-gray-800'
-                                                                }`}
-                                                            style={{ width: `${overallProgress}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className={`text-[10px] font-black w-8 text-right ${overallProgress === 100 ? 'text-blue-400' : 'text-gray-400'}`}>
-                                                        {overallProgress}%
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            {/* PREPARING */}
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('1.2')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('1.3')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('1.4')}</td>
-                                            {/* MATERIAL DELIVERY */}
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('2.1')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('2.2')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('2.3')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('2.4')}</td>
-                                            {/* INSTALASI & COMMISSIONING */}
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.1')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.2')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.3')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.4')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.5')}</td>
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('3.6')}</td>
-                                            {/* CLOSING */}
-                                            <td className="px-1 py-4 text-center border-l border-gray-800/10 group-hover/tr:bg-blue-500/[0.01] transition-colors">{getTaskIcon('4.1')}</td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                            Lihat Detail
+                                        </Link>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </>
                 )}
             </div>
 
