@@ -5,6 +5,7 @@ import { syncPowProgressWithMaterials } from '@/app/actions/pow-sync-actions'
 import { getProjectDetails } from '@/app/actions/get-project-details'
 import { formatProjectReport } from '@/app/actions/telegram-actions'
 import { getProjectMaterialSummary, getAvailableDistributions } from '@/app/actions/material-actions'
+import { generateReportTemplate } from '@/utils/telegram-format'
 
 // Prevent caching for webhooks
 export const dynamic = 'force-dynamic'
@@ -329,6 +330,23 @@ export async function POST(request: NextRequest) {
                 }
             }
 
+            // Callback Logic: format_lapor:[projectId]
+            if (data.startsWith('format_lapor:')) {
+                const projectId = data.split(':')[1]
+                const { data: project } = await supabase.from('projects').select('name').eq('id', projectId).single()
+
+                if (!project) {
+                    await answerCallbackQuery(callbackQuery.id, "❌ Proyek tidak ditemukan.")
+                    return NextResponse.json({ success: true })
+                }
+
+                const summary = await getProjectMaterialSummary(projectId)
+                const template = generateReportTemplate(project.name, summary)
+
+                await sendTelegramReply(chatId, template)
+                await answerCallbackQuery(callbackQuery.id)
+            }
+
             return NextResponse.json({ success: true })
         }
 
@@ -340,6 +358,7 @@ export async function POST(request: NextRequest) {
         const text = update.message.text as string
         const chatId = update.message.chat.id
         const userId = update.message.from?.id
+        const messageId = update.message.message_id
 
         // --- AUTHORIZATION CHECK ---
         // We check if the sender (userId) is in the authorized list.
@@ -373,9 +392,11 @@ export async function POST(request: NextRequest) {
                 startMessage += `• \`/project\` - Tabel daftar proyek milik Anda.\n`
                 startMessage += `• \`/status [Proyek]\` - Detail progres Proyek.\n`
                 startMessage += `• \`/material [Proyek]\` - Stok material & distribusi.\n`
-                startMessage += `• \`/lapor\` - Kirim laporan & potong stok harian.\n\n`
+                startMessage += `• \`/lapor\` - Pilih proyek dan dapatkan format laporan.\n`
+                startMessage += `• \`/lapor [Proyek]\` - Langsung ambil format laporan proyek.\n\n`
 
                 startMessage += `📝 **FORMAT LAPOR SINGKAT:**\n`
+                startMessage += `(Salin, isi, lalu kirim kembali ke bot)\n`
                 startMessage += `\`\`\`\n`
                 startMessage += `/lapor\n`
                 startMessage += `Site Name : [Nama Proyek]\n`
@@ -688,7 +709,71 @@ export async function POST(request: NextRequest) {
         }
 
         // Case 2: /lapor command
-        if (!text.startsWith('/lapor')) {
+        const laporMatch = text.match(/^\/lapor(@\w+)?(?:\s+(.*))?$/s);
+        if (laporMatch) {
+            const botMention = laporMatch[1];
+            const content = laporMatch[2]?.trim();
+
+            // Sub-case A: Just /lapor or /lapor@botname -> Show Project Buttons
+            if (!content) {
+                let query = supabase
+                    .from('projects')
+                    .select('id, name')
+                    .order('name', { ascending: true })
+
+                if (allowedProjectIds.length > 0) {
+                    query = query.in('id', allowedProjectIds)
+                }
+
+                const { data: projects } = await query
+
+                if (!projects || projects.length === 0) {
+                    await sendTelegramReply(chatId, '📭 **Akses Terbatas**: Anda belum ditugaskan ke proyek manapun.')
+                    return NextResponse.json({ success: true })
+                }
+
+                const buttons = projects.map(p => ([{
+                    text: `📝 ${p.name}`,
+                    callback_data: `format_lapor:${p.id}`
+                }]))
+
+                await sendTelegramReply(chatId, '💡 **SILAKAN PILIH PROYEK**\nKlik tombol di bawah untuk mendapatkan format laporan yang sesuai:', {
+                    inline_keyboard: buttons
+                })
+                return NextResponse.json({ success: true })
+            }
+
+            // Sub-case B: /lapor [ProjectName] (but not full report) -> Give Template
+            // We check if content is short and doesn't contain standard report markers
+            const isFullReport = content.toLowerCase().includes('site name') || content.includes('\n');
+
+            if (!isFullReport) {
+                const projectName = content;
+                let query = supabase
+                    .from('projects')
+                    .select('id, name')
+                    .ilike('name', `%${projectName}%`)
+                    .limit(1)
+
+                query = query.in('id', allowedProjectIds)
+
+                const { data: projects } = await query
+
+                if (!projects || projects.length === 0) {
+                    await sendTelegramReply(chatId, `❌ **Proyek Tidak Ditemukan**: "${projectName}"`)
+                    return NextResponse.json({ success: true })
+                }
+
+                const project = projects[0];
+                const summary = await getProjectMaterialSummary(project.id)
+                const template = generateReportTemplate(project.name, summary)
+
+                await sendTelegramReply(chatId, template)
+                return NextResponse.json({ success: true })
+            }
+
+            // Sub-case C: /lapor [Full Report Content] -> Proceed to parsing below
+        } else if (!text.startsWith('/lapor')) {
             return NextResponse.json({ message: 'Not a recognized command' }, { status: 200 })
         }
 
