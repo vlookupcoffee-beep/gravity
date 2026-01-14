@@ -48,6 +48,44 @@ export async function initializeProjectPow(projectId: string) {
     }
 }
 
+export async function bulkInitializeAllProjectsPow() {
+    const supabase = await createClient()
+
+    try {
+        await checkOwnerRole()
+
+        // 1. Get all projects
+        const { data: projects } = await supabase.from('projects').select('id, name')
+        if (!projects) return { success: false, error: 'No projects found' }
+
+        let initializedCount = 0
+        const errors = []
+
+        for (const project of projects) {
+            // Check if tasks exist
+            const { data: existing } = await supabase
+                .from('pow_tasks')
+                .select('id')
+                .eq('project_id', project.id)
+                .limit(1)
+
+            if (!existing || existing.length === 0) {
+                const result = await initializeProjectPow(project.id)
+                if (result.success) {
+                    initializedCount++
+                } else {
+                    errors.push(`Failed for ${project.name}: ${result.error}`)
+                }
+            }
+        }
+
+        revalidatePath('/dashboard')
+        return { success: true, count: initializedCount, errors: errors.length > 0 ? errors : undefined }
+    } catch (e: any) {
+        return { success: false, error: e.message }
+    }
+}
+
 export async function getPowTasks(projectId: string) {
     const supabase = await createClient()
 

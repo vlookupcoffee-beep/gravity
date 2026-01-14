@@ -111,3 +111,38 @@ export async function syncPowProgressWithMaterials(projectId: string) {
 
     return { success: true, updatedCount: 0 }
 }
+
+export async function bulkSyncAllProjectsPow() {
+    const supabase = await createClient()
+
+    try {
+        const { checkOwnerRole } = await import('./auth-actions')
+        const { bulkInitializeAllProjectsPow } = await import('./pow-actions')
+        await checkOwnerRole()
+
+        // 1. Ensure all projects have PoW tasks initialized
+        await bulkInitializeAllProjectsPow()
+
+        // 2. Get all projects
+        const { data: projects } = await supabase.from('projects').select('id')
+        if (!projects) return { success: false, error: 'No projects found' }
+
+        let totalUpdated = 0
+        const results = []
+
+        // 3. Sync each project
+        for (const project of projects) {
+            const result = await syncPowProgressWithMaterials(project.id)
+            if (result.success) {
+                totalUpdated += (result.updatedCount || 0)
+            }
+            results.push({ id: project.id, ...result })
+        }
+
+        revalidatePath('/dashboard')
+        return { success: true, totalUpdated, projectCount: projects.length }
+    } catch (e: any) {
+        console.error('Error in bulkSyncAllProjectsPow:', e)
+        return { success: false, error: e.message }
+    }
+}

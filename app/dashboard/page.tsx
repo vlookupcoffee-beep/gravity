@@ -9,12 +9,15 @@ import { Activity, CheckCircle, Clock, Database, Plus, TrendingUp, CheckCircle2,
 import Link from 'next/link'
 import ProjectReportModal from '@/components/dashboard/ProjectReportModal'
 import { getCurrentUser } from '@/app/actions/auth-actions'
+import { bulkSyncAllProjectsPow } from '@/app/actions/pow-sync-actions'
+import { RefreshCw } from 'lucide-react'
 import DashboardCharts from '@/components/dashboard/DashboardCharts'
 
 export default function DashboardPage() {
     const [projects, setProjects] = useState<any[]>([])
     const [powTasks, setPowTasks] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [isSyncing, setIsSyncing] = useState(false)
     const [showReport, setShowReport] = useState(false)
     const [userRole, setUserRole] = useState<string | null>(null)
 
@@ -29,6 +32,21 @@ export default function DashboardPage() {
         setPowTasks(powData)
         setUserRole(user?.role || null)
         setLoading(false)
+    }
+
+    const handleBulkSync = async () => {
+        if (!confirm('Apakah Anda yakin ingin mensinkronisasi PoW untuk semua proyek? Ini akan memakan waktu beberapa saat.')) return
+
+        setIsSyncing(true)
+        const result = await bulkSyncAllProjectsPow()
+        setIsSyncing(false)
+
+        if (result.success) {
+            alert(`Berhasil! ${result.totalUpdated} perubahan diterapkan pada ${result.projectCount} proyek.`)
+            load()
+        } else {
+            alert('Gagal melakukan sinkronisasi: ' + result.error)
+        }
     }
 
     useEffect(() => {
@@ -58,9 +76,19 @@ export default function DashboardPage() {
                     <h1 className="text-3xl font-extrabold text-white tracking-tight">Ringkasan Dashboard</h1>
                     <p className="text-gray-400 mt-1 font-medium italic">Memantau evolusi proyek Anda secara real-time.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                     {userRole !== 'mandor' && (
                         <>
+                            {userRole === 'owner' && (
+                                <button
+                                    onClick={handleBulkSync}
+                                    disabled={isSyncing}
+                                    className="bg-emerald-600/10 text-emerald-400 px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-emerald-600/20 transition-all border border-emerald-600/20 shadow-lg active:scale-95 disabled:opacity-50"
+                                >
+                                    <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
+                                    <span className="font-semibold text-sm">{isSyncing ? 'Syncing...' : 'Sync All PoW'}</span>
+                                </button>
+                            )}
                             <button
                                 onClick={() => setShowReport(true)}
                                 className="bg-[#1E293B]/50 backdrop-blur-md text-white px-5 py-2.5 rounded-xl flex items-center gap-2 hover:bg-gray-700 transition-all border border-gray-700/50 shadow-lg active:scale-95"
