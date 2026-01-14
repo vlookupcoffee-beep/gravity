@@ -274,6 +274,12 @@ export async function bulkCreateMaterials(materials: {
 
         revalidatePath('/dashboard/materials')
 
+        // Trigger PoW Sync for all involved projects
+        const projectIds = Array.from(new Set(materials.map(m => m.project_id).filter(id => !!id))) as string[]
+        for (const pid of projectIds) {
+            await syncPowProgressWithMaterials(pid)
+        }
+
         return {
             success: errors.length === 0,
             count: results.length,
@@ -447,6 +453,80 @@ export async function getProjectMaterialSummary(projectId: string, distributionN
         })
     }
 
+    // --- FALLBACK: If no requirements, derive from Structures & Routes ---
+    if (summaryMap.size === 0) {
+        const { data: structures } = await supabase
+            .from('structures')
+            .select('name, type')
+            .eq('project_id', projectId)
+
+        const { data: routes } = await supabase
+            .from('routes')
+            .select('name, type, path')
+            .eq('project_id', projectId)
+
+        // Count Poles
+        const poleCount = structures?.filter(s => s.type === 'POLE' || s.name?.toUpperCase().includes('TIANG')).length || 0
+        if (poleCount > 0) {
+            summaryMap.set('virtual-pole', {
+                id: 'virtual-pole',
+                name: 'TIANG (POLE)',
+                unit: 'BATANG',
+                total_in: 0,
+                total_out: 0,
+                quantity_needed: poleCount
+            })
+        }
+
+        // Count ODP/FAT
+        const odpCount = structures?.filter(s => s.type === 'ODP' || s.name?.toUpperCase().includes('FAT') || s.name?.toUpperCase().includes('ODP')).length || 0
+        if (odpCount > 0) {
+            summaryMap.set('virtual-odp', {
+                id: 'virtual-odp',
+                name: 'ODP / FAT',
+                unit: 'UNIT',
+                total_in: 0,
+                total_out: 0,
+                quantity_needed: odpCount
+            })
+        }
+
+        // Calculate Cable Length (exclude HDPE)
+        let totalCableLength = 0
+        if (routes) {
+            routes.forEach((route: any) => {
+                if (route.type === 'HDPE' || route.name?.toUpperCase().includes('HDPE')) return
+
+                if (Array.isArray(route.path) && route.path.length > 1) {
+                    for (let i = 0; i < route.path.length - 1; i++) {
+                        const p1 = route.path[i]
+                        const p2 = route.path[i + 1]
+                        if (p1.lat && p1.lon && p2.lat && p2.lon) {
+                            // Simple distance calculation (reusing logic from get-project-details)
+                            const R = 6371
+                            const dLat = (p2.lat - p1.lat) * Math.PI / 180
+                            const dLon = (p2.lon - p1.lon) * Math.PI / 180
+                            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2)
+                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+                            totalCableLength += (R * c * 1000) // Meters
+                        }
+                    }
+                }
+            })
+        }
+
+        if (totalCableLength > 0) {
+            summaryMap.set('virtual-cable', {
+                id: 'virtual-cable',
+                name: 'KABEL FO (ADSS/DC)',
+                unit: 'METER',
+                total_in: 0,
+                total_out: 0,
+                quantity_needed: Math.round(totalCableLength)
+            })
+        }
+    }
+
     return Array.from(summaryMap.values())
 }
 
@@ -468,6 +548,10 @@ export async function updateMaterialRequirement(projectId: string, materialId: s
 
         revalidatePath(`/dashboard/projects/${projectId}`)
         revalidatePath('/dashboard/materials')
+
+        // Trigger PoW Sync
+        await syncPowProgressWithMaterials(projectId)
+
         return { success: true }
     } catch (e: any) {
         return { success: false, error: e.message }

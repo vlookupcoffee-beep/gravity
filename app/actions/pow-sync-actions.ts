@@ -16,7 +16,7 @@ export async function syncPowProgressWithMaterials(projectId: string) {
     // 2. Fetch PoW tasks for this project
     const { data: powTasks, error: powError } = await supabase
         .from('pow_tasks')
-        .select('id, task_name, progress')
+        .select('*')
         .eq('project_id', projectId)
 
     if (powError || !powTasks) {
@@ -25,38 +25,81 @@ export async function syncPowProgressWithMaterials(projectId: string) {
     }
 
     const updates = []
+    const materialProgress = new Map<string, number>()
 
-    // 3. Calculate progress for each mapped task
+    // --- LOGIC 1: Keyword matching for Qualitative Tasks (01-04, 09-10) ---
+    const { data: reports } = await supabase
+        .from('daily_reports')
+        .select('today_activity')
+        .eq('project_id', projectId)
+
+    const allActivities = reports?.map(r => r.today_activity?.toUpperCase() || '').join(' ') || ''
+
+    const keywordMapping = {
+        "01.KICK OFF": ["KICK OFF", "KOM"],
+        "02.SURVEY / AANWIJZHING LAPANGAN": ["SURVEY", "AANWIJZHING"],
+        "03.DESIGN REVIEW MEETING": ["DRM", "DESIGN REVIEW"],
+        "04.PERIJINAN": ["IJIN", "PERMIT", "PERIJINAN"],
+        "09.SUBMIT ABD V4": ["SUBMIT ABD", "ABD V4"],
+        "10.ATP": ["ATP", "BAST"]
+    }
+
+    for (const [taskName, keywords] of Object.entries(keywordMapping)) {
+        const task = powTasks.find(t => t.task_name === taskName)
+        if (task && task.progress < 100) {
+            const match = keywords.some(k => allActivities.includes(k))
+            if (match) {
+                updates.push(
+                    supabase.from('pow_tasks').update({ progress: 100, status: 'completed' }).eq('id', task.id)
+                )
+            }
+        }
+    }
+
+    // --- LOGIC 2: Material Delivery (05) ---
+    const task05 = powTasks.find(t => t.task_name === "05.DELIVERY MATERIAL")
+    if (task05) {
+        let totalNeeded = materialSummary.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
+        let totalIn = materialSummary.reduce((acc, m) => acc + (m.total_in || 0), 0)
+        const progress = totalNeeded > 0 ? Math.min(100, Math.round((totalIn / totalNeeded) * 100)) : 0
+        if (progress !== task05.progress) {
+            updates.push(
+                supabase.from('pow_tasks').update({ progress, status: progress === 100 ? 'completed' : 'in-progress' }).eq('id', task05.id)
+            )
+        }
+    }
+
+    // --- LOGIC 3: Material Usage (06, 07) ---
     for (const [taskName, linkedMaterials] of Object.entries(TASK_MATERIAL_MAPPING)) {
         const matchingTask = powTasks.find(t => t.task_name === taskName)
         if (!matchingTask) continue
 
-        // Filter summary for linked materials
         const linkedSummary = materialSummary.filter(m => linkedMaterials.includes(m.name))
+        let progress = 0
 
         if (linkedSummary.length > 0) {
-            let totalNeeded = 0
-            let totalUsed = 0
+            let totalNeeded = linkedSummary.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
+            let totalUsed = linkedSummary.reduce((acc, m) => acc + (m.total_out || 0), 0)
+            progress = totalNeeded > 0 ? Math.min(100, Math.round((totalUsed / totalNeeded) * 100)) : 0
 
-            linkedSummary.forEach(m => {
-                totalNeeded += (m.quantity_needed || 0)
-                totalUsed += (m.total_out || 0)
-            })
-
-            // Calculate progress (capped at 100)
-            const calculatedProgress = totalNeeded > 0
-                ? Math.min(100, Math.round((totalUsed / totalNeeded) * 100))
-                : 0
-
-            // Only update if different
-            if (calculatedProgress !== matchingTask.progress) {
+            if (progress !== matchingTask.progress) {
                 updates.push(
-                    supabase
-                        .from('pow_tasks')
-                        .update({ progress: calculatedProgress })
-                        .eq('id', matchingTask.id)
+                    supabase.from('pow_tasks').update({ progress, status: progress === 100 ? 'completed' : 'in-progress' }).eq('id', matchingTask.id)
                 )
             }
+        }
+        materialProgress.set(taskName, progress || matchingTask.progress)
+    }
+
+    // --- LOGIC 4: Installation Done (08) ---
+    const task08 = powTasks.find(t => t.task_name === "08.DONE INSTALASI")
+    if (task08) {
+        const p06 = materialProgress.get("06.PENARIKAN KABEL & TANAM TIANG") || 0
+        const p07 = materialProgress.get("07.INSTALASI ODP") || 0
+        if (p06 === 100 && p07 === 100 && task08.progress < 100) {
+            updates.push(
+                supabase.from('pow_tasks').update({ progress: 100, status: 'completed' }).eq('id', task08.id)
+            )
         }
     }
 

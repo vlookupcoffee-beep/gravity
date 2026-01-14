@@ -830,6 +830,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: reportError.message }, { status: 500 })
         }
 
+        // --- SYNC POW ON SUBMISSION (for keyword-based tasks) ---
+        await syncPowProgressWithMaterials(projectId)
+
         // 3. Process Items
         for (const item of reportData.items) {
             const searchName = item.rawName.split('(')[0].trim()
