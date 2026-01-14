@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { getProjectMaterialSummary } from './material-actions'
 import { revalidatePath } from 'next/cache'
 
-import { TASK_MATERIAL_MAPPING } from '@/utils/pow-constants'
+import { TASK_MATERIAL_KW_MAPPING } from '@/utils/pow-constants'
 
 export async function syncPowProgressWithMaterials(projectId: string) {
     const supabase = await createClient()
@@ -25,9 +25,9 @@ export async function syncPowProgressWithMaterials(projectId: string) {
     }
 
     const updates = []
-    const materialProgress = new Map<string, number>()
+    const taskProgressMap = new Map<string, number>()
 
-    // --- LOGIC 1: Keyword matching for Qualitative Tasks (01-04, 09-10) ---
+    // Fetch reports for qualitative tasks
     const { data: reports } = await supabase
         .from('daily_reports')
         .select('today_activity')
@@ -35,70 +35,92 @@ export async function syncPowProgressWithMaterials(projectId: string) {
 
     const allActivities = reports?.map(r => r.today_activity?.toUpperCase() || '').join(' ') || ''
 
-    const keywordMapping = {
-        "01.KICK OFF": ["KICK OFF", "KOM"],
-        "02.SURVEY / AANWIJZHING LAPANGAN": ["SURVEY", "AANWIJZHING"],
-        "03.DESIGN REVIEW MEETING": ["DRM", "DESIGN REVIEW"],
-        "04.PERIJINAN": ["IJIN", "PERMIT", "PERIJINAN"],
-        "09.SUBMIT ABD V4": ["SUBMIT ABD", "ABD V4"],
-        "10.ATP": ["ATP", "BAST"]
+    // --- LOGIC 1: Keyword matching for Qualitative Tasks ---
+    const qualitativeMapping = {
+        "KICK OFF": ["KICK OFF", "KOM"],
+        "SURVEY": ["SURVEY", "AANWIJZHING"],
+        "DRM": ["DRM", "DESIGN REVIEW"],
+        "IJIN": ["IJIN", "PERMIT", "PERIJINAN"],
+        "ABD": ["SUBMIT ABD", "ABD V4"],
+        "ATP": ["ATP", "BAST"]
     }
 
-    for (const [taskName, keywords] of Object.entries(keywordMapping)) {
-        const task = powTasks.find(t => t.task_name === taskName)
-        if (task && task.progress < 100) {
-            const match = keywords.some(k => allActivities.includes(k))
-            if (match) {
+    for (const task of powTasks) {
+        const upperName = task.task_name.toUpperCase()
+
+        // 1. Check for Qualitative match
+        let foundQual = false
+        for (const [key, keywords] of Object.entries(qualitativeMapping)) {
+            if (upperName.includes(key) || keywords.some(k => upperName.includes(k))) {
+                foundQual = true
+                if (task.progress < 100) {
+                    const matchInReports = keywords.some(k => allActivities.includes(k)) || allActivities.includes(key)
+                    if (matchInReports) {
+                        updates.push(
+                            supabase.from('pow_tasks').update({ progress: 100, status: 'completed' }).eq('id', task.id)
+                        )
+                        taskProgressMap.set(task.id, 100)
+                    }
+                }
+                break
+            }
+        }
+        if (foundQual) continue
+
+        // 2. Check for Delivery match
+        if (upperName.includes("DELIVERY") || upperName.includes("LOGISTIK")) {
+            let totalNeeded = 0
+            let totalIn = 0
+
+            // If task name is specific (e.g. "Delivery ... Kabel"), filter materials
+            let relevantMaterials = materialSummary
+            if (upperName.includes("KABEL")) relevantMaterials = materialSummary.filter(m => m.name.includes("KABEL") || m.name.includes("ADSS"))
+            if (upperName.includes("TIANG")) relevantMaterials = materialSummary.filter(m => m.name.includes("TIANG") || m.name.includes("NP"))
+            if (upperName.includes("ODP") || upperName.includes("FAT")) relevantMaterials = materialSummary.filter(m => m.name.includes("ODP") || m.name.includes("FAT") || m.name.includes("PS"))
+
+            totalNeeded = relevantMaterials.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
+            totalIn = relevantMaterials.reduce((acc, m) => acc + (m.total_in || 0), 0)
+
+            const progress = totalNeeded > 0 ? Math.min(100, Math.round((totalIn / totalNeeded) * 100)) : 0
+            if (progress !== task.progress) {
                 updates.push(
-                    supabase.from('pow_tasks').update({ progress: 100, status: 'completed' }).eq('id', task.id)
+                    supabase.from('pow_tasks').update({ progress, status: progress === 100 ? 'completed' : 'in-progress' }).eq('id', task.id)
                 )
+                taskProgressMap.set(task.id, progress)
+            }
+            continue
+        }
+
+        // 3. Check for Material Usage match
+        let foundUsage = false
+        for (const [kw, linkedMaterials] of Object.entries(TASK_MATERIAL_KW_MAPPING)) {
+            if (upperName.includes(kw) || (kw === "KABEL" && upperName.includes("PENARIKAN")) || (kw === "TIANG" && upperName.includes("PENANAMAN"))) {
+                foundUsage = true
+                const linkedSummary = materialSummary.filter(m => linkedMaterials.includes(m.name) || m.name.includes(kw))
+
+                let totalNeeded = linkedSummary.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
+                let totalUsed = linkedSummary.reduce((acc, m) => acc + (m.total_out || 0), 0)
+                const progress = totalNeeded > 0 ? Math.min(100, Math.round((totalUsed / totalNeeded) * 100)) : 0
+
+                if (progress !== task.progress) {
+                    updates.push(
+                        supabase.from('pow_tasks').update({ progress, status: progress === 100 ? 'completed' : 'in-progress' }).eq('id', task.id)
+                    )
+                    taskProgressMap.set(task.id, progress)
+                }
+                break
             }
         }
     }
 
-    // --- LOGIC 2: Material Delivery (05) ---
-    const task05 = powTasks.find(t => t.task_name === "05.DELIVERY MATERIAL")
-    if (task05) {
-        let totalNeeded = materialSummary.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
-        let totalIn = materialSummary.reduce((acc, m) => acc + (m.total_in || 0), 0)
-        const progress = totalNeeded > 0 ? Math.min(100, Math.round((totalIn / totalNeeded) * 100)) : 0
-        if (progress !== task05.progress) {
+    // --- LOGIC 4: Specialized Done logic (only if specifically named) ---
+    const doneTask = powTasks.find(t => t.task_name.toUpperCase().includes("DONE") || t.task_name.toUpperCase().includes("SELESAI INSTALASI"))
+    if (doneTask && doneTask.progress < 100) {
+        // Check if all installation tasks are done
+        const installTasks = powTasks.filter(t => t.task_name.toUpperCase().includes("KABEL") || t.task_name.toUpperCase().includes("TIANG") || t.task_name.toUpperCase().includes("ODP"))
+        if (installTasks.length > 0 && installTasks.every(t => (taskProgressMap.get(t.id) || t.progress) === 100)) {
             updates.push(
-                supabase.from('pow_tasks').update({ progress, status: progress === 100 ? 'completed' : 'in-progress' }).eq('id', task05.id)
-            )
-        }
-    }
-
-    // --- LOGIC 3: Material Usage (06, 07) ---
-    for (const [taskName, linkedMaterials] of Object.entries(TASK_MATERIAL_MAPPING)) {
-        const matchingTask = powTasks.find(t => t.task_name === taskName)
-        if (!matchingTask) continue
-
-        const linkedSummary = materialSummary.filter(m => linkedMaterials.includes(m.name))
-        let progress = 0
-
-        if (linkedSummary.length > 0) {
-            let totalNeeded = linkedSummary.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
-            let totalUsed = linkedSummary.reduce((acc, m) => acc + (m.total_out || 0), 0)
-            progress = totalNeeded > 0 ? Math.min(100, Math.round((totalUsed / totalNeeded) * 100)) : 0
-
-            if (progress !== matchingTask.progress) {
-                updates.push(
-                    supabase.from('pow_tasks').update({ progress, status: progress === 100 ? 'completed' : 'in-progress' }).eq('id', matchingTask.id)
-                )
-            }
-        }
-        materialProgress.set(taskName, progress || matchingTask.progress)
-    }
-
-    // --- LOGIC 4: Installation Done (08) ---
-    const task08 = powTasks.find(t => t.task_name === "08.DONE INSTALASI")
-    if (task08) {
-        const p06 = materialProgress.get("06.PENARIKAN KABEL & TANAM TIANG") || 0
-        const p07 = materialProgress.get("07.INSTALASI ODP") || 0
-        if (p06 === 100 && p07 === 100 && task08.progress < 100) {
-            updates.push(
-                supabase.from('pow_tasks').update({ progress: 100, status: 'completed' }).eq('id', task08.id)
+                supabase.from('pow_tasks').update({ progress: 100, status: 'completed' }).eq('id', doneTask.id)
             )
         }
     }
@@ -111,6 +133,7 @@ export async function syncPowProgressWithMaterials(projectId: string) {
 
     return { success: true, updatedCount: 0 }
 }
+
 
 export async function bulkSyncAllProjectsPow() {
     const supabase = await createClient()
