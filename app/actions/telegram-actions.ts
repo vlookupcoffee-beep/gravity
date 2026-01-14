@@ -44,7 +44,7 @@ export async function formatProjectReport(data: any) {
             const usage = m.quantity_needed > 0 ? Math.min(100, Math.round((m.total_out / m.quantity_needed) * 100)) : 0;
             const dots = Math.round(usage / 10);
             const bar = '🟦'.repeat(dots) + '⬜'.repeat(10 - dots);
-            message += `- ${m.name}: \`${usage}%\`\n  [${bar}]\n`;
+            message += `- ${m.name}: \`${usage}%\` (${m.total_out}/${m.quantity_needed})\n  [${bar}]\n`;
         });
         message += `\n`;
         if (data.materialRatio) {
