@@ -1,12 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { LayoutDashboard, FolderKanban, Map as MapIcon, Settings, Receipt, LogOut, User, Package, Menu, X } from 'lucide-react'
+import { LayoutDashboard, FolderKanban, Map as MapIcon, Settings, Receipt, LogOut, User, Package, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-export default function DashboardSidebar() {
+interface SidebarProps {
+    isCollapsed?: boolean
+    onToggle?: () => void
+}
+
+export default function DashboardSidebar({ isCollapsed = false, onToggle }: SidebarProps) {
     const pathname = usePathname()
     const [user, setUser] = useState<any>(null)
     const [isOpen, setIsOpen] = useState(false)
@@ -56,7 +61,7 @@ export default function DashboardSidebar() {
 
     return (
         <>
-            {/* Mobile Bottom Navigation or Floating Hamburger? Let's use a Floating Hamburger with better visibility */}
+            {/* Mobile Bottom Navigation or Floating Hamburger */}
             <div className="lg:hidden fixed bottom-6 right-6 z-50">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
@@ -75,14 +80,23 @@ export default function DashboardSidebar() {
             )}
 
             <aside className={`
-                fixed top-0 bottom-0 left-0 w-64 bg-[#0B1120] border-r border-gray-800 flex flex-col h-full z-[45] print:hidden
-                transition-transform duration-300 ease-in-out lg:translate-x-0
-                ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+                fixed top-0 bottom-0 left-0 bg-[#0B1120] border-r border-gray-800 flex flex-col h-full z-[45] print:hidden
+                transition-all duration-300 ease-in-out lg:translate-x-0
+                ${isCollapsed ? 'w-20' : 'w-64'}
+                ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
-                <div className="p-6 border-b border-gray-800">
-                    <div className="flex flex-col items-center gap-2">
+                {/* Collapse Toggle Button (Desktop) */}
+                <button
+                    onClick={onToggle}
+                    className="hidden lg:flex absolute -right-3 top-10 w-6 h-6 bg-blue-600 rounded-full items-center justify-center text-white border border-blue-400/20 shadow-lg z-50 hover:bg-blue-500 transition-colors"
+                >
+                    {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
+
+                <div className={`p-6 border-b border-gray-800 transition-all duration-300 ${isCollapsed ? 'items-center px-4' : ''}`}>
+                    <div className={`flex flex-col items-center gap-2 ${isCollapsed ? '' : ''}`}>
                         <div className="flex items-center gap-3">
-                            <div className="relative w-10 h-10 flex items-center justify-center">
+                            <div className="relative w-8 h-8 flex items-center justify-center">
                                 <Image
                                     src="/logo.png"
                                     alt="Logo"
@@ -90,26 +104,30 @@ export default function DashboardSidebar() {
                                     className="object-contain"
                                 />
                             </div>
-                            <span className="text-lg font-bold text-white tracking-widest">NAKA</span>
+                            {!isCollapsed && <span className="text-lg font-bold text-white tracking-widest whitespace-nowrap">NAKA</span>}
                         </div>
-                        <p className="text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase text-center mt-1">
-                            Network Protocol
-                        </p>
+                        {!isCollapsed && (
+                            <p className="text-[10px] text-gray-500 font-bold tracking-[0.2em] uppercase text-center mt-1">
+                                Network Protocol
+                            </p>
+                        )}
                     </div>
                 </div>
 
-                <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
+                <nav className="p-4 space-y-2 flex-1 overflow-y-auto scrollbar-hide">
                     {menuItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 ${isActive(item.href)
-                                ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
-                                : 'text-gray-500 hover:bg-gray-800/50 hover:text-white'
+                            title={isCollapsed ? item.label : ''}
+                            className={`flex items-center gap-4 rounded-xl transition-all duration-200 ${isCollapsed ? 'p-3 justify-center' : 'px-4 py-3'} 
+                                ${isActive(item.href)
+                                    ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]'
+                                    : 'text-gray-500 hover:bg-gray-800/50 hover:text-white'
                                 }`}
                         >
                             <item.icon size={20} className={isActive(item.href) ? 'drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : ''} />
-                            <span className="font-bold text-sm tracking-tight">{item.label}</span>
+                            {!isCollapsed && <span className="font-bold text-sm tracking-tight whitespace-nowrap">{item.label}</span>}
                         </Link>
                     ))}
                 </nav>
@@ -117,17 +135,19 @@ export default function DashboardSidebar() {
                 <div className="p-4 border-t border-gray-800 space-y-4">
                     {/* User Profile */}
                     {user && (
-                        <div className="px-4 py-3 bg-gray-800/30 rounded-2xl border border-gray-700/30">
+                        <div className={`transition-all duration-300 bg-gray-800/30 rounded-2xl border border-gray-700/30 ${isCollapsed ? 'p-2' : 'px-4 py-3'}`}>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/40">
+                                <div className="min-w-[40px] h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/40">
                                     <User size={18} className="text-white" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-black text-white truncate uppercase tracking-tighter">
-                                        {user.full_name || 'Admin Protokol'}
-                                    </p>
-                                    <p className="text-[10px] text-gray-500 truncate font-bold">{user.username}</p>
-                                </div>
+                                {!isCollapsed && (
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-black text-white truncate uppercase tracking-tighter">
+                                            {user.full_name || 'Admin Protokol'}
+                                        </p>
+                                        <p className="text-[10px] text-gray-500 truncate font-bold">{user.username}</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -135,10 +155,11 @@ export default function DashboardSidebar() {
                     {/* Logout Button */}
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-4 px-4 py-3 text-gray-500 rounded-xl hover:bg-red-500/10 hover:text-red-400 w-full transition-all duration-200 font-bold text-sm"
+                        title={isCollapsed ? 'Keluar Sesi' : ''}
+                        className={`flex items-center gap-4 text-gray-500 rounded-xl hover:bg-red-500/10 hover:text-red-400 w-full transition-all duration-200 font-bold text-sm ${isCollapsed ? 'p-3 justify-center' : 'px-4 py-3'}`}
                     >
                         <LogOut size={20} />
-                        <span>Keluar Sesi</span>
+                        {!isCollapsed && <span className="whitespace-nowrap">Keluar Sesi</span>}
                     </button>
                 </div>
             </aside>

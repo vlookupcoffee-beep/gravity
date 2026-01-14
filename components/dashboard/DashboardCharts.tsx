@@ -14,7 +14,7 @@ export default function DashboardCharts({ projects }: DashboardChartsProps) {
     const barData = projects
         .slice(0, 8) // Show top 8 for clarity
         .map(p => ({
-            name: p.name.length > 15 ? p.name.substring(0, 12) + '...' : p.name,
+            name: `SITE-${p.id.slice(0, 4).toUpperCase()}`,
             fullName: p.name,
             progress: p.progress || 0
         }))
