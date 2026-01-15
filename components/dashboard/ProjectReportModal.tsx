@@ -1,12 +1,10 @@
-
 'use client'
 
 import { useState } from 'react'
-import { X, CheckCircle2, TrendingUp, AlertCircle, Clock, Package, Loader2, BarChart3, PieChart, FileBarChart } from 'lucide-react'
+import { X, CheckCircle2, TrendingUp, AlertCircle, Clock, Package, Loader2, BarChart3, PieChart, FileBarChart, Download, Send, Users, User as UserIcon } from 'lucide-react'
 import { sendTelegramReport } from '@/app/actions/telegram-actions'
-import { Send, Users, User as UserIcon } from 'lucide-react'
+import { generateGlobalReportCsv } from '@/app/actions/csv-export-actions'
 
-// Add global styles for PDF export to disable problematic CSS
 const pdfStyles = `
   .pdf-export-active * {
     transition: none !important;
@@ -41,6 +39,31 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
     const [isDownloading, setIsDownloading] = useState(false)
     const [telegramTarget, setTelegramTarget] = useState<'private' | 'group'>('group')
     const [sendSuccess, setSendSuccess] = useState(false)
+
+    const handleDownloadCsv = async () => {
+        try {
+            setIsDownloading(true)
+            const csvContent = await generateGlobalReportCsv()
+
+            if (!csvContent) throw new Error("Gagal generate CSV")
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.setAttribute('href', url)
+            link.setAttribute('download', `Global_Report_${new Date().toISOString().split('T')[0]}.csv`)
+            link.style.visibility = 'hidden'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+
+        } catch (error: any) {
+            console.error("CSV Download error:", error)
+            alert("Gagal download CSV: " + error.message)
+        } finally {
+            setIsDownloading(false)
+        }
+    }
 
     const reportDate = new Date().toLocaleDateString('id-ID', {
         day: '2-digit',
@@ -93,6 +116,16 @@ export default function ProjectReportModal({ mode, data, onClose }: ProjectRepor
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
+                        {mode === 'global' && (
+                            <button
+                                onClick={handleDownloadCsv}
+                                disabled={isDownloading}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                            >
+                                <Download size={14} />
+                                {isDownloading ? 'Downloading...' : 'Download CSV'}
+                            </button>
+                        )}
                         <div className="flex bg-slate-100 p-1 rounded-xl mr-2">
                             <button
                                 onClick={() => setTelegramTarget('private')}
