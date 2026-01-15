@@ -27,6 +27,12 @@ export function generateReportTemplate(projectName: string, materials: any[], di
         template += `[Daftar Material] : 0/0/0\n`;
     }
 
+    template += `\nPerizinan :\n`;
+    template += `Kelurahan : 0/0/0\n`;
+    template += `PU (jika ada) : 0/0/0\n`;
+    template += `RW : 0/0/0\n`;
+    template += `RT : 0/0/0\n`;
+
     template += `\`\`\``;
 
     return template;

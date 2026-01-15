@@ -941,7 +941,21 @@ export async function POST(request: NextRequest) {
                 material_name_snapshot: item.rawName,
                 quantity_scope: item.scope,
                 quantity_total: item.totalDone,
-                quantity_today: item.todayDone
+                quantity_today: item.todayDone,
+                category: 'SOW'
+            })
+        }
+
+        // 3b. Process Permits
+        for (const permit of reportData.permits) {
+            await supabase.from('daily_report_items').insert({
+                report_id: report.id,
+                material_id: null,
+                material_name_snapshot: permit.rawName,
+                quantity_scope: permit.scope,
+                quantity_total: permit.totalDone,
+                quantity_today: permit.todayDone,
+                category: 'PERMIT'
             })
         }
 
@@ -960,6 +974,22 @@ export async function POST(request: NextRequest) {
                 adminMsg += `• ${it.rawName}: \`${it.todayDone}\`\n`
             }
         })
+
+        if (reportData.permits && reportData.permits.length > 0) {
+            adminMsg += `\n📑 **Perizinan:**\n`
+            reportData.permits.forEach(it => {
+                // Always show permits progress if scope > 0 or done > 0, or just if todayDone > 0?
+                // User wants to see report. "Breakdown ... sama seperti laporan progres".
+                // In progress report (adminMsg above), we only show items with todayDone > 0.
+                // But for permits, maybe we want to see status even if 0 today?
+                // Let's stick to consistent behavior: show if today > 0, OR maybe show all if it's permits?
+                // Let's show if today > 0 for now to keep it concise, or maybe check user intent.
+                // User said "breakdown ... sama seperti laporan progres", so mimicking behavior.
+                if (it.todayDone > 0) {
+                    adminMsg += `• ${it.rawName}: \`${it.todayDone}\`\n`
+                }
+            })
+        }
 
         const buttons = {
             inline_keyboard: [[

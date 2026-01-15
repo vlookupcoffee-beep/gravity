@@ -5,6 +5,7 @@ export interface ParsedReport {
     executor: string | null;
     waspang: string | null;
     items: ParsedItem[];
+    permits: ParsedItem[];
     todayActivity: string | null;
     tomorrowPlan: string | null;
 }
@@ -26,14 +27,14 @@ export function parseTelegramMessage(text: string): ParsedReport {
         executor: null,
         waspang: null,
         items: [],
+        permits: [],
         todayActivity: null,
         tomorrowPlan: null
     };
 
-    let parsingItems = false;
     let activityBuffer: string[] = [];
     let planBuffer: string[] = [];
-    let currentSection: 'header' | 'sow' | 'activity' | 'plan' = 'header';
+    let currentSection: 'header' | 'sow' | 'permits' | 'activity' | 'plan' = 'header';
 
     for (const line of lines) {
         const trimmed = line.trim();
@@ -42,6 +43,10 @@ export function parseTelegramMessage(text: string): ParsedReport {
         // Detect Sections
         if (trimmed.toLowerCase().includes('sow :')) {
             currentSection = 'sow';
+            continue;
+        }
+        if (trimmed.toLowerCase().includes('perizinan :')) {
+            currentSection = 'permits';
             continue;
         }
         if (trimmed.toLowerCase().startsWith('today activity')) {
@@ -69,9 +74,10 @@ export function parseTelegramMessage(text: string): ParsedReport {
             if (trimmed.toLowerCase().startsWith('executor')) report.executor = trimmed.split(':')[1]?.trim() || null;
             if (trimmed.toLowerCase().startsWith('waspang')) report.waspang = trimmed.split(':')[1]?.trim() || null;
         }
-        else if (currentSection === 'sow') {
+        else if (currentSection === 'sow' || currentSection === 'permits') {
             // Format: Name (Code): Qty/Done/Today
             // Example: NP-7.0-140-3S (TIANG 3S):123/0/0
+            // Example Permit: Kelurahan : 1/0/0
             const parts = trimmed.split(':');
             if (parts.length >= 2) {
                 const namePart = parts[0].trim();
@@ -79,12 +85,18 @@ export function parseTelegramMessage(text: string): ParsedReport {
 
                 const nums = numbersPart.split('/').map(n => parseFloat(n.trim()));
                 if (nums.length === 3) {
-                    report.items.push({
+                    const item: ParsedItem = {
                         rawName: namePart,
                         scope: nums[0] || 0,
                         totalDone: nums[1] || 0,
                         todayDone: nums[2] || 0
-                    });
+                    };
+
+                    if (currentSection === 'sow') {
+                        report.items.push(item);
+                    } else {
+                        report.permits.push(item);
+                    }
                 }
             }
         }
