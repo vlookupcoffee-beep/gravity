@@ -141,3 +141,77 @@ export async function processKmlUpload(formData: FormData) {
         return { error: 'Failed to process KML: ' + err.message }
     }
 }
+
+export async function updateProjectMap(projectId: string, formData: FormData) {
+    const file = formData.get('file') as File
+    if (!file) return { error: 'No file provided' }
+
+    const text = await file.text()
+
+    try {
+        const result = await parseStringPromise(text)
+        const kml = result.kml
+        const document = kml.Document?.[0]
+
+        if (!document) return { error: 'Invalid KML: No Document found' }
+
+        const supabase = await createClient()
+
+        // 1. Delete existing maps for this project
+        await Promise.all([
+            supabase.from('structures').delete().eq('project_id', projectId),
+            supabase.from('routes').delete().eq('project_id', projectId)
+        ])
+
+        const placemarks: any[] = []
+        const findPlacemarks = (container: any) => {
+            if (container.Placemark) placemarks.push(...container.Placemark)
+            if (container.Folder) container.Folder.forEach((folder: any) => findPlacemarks(folder))
+        }
+        findPlacemarks(document)
+
+        const structures: any[] = []
+        const routes: any[] = []
+
+        for (const placemark of placemarks) {
+            const name = placemark.name?.[0] || 'Unnamed'
+            if (placemark.Point) {
+                const coordsRaw = placemark.Point[0].coordinates[0].trim()
+                const [lon, lat] = coordsRaw.split(',').map(Number)
+                structures.push({
+                    project_id: projectId,
+                    name,
+                    type: name.includes('MH') ? 'MH' : name.includes('HH') ? 'HH' : 'POLE',
+                    coordinates: { lat, lon },
+                    metadata: { original_kml: placemark }
+                })
+            }
+            if (placemark.LineString) {
+                const coordsRaw = placemark.LineString[0].coordinates[0].trim()
+                const points = coordsRaw.split(/\s+/).map((p: string) => {
+                    const [lon, lat] = p.split(',').map(Number)
+                    return { lat, lon }
+                })
+                routes.push({
+                    project_id: projectId,
+                    name,
+                    type: name.includes('HDPE') ? 'HDPE' : 'CABLE',
+                    path: points,
+                    metadata: { original_kml: placemark }
+                })
+            }
+        }
+
+        if (structures.length > 0) {
+            await supabase.from('structures').insert(structures)
+        }
+        if (routes.length > 0) {
+            await supabase.from('routes').insert(routes)
+        }
+
+        return { success: true, counts: { structures: structures.length, routes: routes.length } }
+    } catch (err: any) {
+        console.error('Map update error:', err)
+        return { error: 'Failed to update map: ' + err.message }
+    }
+}

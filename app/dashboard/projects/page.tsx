@@ -5,6 +5,7 @@ import { getProjects } from '@/app/actions/get-projects'
 import { Search, Filter, Plus, FileText, Trash2, Edit, Map as MapIcon, Download } from 'lucide-react'
 import Link from 'next/link'
 import { getCurrentUser } from '@/app/actions/auth-actions'
+import { PROJECT_STATUS_OPTIONS } from '@/utils/pow-constants'
 
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<any[]>([])
@@ -55,11 +56,30 @@ export default function ProjectsPage() {
     }
 
     const getStatusLabel = (status: string) => {
+        if (!status) return 'Perencanaan'
+        if (status === 'planning') return 'Perencanaan'
         if (status === 'in-progress') return 'Dalam Pengerjaan'
         if (status === 'on-hold') return 'Ditangguhkan'
         if (status === 'completed') return 'Selesai'
-        if (!status || status === 'planning') return 'Perencanaan'
         return status
+    }
+
+    const getStatusColor = (status: string) => {
+        const s = status?.toLowerCase() || ''
+        if (s.includes('kick off')) return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+        if (s.includes('survey')) return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
+        if (s.includes('drm')) return 'bg-pink-500/10 text-pink-400 border-pink-500/20'
+        if (s.includes('ijin')) return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+        if (s.includes('delivery')) return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+        if (s.includes('kabel') || s.includes('tiang')) return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+        if (s.includes('odp')) return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+        if (s.includes('done') || s.includes('atp')) return 'bg-green-500/10 text-green-400 border-green-500/20'
+        if (s.includes('abd')) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+
+        if (s === 'completed') return 'bg-green-500/10 text-green-400 border-green-500/20'
+        if (s === 'in-progress') return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+        if (s === 'on-hold') return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+        return 'bg-gray-700/50 text-gray-400 border-gray-600'
     }
 
     const toggleDropdown = (id: string, e: React.MouseEvent) => {
@@ -181,15 +201,17 @@ export default function ProjectsPage() {
                 <div className="flex items-center gap-2">
                     <Filter className="text-gray-400" size={20} />
                     <select
-                        className="border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#0F172A] text-white"
+                        className="border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[#0F172A] text-white text-sm"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
                         <option value="all">Semua Status</option>
-                        <option value="planning">Perencanaan</option>
-                        <option value="in-progress">Dalam Pengerjaan</option>
-                        <option value="completed">Selesai</option>
-                        <option value="on-hold">Ditangguhkan</option>
+                        {PROJECT_STATUS_OPTIONS.map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                        <option value="planning">Perencanaan (Lama)</option>
+                        <option value="in-progress">Pengerjaan (Lama)</option>
+                        <option value="completed">Selesai (Lama)</option>
                     </select>
                 </div>
             </div>
@@ -245,28 +267,24 @@ export default function ProjectsPage() {
                                                 <button
                                                     onClick={(e) => userRole !== 'mandor' && userRole !== 'restricted_viewer' && toggleDropdown(project.id, e)}
                                                     disabled={userRole === 'mandor' || userRole === 'restricted_viewer'}
-                                                    className={`px-2.5 py-1 rounded-full text-xs font-medium border flex items-center justify-center min-w-[100px] whitespace-nowrap transition-colors ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' :
-                                                        project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' :
-                                                            project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' :
-                                                                'bg-gray-700/50 text-gray-400 border-gray-600 hover:bg-gray-700'
-                                                        } ${userRole === 'mandor' ? 'cursor-default' : 'cursor-pointer'}`}
+                                                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter border flex items-center justify-center min-w-[100px] whitespace-nowrap transition-colors ${getStatusColor(project.status)} ${userRole === 'mandor' ? 'cursor-default' : 'cursor-pointer'}`}
                                                 >
                                                     {getStatusLabel(project.status)}
                                                 </button>
 
                                                 {/* Custom Dropdown Menu */}
                                                 {activeDropdown === project.id && (
-                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-36 bg-[#0B1120] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden py-1">
-                                                        {['planning', 'in-progress', 'completed', 'on-hold'].map((status) => (
+                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-[#0B1120] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden py-1 max-h-60 overflow-y-auto">
+                                                        {PROJECT_STATUS_OPTIONS.map((status) => (
                                                             <button
                                                                 key={status}
                                                                 onClick={(e) => selectStatus(project.id, status, e)}
-                                                                className={`w-full px-4 py-2 text-xs text-left transition-colors hover:bg-gray-800 ${(project.status || 'planning') === status
-                                                                    ? 'text-white bg-blue-500/10 font-medium'
+                                                                className={`w-full px-4 py-2 text-[10px] uppercase font-bold text-left transition-colors hover:bg-gray-800 ${(project.status || 'planning') === status
+                                                                    ? 'text-white bg-blue-500/10 font-black border-l-2 border-blue-500'
                                                                     : 'text-gray-400'
                                                                     }`}
                                                             >
-                                                                {getStatusLabel(status)}
+                                                                {status}
                                                             </button>
                                                         ))}
                                                     </div>

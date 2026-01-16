@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Save, Calendar, DollarSign, Type, AlignLeft, Info } from 'lucide-react'
 import { createProject } from '@/app/actions/project-actions'
+import { PROJECT_STATUS_OPTIONS } from '@/utils/pow-constants'
 
 export default function NewProjectPage() {
     const router = useRouter()
@@ -122,12 +123,12 @@ export default function NewProjectPage() {
                                 <select
                                     name="status"
                                     className="w-full px-4 py-2 bg-[#0F172A] border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none"
-                                    defaultValue="planning"
+                                    defaultValue="KICK OFF"
                                 >
-                                    <option value="planning">Planning</option>
-                                    <option value="in-progress">In Progress</option>
-                                    <option value="on-hold">On Hold</option>
-                                    <option value="completed">Completed</option>
+                                    <option value="planning">--- Pilih Status ---</option>
+                                    {PROJECT_STATUS_OPTIONS.map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
                                 </select>
                             </div>
 

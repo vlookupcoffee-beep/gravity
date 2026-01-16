@@ -1,8 +1,10 @@
 'use client'
 
-import { X } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { X, Map as MapIcon, Upload } from 'lucide-react'
+import { useState } from 'react'
 import { updateProject } from '@/app/actions/project-actions'
+import { updateProjectMap } from '@/app/actions/upload-kml'
+import { PROJECT_STATUS_OPTIONS } from '@/utils/pow-constants'
 
 interface EditProjectModalProps {
     project: any
@@ -21,6 +23,7 @@ export default function EditProjectModal({ project, onClose, onUpdate }: EditPro
     const [value, setValue] = useState(project.value)
     const [startDate, setStartDate] = useState(project.start_date ? project.start_date.split('T')[0] : '')
     const [endDate, setEndDate] = useState(project.end_date ? project.end_date.split('T')[0] : '')
+    const [mapFile, setMapFile] = useState<File | null>(null)
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -38,6 +41,12 @@ export default function EditProjectModal({ project, onClose, onUpdate }: EditPro
         const result = await updateProject(project.id, formData)
 
         if (result.success) {
+            // Handle Map Upload if file exists
+            if (mapFile) {
+                const mapData = new FormData()
+                mapData.append('file', mapFile)
+                await updateProjectMap(project.id, mapData)
+            }
             onUpdate()
             onClose()
         } else {
@@ -85,16 +94,16 @@ export default function EditProjectModal({ project, onClose, onUpdate }: EditPro
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Status</label>
+                            <label className="block text-sm font-medium text-gray-400 mb-1">Status Project</label>
                             <select
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value)}
-                                className="w-full bg-[#0F172A] border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full bg-[#0F172A] border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             >
-                                <option value="planning">Planning</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                                <option value="on-hold">On Hold</option>
+                                <option value="planning">--- Pilih Status ---</option>
+                                {PROJECT_STATUS_OPTIONS.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
                             </select>
                         </div>
 
@@ -126,6 +135,23 @@ export default function EditProjectModal({ project, onClose, onUpdate }: EditPro
                                 onChange={(e) => setEndDate(e.target.value)}
                                 className="w-full bg-[#0F172A] border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
+                        </div>
+                        <div className="col-span-2">
+                            <label className="block text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">Update Map Layout (KML/KMZ)</label>
+                            <div className="flex items-center gap-4 p-4 bg-[#0F172A] border border-gray-700 rounded-xl border-dashed">
+                                <div className="p-3 bg-blue-500/10 rounded-lg text-blue-400">
+                                    <MapIcon size={24} />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-400 mb-2">Pilih file KML baru untuk memperbarui koordinat tiang dan jalur kabel.</p>
+                                    <input
+                                        type="file"
+                                        accept=".kml,.kmz"
+                                        className="text-xs text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
+                                        onChange={(e) => setMapFile(e.target.files?.[0] || null)}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 

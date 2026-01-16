@@ -42,3 +42,19 @@ export const TASK_MATERIAL_KW_MAPPING = {
         "CLOSURE"
     ]
 };
+
+/**
+ * Standard Project Status Options
+ */
+export const PROJECT_STATUS_OPTIONS = [
+    "KICK OFF",
+    "SURVEY / AANWIJZHING LAPANGAN",
+    "DESIGN REVIEW MEETING",
+    "PERIJINAN",
+    "DELIVERY MATERIAL",
+    "PENARIKAN KABEL & TANAM TIANG",
+    "INSTALASI ODP",
+    "DONE INSTALASI",
+    "SUBMIT ABD V4",
+    "ATP"
+];
