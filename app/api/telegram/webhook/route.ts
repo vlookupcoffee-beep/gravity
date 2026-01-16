@@ -493,7 +493,17 @@ export async function POST(request: NextRequest) {
                 startMessage += `Saat Admin menyetujui laporan:\n`
                 startMessage += `1. Klik tombol **✅ Approve**\n`
                 startMessage += `2. Bot akan menampilkan tombol Milestone (Kick Off, Survey, dll)\n`
-                startMessage += `3. Klik milestone yang selesai untuk tandai 100% secara instan.\n`
+                startMessage += `3. Klik milestone yang selesai untuk tandai 100% secara instan.\n\n`
+
+                startMessage += `🚀 **AUTO-UPDATE PoW (OTOMATIS):**\n`
+                startMessage += `Sistem akan otomatis 100% jika isi *Today Activity* mengandung:\n`
+                startMessage += `• **Kick Off** / **KOM**\n`
+                startMessage += `• **Survey** / **Aanwijzing**\n`
+                startMessage += `• **Ijin** / **Permit** / **Perijinan**\n`
+                startMessage += `• **DRM** / **Design Review**\n`
+                startMessage += `• **ABD** / **Submit ABD**\n`
+                startMessage += `• **ATP** / **BAST**\n\n`
+                startMessage += `📦 *Material & Delivery juga otomatis terupdate dari laporan.*`
 
                 await sendTelegramReply(chatId, startMessage)
             } else {

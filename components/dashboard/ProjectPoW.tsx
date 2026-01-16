@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit, Calendar, TrendingUp, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, Edit, Calendar, TrendingUp, CheckCircle2, Clock, AlertCircle, RefreshCcw, Eye, EyeOff } from 'lucide-react'
 import { getPowTasks, createPowTask, updatePowTask, deletePowTask, updateTaskProgress, initializeProjectPow } from '@/app/actions/pow-actions'
+import { syncPowProgressWithMaterials } from '@/app/actions/pow-sync-actions'
 import { STANDARD_POW_TASKS } from '@/utils/pow-constants'
 
 interface Props {
@@ -15,6 +16,8 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingTask, setEditingTask] = useState<any>(null)
+    const [hideZero, setHideZero] = useState(false)
+    const [isSyncing, setIsSyncing] = useState(false)
 
     // Form state
     const [formData, setFormData] = useState({
@@ -98,6 +101,19 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
         onUpdate?.()
     }
 
+    async function handleSync() {
+        setIsSyncing(true)
+        try {
+            await syncPowProgressWithMaterials(projectId)
+            await loadTasks()
+            onUpdate?.()
+        } catch (error) {
+            console.error('Sync failed:', error)
+        } finally {
+            setIsSyncing(false)
+        }
+    }
+
     const getStatusBadge = (status: string) => {
         const styles = {
             'not-started': 'bg-gray-500/10 text-gray-400 border-gray-500/20',
@@ -130,6 +146,8 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
         ? Math.round(tasks.reduce((acc, t) => acc + t.progress, 0) / tasks.length)
         : 0
 
+    const displayedTasks = hideZero ? tasks.filter(t => t.progress > 0) : tasks
+
     return (
         <div className="bg-[#1E293B] rounded-xl border border-gray-700 overflow-hidden">
             <div className="p-6 border-b border-gray-700 flex justify-between items-center">
@@ -139,7 +157,28 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
                         {tasks.length} tasks • Overall Progress: <span className="text-blue-400 font-semibold">{totalProgress}%</span>
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                    <button
+                        onClick={() => setHideZero(!hideZero)}
+                        className={`p-2 rounded-lg border transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest ${hideZero
+                                ? 'bg-blue-500/10 border-blue-500/50 text-blue-400'
+                                : 'bg-gray-800 border-gray-700 text-gray-500 hover:text-gray-300'
+                            }`}
+                        title={hideZero ? "Tampilkan semua" : "Sembunyikan Progres 0%"}
+                    >
+                        {hideZero ? <Eye size={16} /> : <EyeOff size={16} />}
+                        <span className="hidden sm:inline">{hideZero ? "Semua" : "Sembunyi 0%"}</span>
+                    </button>
+
+                    <button
+                        onClick={handleSync}
+                        disabled={isSyncing}
+                        className={`p-2 rounded-lg border border-gray-700 bg-gray-800 text-gray-400 hover:text-white transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest shadow-lg ${isSyncing ? 'animate-pulse' : ''}`}
+                    >
+                        <RefreshCcw size={16} className={isSyncing ? 'animate-spin' : ''} />
+                        <span className="hidden sm:inline">Sync Progres</span>
+                    </button>
+
                     {tasks.length === 0 && !loading && (
                         <button
                             onClick={async () => {
@@ -151,14 +190,14 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
                             }}
                             className="bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-600 transition flex items-center gap-2 border border-gray-600"
                         >
-                            <CheckCircle2 size={16} /> Initialize PoW
+                            <CheckCircle2 size={16} /> Init
                         </button>
                     )}
                     <button
                         onClick={() => openModal()}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2 shadow-lg shadow-blue-900/40"
                     >
-                        <Plus size={16} /> Add Task
+                        <Plus size={16} /> <span className="hidden xs:inline">Add Task</span>
                     </button>
                 </div>
             </div>
@@ -166,9 +205,9 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
             {/* Timeline Visualization */}
             {tasks.length > 0 && (
                 <div className="p-6 bg-[#0F172A] border-b border-gray-700">
-                    <h4 className="text-sm font-semibold text-gray-400 mb-4">Timeline Overview</h4>
+                    <h4 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-[0.2em] text-[10px]">Timeline Overview</h4>
                     <div className="space-y-3">
-                        {tasks.map((task) => (
+                        {displayedTasks.map((task) => (
                             <div key={task.id} className="space-y-1">
                                 <div className="flex justify-between text-xs">
                                     <span className="text-gray-300">{task.task_name}</span>
@@ -216,7 +255,7 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800/50">
-                                {tasks.map((task) => (
+                                {displayedTasks.map((task) => (
                                     <tr key={task.id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-6 py-4">
                                             <div>
@@ -276,7 +315,7 @@ export default function ProjectPoW({ projectId, onUpdate }: Props) {
 
                     {/* Mobile View (Cards) */}
                     <div className="md:hidden divide-y divide-gray-800/50">
-                        {tasks.map((task) => (
+                        {displayedTasks.map((task) => (
                             <div key={task.id} className="p-4 space-y-4">
                                 <div className="flex justify-between items-start gap-3">
                                     <div className="flex-1 min-w-0">
