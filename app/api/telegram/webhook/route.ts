@@ -706,8 +706,47 @@ export async function POST(request: NextRequest) {
             const projectName = text.replace('/status', '').trim()
 
             if (!projectName) {
-                await sendTelegramReply(chatId, '❓ **Gunakan Format:** `/status NAMA PROJECT`')
+                await sendTelegramReply(chatId, '❓ **Gunakan Format:** `/status NAMA PROJECT` atau `/status all`')
                 return NextResponse.json({ message: 'Missing project name' }, { status: 200 })
+            }
+
+            // --- SUB-CASE: /status all ---
+            if (projectName.toLowerCase() === 'all') {
+                let query = supabase
+                    .from('projects')
+                    .select('id, name, progress, status')
+                    .order('name', { ascending: true })
+
+                // Strictly filter by allowed projects
+                if (allowedProjectIds.length > 0) {
+                    query = query.in('id', allowedProjectIds)
+                } else {
+                    await sendTelegramReply(chatId, '📭 **Akses Terbatas**: Anda belum memiliki akses ke proyek manapun.')
+                    return NextResponse.json({ success: true })
+                }
+
+                const { data: allProjects, error: fetchError } = await query
+                if (fetchError || !allProjects) {
+                    await sendTelegramReply(chatId, '❌ Gagal mengambil data proyek.')
+                    return NextResponse.json({ success: true })
+                }
+
+                let statusAllMsg = `📊 **STATUS SEMUA PROYEK**\n\n`
+                allProjects.forEach((p: any, idx: number) => {
+                    const dots = Math.round((p.progress || 0) / 10)
+                    const bar = '🟦'.repeat(dots) + '⬜'.repeat(10 - dots)
+                    statusAllMsg += `${idx + 1}. *${p.name}*\n`
+                    statusAllMsg += `   📈 Progres: \`${p.progress || 0}%\`\n`
+                    statusAllMsg += `   📌 Status: \`${p.status || '-'}\`\n`
+                    statusAllMsg += `   [${bar}]\n\n`
+                })
+
+                if (allProjects.length === 0) {
+                    statusAllMsg = '📭 **Tidak ada proyek** yang terdaftar.'
+                }
+
+                await sendTelegramReply(chatId, statusAllMsg)
+                return NextResponse.json({ success: true }, { status: 200 })
             }
 
             let query = supabase
