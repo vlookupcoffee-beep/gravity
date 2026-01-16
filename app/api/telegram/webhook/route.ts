@@ -350,7 +350,8 @@ export async function POST(request: NextRequest) {
                 msg += `📍 **BREAKDOWN: ${distName ? distName.toUpperCase() : 'TOTAL PROJECT'}**\n\n`
 
                 summary.forEach((m: any) => {
-                    if (m.quantity_needed === 0 && m.total_in === 0 && m.total_out === 0) return
+                    const usage = m.quantity_needed > 0 ? Math.min(100, Math.round((m.total_out / m.quantity_needed) * 100)) : 0;
+                    if (usage === 0) return;
                     msg += `\n🔸 **${m.name}**\n`
                     msg += `\`KEB: ${m.quantity_needed} | MSK: ${m.total_in}\`\n`
                 })
@@ -771,7 +772,8 @@ export async function POST(request: NextRequest) {
 
             summary.forEach((m: any) => {
                 const sisa = m.total_in - m.total_out
-                if (m.quantity_needed === 0 && m.total_in === 0 && m.total_out === 0) return
+                const usage = m.quantity_needed > 0 ? Math.min(100, Math.round((m.total_out / m.quantity_needed) * 100)) : 0;
+                if (usage === 0 && m.total_in === 0) return; // Hide if no usage and no stock arrived
 
                 msg += `\n🔸 **${m.name}**\n`
                 msg += `\`KEB: ${m.quantity_needed} | MSK: ${m.total_in} | TPK: ${m.total_out} | SIS: ${sisa}\`\n`

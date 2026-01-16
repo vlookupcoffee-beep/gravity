@@ -150,8 +150,12 @@ export default function ProjectsPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-white">Daftar Proyek</h1>
                     <p className="text-gray-400">Kelola dan pantau semua proyek teknik Anda.</p>
+                    {/* DEBUG INFO - REMOVE LATER */}
+                    <div className="text-xs text-yellow-500 font-mono mt-1">
+                        Role Detected: {userRole ? `"${userRole}"` : 'null'} | Strict Match: {userRole === 'restricted_viewer' ? 'YES' : 'NO'}
+                    </div>
                 </div>
-                {userRole !== 'mandor' && (
+                {userRole !== 'mandor' && userRole !== 'restricted_viewer' && (
                     <Link
                         href="/dashboard/projects/new"
                         className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition shadow-lg shadow-blue-900/20"
@@ -198,7 +202,7 @@ export default function ProjectsPage() {
                             <tr>
                                 <th className="px-6 py-4 font-semibold">Nama Proyek</th>
                                 <th className="px-6 py-4 font-semibold text-center">Status</th>
-                                <th className="px-6 py-4 font-semibold">Nilai</th>
+                                {userRole !== 'restricted_viewer' && <th className="px-6 py-4 font-semibold">Nilai</th>}
                                 <th className="px-6 py-4 font-semibold">Progres</th>
                                 <th className="px-6 py-4 font-semibold text-right">Aksi</th>
                             </tr>
@@ -239,8 +243,8 @@ export default function ProjectsPage() {
                                         <td className="px-6 py-4 text-center">
                                             <div className="relative inline-block">
                                                 <button
-                                                    onClick={(e) => userRole !== 'mandor' && toggleDropdown(project.id, e)}
-                                                    disabled={userRole === 'mandor'}
+                                                    onClick={(e) => userRole !== 'mandor' && userRole !== 'restricted_viewer' && toggleDropdown(project.id, e)}
+                                                    disabled={userRole === 'mandor' || userRole === 'restricted_viewer'}
                                                     className={`px-2.5 py-1 rounded-full text-xs font-medium border flex items-center justify-center min-w-[100px] whitespace-nowrap transition-colors ${project.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' :
                                                         project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' :
                                                             project.status === 'on-hold' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' :
@@ -269,9 +273,11 @@ export default function ProjectsPage() {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm font-medium text-gray-300">
-                                            {formatCurrency(userRole === 'mandor' ? project.value_mandor : project.value)}
-                                        </td>
+                                        {userRole !== 'restricted_viewer' && (
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-300">
+                                                {formatCurrency(userRole === 'mandor' ? project.value_mandor : project.value)}
+                                            </td>
+                                        )}
                                         <td className="px-6 py-4">
                                             <div className="w-full bg-gray-700 rounded-full h-2 mb-1">
                                                 <div
@@ -297,7 +303,7 @@ export default function ProjectsPage() {
                                                 >
                                                     <Download size={16} />
                                                 </button>
-                                                {userRole !== 'mandor' && (
+                                                {userRole !== 'mandor' && userRole !== 'restricted_viewer' && (
                                                     <>
                                                         <button className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition" title="Edit">
                                                             <Edit size={16} />

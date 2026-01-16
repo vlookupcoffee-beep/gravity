@@ -13,15 +13,24 @@ interface ProjectDetailModalProps {
 export default function ProjectDetailModal({ projectId, projectName, onClose }: ProjectDetailModalProps) {
     const [details, setDetails] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [userRole, setUserRole] = useState<string | null>(null)
 
     useEffect(() => {
-        async function loadDetails() {
+        async function load() {
             setLoading(true)
-            const data = await getProjectDetails(projectId)
+            const { getProjectDetails } = await import('@/app/actions/get-project-details')
+            const { getCurrentUser } = await import('@/app/actions/auth-actions')
+
+            const [data, user] = await Promise.all([
+                getProjectDetails(projectId),
+                getCurrentUser()
+            ])
+
             setDetails(data)
+            setUserRole(user?.role || null)
             setLoading(false)
         }
-        loadDetails()
+        load()
     }, [projectId])
 
     return (
@@ -30,12 +39,16 @@ export default function ProjectDetailModal({ projectId, projectName, onClose }: 
                 {/* Header */}
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                     <h2 className="text-xl font-bold text-gray-900">{projectName}</h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition text-gray-400 hover:text-gray-600"
-                    >
-                        <X size={20} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {/* Hide Edit for restricted users */}
+                        {/* Add Edit button here if needed in future, but explicit requirement is that restricted_viewer can't edit */}
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition text-gray-400 hover:text-gray-600"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}

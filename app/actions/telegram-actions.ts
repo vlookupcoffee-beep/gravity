@@ -29,24 +29,33 @@ export async function formatProjectReport(data: any) {
     ];
 
     if (data.powTasks?.length > 0) {
-        message += `📍 **Tahapan Eksekusi:**\n`;
-        data.powTasks.filter((t: any) => allowedCategories.includes(t.task_name)).forEach((t: any) => {
-            const dots = Math.round(t.progress / 10);
-            const bar = '🟦'.repeat(dots) + '⬜'.repeat(10 - dots);
-            message += `- ${t.task_name}: \`${t.progress}%\`\n  [${bar}]\n`;
-        });
-        message += `\n`;
+        const activeTasks = data.powTasks.filter((t: any) => allowedCategories.includes(t.task_name) && t.progress > 0);
+        if (activeTasks.length > 0) {
+            message += `📍 **Tahapan Eksekusi:**\n`;
+            activeTasks.forEach((t: any) => {
+                const dots = Math.round(t.progress / 10);
+                const bar = '🟦'.repeat(dots) + '⬜'.repeat(10 - dots);
+                message += `- ${t.task_name}: \`${t.progress}%\`\n  [${bar}]\n`;
+            });
+            message += `\n`;
+        }
     }
 
     if (data.materialSummary?.length > 0) {
-        message += `📦 **PROGRES MATERIAL (PAKAI/BUTUH):**\n`;
-        data.materialSummary.forEach((m: any) => {
+        const activeMaterials = data.materialSummary.map((m: any) => {
             const usage = m.quantity_needed > 0 ? Math.min(100, Math.round((m.total_out / m.quantity_needed) * 100)) : 0;
-            const dots = Math.round(usage / 10);
-            const bar = '🟦'.repeat(dots) + '⬜'.repeat(10 - dots);
-            message += `- ${m.name}: \`${usage}%\` (${m.total_out}/${m.quantity_needed})\n  [${bar}]\n`;
-        });
-        message += `\n`;
+            return { ...m, usage };
+        }).filter((m: any) => m.usage > 0);
+
+        if (activeMaterials.length > 0) {
+            message += `📦 **PROGRES MATERIAL (PAKAI/BUTUH):**\n`;
+            activeMaterials.forEach((m: any) => {
+                const dots = Math.round(m.usage / 10);
+                const bar = '🟦'.repeat(dots) + '⬜'.repeat(10 - dots);
+                message += `- ${m.name}: \`${m.usage}%\` (${m.total_out}/${m.quantity_needed})\n  [${bar}]\n`;
+            });
+            message += `\n`;
+        }
         if (data.materialRatio) {
             message += `💡 **Rasio Penggunaan:** \`${data.materialRatio}% Terdistribusi\`\n\n`;
         }

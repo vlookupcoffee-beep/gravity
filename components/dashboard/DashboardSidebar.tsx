@@ -59,6 +59,14 @@ export default function DashboardSidebar({ isCollapsed = false, onToggle }: Side
         menuItems.splice(2, 0, financeItem);
     }
 
+    // Hide KHS for restricted_viewer
+    if (user?.role === 'restricted_viewer') {
+        const khsIndex = menuItems.findIndex(item => item.label === 'Daftar Harga (KHS)');
+        if (khsIndex > -1) {
+            menuItems.splice(khsIndex, 1);
+        }
+    }
+
     return (
         <>
             {/* Mobile Bottom Navigation or Floating Hamburger */}
