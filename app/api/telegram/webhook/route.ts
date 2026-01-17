@@ -80,28 +80,54 @@ export async function POST(request: NextRequest) {
         const update = await request.json()
         const supabase = await createClient()
 
+        // --- AUTHORIZATION & PROJECT ACCESS LOGIC ---
+        // Basic validation of Telegram Update structure
+        const message = update.message || update.callback_query?.message
+        const callbackQuery = update.callback_query
+        const text = (update.message?.text || callbackQuery?.data) as string
+        const chatId = message?.chat?.id
+        const userId = update.message?.from?.id || callbackQuery?.from?.id
+        const messageId = message?.message_id
+
+        if (!userId) {
+            return NextResponse.json({ message: 'No user ID found' }, { status: 200 })
+        }
+
+        const { data: authUser } = await supabase
+            .from('telegram_authorized_users')
+            .select('telegram_id, is_active, is_admin')
+            .eq('telegram_id', userId)
+            .single()
+
+        const isAuthorized = authUser && authUser.is_active
+
+        // Fetch allowed projects for this user
+        // IF USER IS ADMIN: Allow ALL projects automatically ("All Role Open")
+        let allowedProjectIds: string[] = []
+
+        if (authUser?.is_admin) {
+            const { data: allProjects } = await supabase.from('projects').select('id')
+            allowedProjectIds = allProjects?.map(p => p.id) || []
+        } else {
+            const { data: allowedProjectsData } = await supabase
+                .from('telegram_user_projects')
+                .select('project_id')
+                .eq('telegram_id', userId)
+            allowedProjectIds = allowedProjectsData?.map(p => p.project_id) || []
+        }
+
         // --- HANDLE CALLBACK QUERIES ---
-        if (update.callback_query) {
-            const callbackQuery = update.callback_query
+        if (callbackQuery) {
             const data = callbackQuery.data as string
-            const chatId = callbackQuery.message.chat.id
-            const messageId = callbackQuery.message.message_id
-            const adminId = callbackQuery.from.id
+            const requesterId = callbackQuery.from.id
+            const isAdmin = authUser?.is_admin || false
 
-            // Check if requester is Admin
-            const { data: adminUser } = await supabase
-                .from('telegram_authorized_users')
-                .select('is_admin')
-                .eq('telegram_id', adminId)
-                .single()
-
-            if (!adminUser?.is_admin) {
-                await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
-                return NextResponse.json({ success: true })
-            }
-
-            // Callback Logic: approve_lapor:[reportId]
+            // Callback Logic: approve_lapor:[reportId] (ADMIN ONLY)
             if (data.startsWith('approve_lapor:')) {
+                if (!isAdmin) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
+                    return NextResponse.json({ success: true })
+                }
                 const reportId = data.split(':')[1]
 
                 // Fetch report details
@@ -184,8 +210,12 @@ export async function POST(request: NextRequest) {
                 // For now, just finish.
             }
 
-            // Callback Logic: reject_lapor:[reportId]
+            // Callback Logic: reject_lapor:[reportId] (ADMIN ONLY)
             if (data.startsWith('reject_lapor:')) {
+                if (!isAdmin) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
+                    return NextResponse.json({ success: true })
+                }
                 const reportId = data.split(':')[1]
 
                 const { data: report } = await supabase.from('daily_reports').select('*, projects(name)').eq('id', reportId).single()
@@ -197,8 +227,12 @@ export async function POST(request: NextRequest) {
                 await editTelegramMessage(chatId, messageId, `❌ **LAPORAN DITOLAK**\n\nProject: *${report.projects?.name}*\n\nStatus: \`REJECTED\``)
             }
 
-            // Callback Logic: ms_upd:[projectId]:[taskId]:[reportId]
+            // Callback Logic: ms_upd:[projectId]:[taskId]:[reportId] (ADMIN ONLY)
             if (data.startsWith('ms_upd:')) {
+                if (!isAdmin) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
+                    return NextResponse.json({ success: true })
+                }
                 const [_, projectId, taskId, reportId] = data.split(':')
 
                 // Update Milestone
@@ -236,8 +270,12 @@ export async function POST(request: NextRequest) {
                 )
             }
 
-            // Callback Logic: ms_done:[reportId]
+            // Callback Logic: ms_done:[reportId] (ADMIN ONLY)
             if (data.startsWith('ms_done:')) {
+                if (!isAdmin) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
+                    return NextResponse.json({ success: true })
+                }
                 const reportId = data.split(':')[1]
                 const { data: report } = await supabase.from('daily_reports').select('*, projects(name)').eq('id', reportId).single()
 
@@ -253,8 +291,12 @@ export async function POST(request: NextRequest) {
 
             // --- RESTORED ORIGINAL CALLBACKS ---
 
-            // Callback Logic: approve:[userId]
+            // Callback Logic: approve:[userId] (ADMIN ONLY)
             if (data.startsWith('approve:')) {
+                if (!isAdmin) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
+                    return NextResponse.json({ success: true })
+                }
                 const targetUserId = data.split(':')[1]
                 const name = callbackQuery.message.text.split('\n')[0].replace('📩 Permintaan Akses dari: ', '').trim()
 
@@ -290,8 +332,12 @@ export async function POST(request: NextRequest) {
                 })
             }
 
-            // Callback Logic: toggle:[userId]:[projectId]
+            // Callback Logic: toggle:[userId]:[projectId] (ADMIN ONLY)
             if (data.startsWith('toggle:')) {
+                if (!isAdmin) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
+                    return NextResponse.json({ success: true })
+                }
                 const [_, targetUserId, projectId] = data.split(':')
 
                 // Check if already exists
@@ -328,8 +374,12 @@ export async function POST(request: NextRequest) {
                 await answerCallbackQuery(callbackQuery.id)
             }
 
-            // Callback Logic: done:[userId]
+            // Callback Logic: done:[userId] (ADMIN ONLY)
             if (data.startsWith('done:')) {
+                if (!isAdmin) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Anda bukan Admin!")
+                    return NextResponse.json({ success: true })
+                }
                 const targetUserId = data.split(':')[1]
                 await editTelegramMessage(chatId, messageId, `✅ **Selesai!**\nUser \`${targetUserId}\` telah dikonfigurasi.`)
                 await answerCallbackQuery(callbackQuery.id)
@@ -338,9 +388,15 @@ export async function POST(request: NextRequest) {
                 await sendTelegramReply(Number(targetUserId), "🎉 **Akses Anda telah diaktifkan!**\nSilakan gunakan perintah `/project` untuk mulai.")
             }
 
-            // Callback Logic: dist:[projectId]:[distName]
+            // Callback Logic: dist:[projectId]:[distName] (AUTHORIZED USERS)
             if (data.startsWith('dist:')) {
                 const [_, projectId, distName] = data.split(':')
+
+                if (!allowedProjectIds.includes(projectId)) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Akses Ditolak!")
+                    return NextResponse.json({ success: true })
+                }
+
                 const projectDetails = await getProjectDetails(projectId)
 
                 // Get Distribution Summary
@@ -404,9 +460,14 @@ export async function POST(request: NextRequest) {
                 }
             }
 
-            // Callback Logic: format_lapor:[projectId]
+            // Callback Logic: format_lapor:[projectId] (AUTHORIZED USERS)
             if (data.startsWith('format_lapor:')) {
                 const projectId = data.split(':')[1]
+
+                if (!allowedProjectIds.includes(projectId)) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Akses Ditolak!")
+                    return NextResponse.json({ success: true })
+                }
                 const { data: project } = await supabase.from('projects').select('name').eq('id', projectId).single()
 
                 if (!project) {
@@ -424,41 +485,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: true })
         }
 
-        // Basic validation of Telegram Update structure
         if (!update.message || !update.message.text) {
             return NextResponse.json({ message: 'No message content' }, { status: 200 })
         }
-
-        const text = update.message.text as string
-        const chatId = update.message.chat.id
-        const userId = update.message.from?.id
-        const messageId = update.message.message_id
-
-        // --- AUTHORIZATION CHECK ---
-        // We check if the sender (userId) is in the authorized list.
-        // If not, we block all commands EXCEPT /start which is used to identify the ID.
-        const { data: authUser, error: authError } = await supabase
-            .from('telegram_authorized_users')
-            .select('telegram_id, is_active, is_admin')
-            .eq('telegram_id', userId)
-            .single()
-
-        const isAuthorized = authUser && authUser.is_active
-
-        // Fetch allowed projects for this user
-        // IF USER IS ADMIN: Allow ALL projects automatically ("All Role Open")
-        let allowedProjectIds: string[] = []
-
-        if (authUser?.is_admin) {
-            const { data: allProjects } = await supabase.from('projects').select('id')
-            allowedProjectIds = allProjects?.map(p => p.id) || []
-        } else {
-            const { data: allowedProjectsData } = await supabase
-                .from('telegram_user_projects')
-                .select('project_id')
-                .eq('telegram_id', userId)
-            allowedProjectIds = allowedProjectsData?.map(p => p.project_id) || []
-        }
+        // text, chatId, userId are already extracted at the top
 
         // Case: /start command - Show Telegram ID & Help
         if (text.startsWith('/start')) {
