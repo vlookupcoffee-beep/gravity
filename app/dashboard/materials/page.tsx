@@ -77,11 +77,25 @@ export default function MaterialsPage() {
     }
 
     async function handleDeleteAll() {
-        if (confirm('ARE YOU SURE? This will delete ALL materials and transactions permanently!')) {
-            if (confirm('Really? This action cannot be undone.')) {
-                setLoading(true)
-                await deleteAllMaterials()
-                loadData()
+        const projectName = selectedProjectId ? projects.find(p => p.id === selectedProjectId)?.name : null
+
+        if (selectedProjectId) {
+            // Project-specific reset
+            if (confirm(`Reset material data untuk project "${projectName}"?\n\nIni akan menghapus:\n- Semua transaksi MASUK/KELUAR material di project ini\n- Semua data KEBUTUHAN material di project ini\n\nGlobal stock TIDAK akan terpengaruh.`)) {
+                if (confirm('Yakin? Tindakan ini tidak dapat dibatalkan.')) {
+                    setLoading(true)
+                    await deleteAllMaterials(selectedProjectId)
+                    loadProjectSpecificData(selectedProjectId, selectedDistribution)
+                }
+            }
+        } else {
+            // Global reset
+            if (confirm('⚠️ PERINGATAN KERAS! ⚠️\n\nIni akan menghapus SEMUA material di SELURUH SISTEM:\n- Semua material global\n- Semua transaksi di semua project\n- Semua data kebutuhan material\n\nApakah Anda BENAR-BENAR yakin?')) {
+                if (confirm('Really? This action CANNOT be undone. Type YES in your mind if you are absolutely sure.')) {
+                    setLoading(true)
+                    await deleteAllMaterials()
+                    loadData()
+                }
             }
         }
     }
@@ -102,9 +116,10 @@ export default function MaterialsPage() {
                     <button
                         onClick={handleDeleteAll}
                         className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/20 transition-all shadow-sm text-sm"
+                        title={selectedProjectId ? 'Reset material data untuk project ini saja' : 'Reset SEMUA material di sistem'}
                     >
                         <Trash2 size={16} />
-                        Reset All
+                        {selectedProjectId ? 'Reset Project' : 'Reset All'}
                     </button>
                     <button
                         onClick={() => setShowBulkModal(true)}

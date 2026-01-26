@@ -107,19 +107,38 @@ export async function addStock(formData: FormData) {
     }
 }
 
-export async function deleteAllMaterials() {
+export async function deleteAllMaterials(projectId?: string) {
     const supabase = await createClient()
 
     try {
-        const { error } = await supabase
-            .from('materials')
-            .delete()
-            .neq('id', '00000000-0000-0000-0000-000000000000') // Delete all (using neq random UUID is a trick to match all if no where clause needed, but explicit delete with empty filter works too usually. Safest is delete().neq or similar)
-            // Actually delete() requires a filter in Supabase client usually to prevent accidental deletes.
-            // Let's use greater than timestamp 0 or similar simple true condition.
-            .gt('created_at', '1970-01-01')
+        if (projectId) {
+            // Project-specific deletion: only delete transactions and requirements for this project
+            // Don't delete the materials themselves, just the project-specific data
 
-        if (error) throw error
+            // Delete transactions for this project
+            const { error: txError } = await supabase
+                .from('material_transactions')
+                .delete()
+                .eq('project_id', projectId)
+
+            if (txError) throw txError
+
+            // Delete requirements for this project
+            const { error: reqError } = await supabase
+                .from('project_material_requirements')
+                .delete()
+                .eq('project_id', projectId)
+
+            if (reqError) throw reqError
+        } else {
+            // Global deletion: delete ALL materials and related data
+            const { error } = await supabase
+                .from('materials')
+                .delete()
+                .gt('created_at', '1970-01-01')
+
+            if (error) throw error
+        }
 
         revalidatePath('/dashboard/materials')
         return { success: true }
