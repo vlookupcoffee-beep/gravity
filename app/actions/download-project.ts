@@ -8,26 +8,29 @@ async function generateBOQCSV(projectId: string): Promise<string> {
     const supabase = await createClient()
 
     const { data: items } = await supabase
-        .from('project_items')
-        .select('*')
+        .from('project_material_requirements')
+        .select('*, materials(name, unit, khs_item_code)')
         .eq('project_id', projectId)
-        .order('created_at', { ascending: true })
+        .order('item_code', { ascending: true })
 
     if (!items || items.length === 0) {
-        return 'Item Code,Description,Unit,Unit Price,Quantity,Total Price,Progress\n'
+        return 'Item Code,Description,Unit,Qty,Vendor Price,Vendor Total,Mandor Price,Mandor Total\n'
     }
 
-    const header = 'Item Code,Description,Unit,Unit Price,Quantity,Total Price,Progress\n'
+    const header = 'Item Code,Description,Unit,Qty,Vendor Price,Vendor Total,Mandor Price,Mandor Total\n'
     const rows = items.map(item => {
-        const totalPrice = (item.unit_price || 0) * (item.quantity || 0)
+        // @ts-ignore
+        const unit = item.materials?.unit || ''
+
         return [
             item.item_code || '',
             `"${(item.description || '').replace(/"/g, '""')}"`,
-            item.unit || '',
-            item.unit_price || 0,
-            item.quantity || 0,
-            totalPrice,
-            `${item.progress || 0}%`
+            unit,
+            item.quantity_needed || 0,
+            item.unit_price_vendor || 0,
+            item.total_value_vendor || 0,
+            item.unit_price_mandor || 0,
+            item.total_value_mandor || 0
         ].join(',')
     }).join('\n')
 

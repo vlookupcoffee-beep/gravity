@@ -169,12 +169,29 @@ export async function deleteProjectBOQItem(itemId: string, projectId: string) {
     const supabase = await createClient()
 
     try {
+        // 1. Get item details first to find item_code
+        const { data: itemToDelete } = await supabase
+            .from('project_material_requirements')
+            .select('item_code')
+            .eq('id', itemId)
+            .single()
+
+        // 2. Delete from NEW table
         const { error } = await supabase
             .from('project_material_requirements')
             .delete()
             .eq('id', itemId)
 
         if (error) throw error
+
+        // 3. Delete from OLD table (backward compatibility)
+        if (itemToDelete?.item_code) {
+            await supabase
+                .from('project_items')
+                .delete()
+                .eq('project_id', projectId)
+                .eq('item_code', itemToDelete.item_code)
+        }
 
         // Recalculate project value
         const summary = await getProjectBOQSummary(projectId)
