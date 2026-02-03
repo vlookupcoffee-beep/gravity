@@ -39,6 +39,8 @@ export async function createProject(formData: FormData) {
     const value = parseFloat(formData.get('value') as string) || 0
     const start_date = formData.get('start_date') as string
     const end_date = formData.get('end_date') as string
+    const project_type = formData.get('project_type') as string || 'BACKBONE'
+    const total_distributions = parseInt(formData.get('total_distributions') as string) || 1
 
     try {
         await checkOwnerRole()
@@ -52,7 +54,9 @@ export async function createProject(formData: FormData) {
                 value,
                 start_date: start_date || null,
                 end_date: end_date || null,
-                progress: 0
+                progress: 0,
+                project_type,
+                total_distributions
             })
             .select()
             .single()

@@ -1,5 +1,4 @@
 
-// scripts/debug_schema_reports.ts
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://wbfmylhcqzfjqscvazfm.supabase.co'
@@ -8,25 +7,20 @@ const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIU
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 async function inspectSchema() {
-    // Check columns for daily_reports
-    console.log("--- daily_reports columns ---")
-    // We can't query information_schema easily with anon key usually, 
-    // but we can select one row and look at keys if RLS allows.
-    const { data: report } = await supabase.from('daily_reports').select('*').limit(1)
-    if (report && report.length) console.log(Object.keys(report[0]))
-    else console.log("No access or empty daily_reports")
+    console.log("--- Inspecting daily_reports ---")
+    const { data, error } = await supabase.from('daily_reports').select('*').limit(1)
 
-    // Check for potential child tables
-    const potentialTables = ['daily_report_items', 'report_items', 'daily_report_details']
+    if (error) {
+        console.error("Error:", error.message)
+        return
+    }
 
-    for (const table of potentialTables) {
-        console.log(`\n--- checking ${table} ---`)
-        const { data, error } = await supabase.from(table).select('*').limit(1)
-        if (error) console.log(`Error/Not Found: ${error.message}`)
-        else {
-            console.log("Found!")
-            if (data.length) console.log(Object.keys(data[0]))
-        }
+    if (data && data.length > 0) {
+        const row = data[0]
+        console.log('Columns:', Object.keys(row))
+        console.log('Sample Row:', JSON.stringify(row, null, 2))
+    } else {
+        console.log("No rows found in daily_reports")
     }
 }
 

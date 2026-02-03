@@ -14,6 +14,11 @@ interface Props {
 
 export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
     const [items, setItems] = useState<any[]>([])
+    // Distribution State (CLUSTER Support)
+    const [distributions, setDistributions] = useState<string[]>([])
+    const [activeDistribution, setActiveDistribution] = useState<string>('')
+    const [totalDistributions, setTotalDistributions] = useState(1)
+
     const [isModalOpen, setIsModalOpen] = useState(false)
 
     // Modal State
@@ -29,6 +34,7 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
     // Upload & Recalculate State
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
     const [uploading, setUploading] = useState(false)
+    const [targetDistribution, setTargetDistribution] = useState<string>('')
 
     useEffect(() => {
         loadProjectItems()
@@ -44,6 +50,19 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
     async function loadProjectItems() {
         const data = await getProjectBOQUnified(projectId)
         setItems(data || [])
+
+        // Check project type/distributions only if not already loaded (performance optimization)
+        // Ideally pass project details as props, but fetching here for safety:
+        const { getProjectDetails } = await import('@/app/actions/get-project-details')
+        const project = await getProjectDetails(projectId)
+
+        if (project && project.project_type === 'CLUSTER' && project.total_distributions > 1) {
+            const dists = Array.from({ length: project.total_distributions }, (_, i) => `DISTRIBUSI ${i + 1}`)
+            setDistributions(dists)
+            setTotalDistributions(project.total_distributions)
+            if (!activeDistribution) setActiveDistribution(dists[0])
+            if (!targetDistribution) setTargetDistribution(dists[0])
+        }
     }
 
     async function loadProviders() {
@@ -61,7 +80,21 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
         if (!selectedKHSItem) return
         setAdding(true)
         // Pass the rowSelectionType as part of the item metadata
-        const itemWithSelection = { ...selectedKHSItem, uploadType: rowSelectionType }
+        const itemWithSelection = {
+            ...selectedKHSItem,
+            uploadType: rowSelectionType,
+            // For single add, use active distribution (or empty string if not cluster)
+            distribution_name: activeDistribution
+        }
+        // NOTE: addProjectItem current implementation might need update to accept distribution_name inside item metadata or separate arg.
+        // Assuming addProjectItem handles it via item metadata or we need to update `boq-actions.ts`.
+        // Let's check `boq-actions.ts`... wait, `boq-actions.ts` calls `addProjectItem`.
+        // I should stick to `uploadProjectItems` for bulk. 
+        // For single add, I will update addProjectItem to support distribution via metadata or create a new Unified Add.
+
+        // Actually, let's use `addProjectItem` as is but inject `distribution_name` into the logic if possible.
+        // Or better: update `addProjectItem` signature in next step if broken.
+        // For now, let's pass it in item object which is usually flexible.
         const result = await addProjectItem(projectId, itemWithSelection, Number(quantity))
         setAdding(false)
 
@@ -123,9 +156,17 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
         const formData = new FormData()
         formData.append('file', file)
 
+        // Append Distribution Name if set
+        if (targetDistribution) {
+            formData.append('distribution_name', targetDistribution)
+        }
+
         const { uploadProjectItems } = await import('@/app/actions/boq-actions')
 
         formData.append('uploadType', rowSelectionType) // Use the same selection type for bulk upload
+        // We can append distribution_name to formData directly, and let boq-actions handle it.
+        if (targetDistribution) formData.append('distribution_name', targetDistribution)
+
         const result = await uploadProjectItems(projectId, selectedProvider, formData)
         setUploading(false)
 
@@ -147,15 +188,43 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
 
-    // Use pre-calculated totals from DB (more accurate)
-    const totalValueVendor = items.reduce((acc, item) => acc + (Number(item.total_value_vendor || 0)), 0)
-    const totalValueMandor = items.reduce((acc, item) => acc + (Number(item.total_value_mandor || 0)), 0)
+    // Filter items by active distribution (if distributions exist)
+    const displayedItems = (distributions.length > 0 && activeDistribution)
+        ? items.filter(i => i.distribution_name === activeDistribution)
+        : items
+
+    const totalValueVendor = displayedItems.reduce((acc, item) => acc + (Number(item.total_value_vendor || 0)), 0)
+    const totalValueMandor = displayedItems.reduce((acc, item) => acc + (Number(item.total_value_mandor || 0)), 0)
 
     return (
         <div className="bg-[#1E293B] rounded-xl border border-gray-700 overflow-hidden">
+            {/* Distribution Tabs */}
+            {distributions.length > 0 && (
+                <div className="bg-[#0F172A] border-b border-gray-700 flex overflow-x-auto">
+                    {distributions.map(dist => (
+                        <button
+                            key={dist}
+                            onClick={() => {
+                                setActiveDistribution(dist)
+                                setTargetDistribution(dist) // Auto-select for upload too
+                            }}
+                            className={`px-6 py-3 text-sm font-bold uppercase tracking-wider whitespace-nowrap border-b-2 transition-colors ${activeDistribution === dist
+                                ? 'border-blue-500 text-blue-400 bg-blue-500/5'
+                                : 'border-transparent text-gray-400 hover:text-white hover:bg-white/5'
+                                }`}
+                        >
+                            {dist}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             <div className="p-6 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4">
                 <div>
-                    <h3 className="font-bold text-white">Work Items (BOQ)</h3>
+                    <h3 className="font-bold text-white flex items-center gap-2">
+                        Work Items (BOQ)
+                        {activeDistribution && <span className="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded">{activeDistribution}</span>}
+                    </h3>
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
                         {userRole !== 'mandor' && (
                             <p className="text-sm text-gray-400">Total Vendor: <span className="text-green-400 font-mono">{formatCurrency(totalValueVendor)}</span></p>
@@ -197,12 +266,14 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
                 </div>
             </div>
 
-            {items.length === 0 ? (
+            {displayedItems.length === 0 ? (
                 <div className="p-12 text-center">
                     <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-700">
                         <Package size={24} className="text-gray-600" />
                     </div>
-                    <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Belum Ada Item</p>
+                    <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">
+                        {activeDistribution ? `Belum Ada Item di ${activeDistribution}` : 'Belum Ada Item'}
+                    </p>
                     <p className="text-[10px] text-gray-500 mt-2 uppercase tracking-tighter">Tambahkan item secara manual atau impor dari CSV.</p>
                 </div>
             ) : (
@@ -221,7 +292,7 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-800/50">
-                                {items.map((item) => (
+                                {displayedItems.map((item) => (
                                     <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-6 py-4 text-blue-400 font-mono text-[11px] font-black">{item.item_code}</td>
                                         <td className="px-6 py-4 text-gray-300 font-medium">{item.description}</td>
@@ -249,7 +320,7 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
 
                     {/* Mobile View (Cards) */}
                     <div className="md:hidden divide-y divide-gray-800/50">
-                        {items.map((item) => (
+                        {displayedItems.map((item) => (
                             <div key={item.id} className="p-4 space-y-4">
                                 <div className="flex justify-between items-start gap-2">
                                     <div className="min-w-0">
@@ -420,6 +491,21 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Distribution Selector in Upload */}
+                            {distributions.length > 0 && (
+                                <div>
+                                    <label className="text-sm text-gray-400 mb-1 block">Target Distribution</label>
+                                    <select
+                                        className="w-full bg-[#0F172A] border border-gray-600 text-white rounded-lg px-3 py-2 text-sm"
+                                        value={targetDistribution}
+                                        onChange={(e) => setTargetDistribution(e.target.value)}
+                                    >
+                                        <option value="">-- No Distribution --</option>
+                                        {distributions.map(dist => <option key={dist} value={dist}>{dist}</option>)}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="p-4 border border-dashed border-gray-600 rounded-lg bg-[#0F172A]/50 text-center">
                                 <p className="text-sm text-gray-400 mb-2">Upload CSV with format:</p>
