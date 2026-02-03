@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { getProjectMaterialSummary } from './material-actions'
 import { revalidatePath } from 'next/cache'
 
-import { TASK_MATERIAL_KW_MAPPING } from '@/utils/pow-constants'
+import { TASK_MATERIAL_KW_MAPPING, STATUS_WEIGHT_MAPPING } from '@/utils/pow-constants'
 
 export async function syncPowProgressWithMaterials(projectId: string) {
     const supabase = await createClient()
@@ -143,20 +143,54 @@ export async function syncPowProgressWithMaterials(projectId: string) {
     }
 
     // --- LOGIC 5: Sync Overall Project Progress ---
-    const { data: latestTasks } = await supabase
-        .from('pow_tasks')
-        .select('progress')
-        .eq('project_id', projectId)
+    // --- LOGIC 5: Sync Overall Project Progress (WEIGHTED) ---
+    // Calculate new weighted progress based on STATUS_WEIGHT_MAPPING
+    let currentWeightedScore = 0
+    let usedMaterialNames = new Set<string>()
 
-    if (latestTasks && latestTasks.length > 0) {
-        const total = latestTasks.reduce((acc, t) => acc + (t.progress || 0), 0)
-        const overallProgress = Math.round(total / latestTasks.length)
+    // 5a. Calculate specific categories
+    for (const category of STATUS_WEIGHT_MAPPING) {
+        // @ts-ignore
+        const relevantMaterials = materialSummary.filter(m => category.identifiers.includes(m.name))
 
-        await supabase
-            .from('projects')
-            .update({ progress: overallProgress })
-            .eq('id', projectId)
+        if (relevantMaterials.length > 0) {
+            const totalNeeded = relevantMaterials.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
+            const totalOut = relevantMaterials.reduce((acc, m) => acc + (m.total_out || 0), 0)
+
+            const categoryProgress = totalNeeded > 0 ? (totalOut / totalNeeded) : 0
+            // @ts-ignore
+            const contribution = categoryProgress * category.weight
+
+            currentWeightedScore += contribution
+            relevantMaterials.forEach(m => usedMaterialNames.add(m.name))
+        }
     }
+
+    // 5b. Calculate Remainder (Prorata) - 10%
+    const remainingMaterials = materialSummary.filter(m => !usedMaterialNames.has(m.name))
+    // Logic: If there are ANY remaining materials, calculate their progress.
+    // If there are NO remaining materials, but we have completed the other steps, we assume the "remainder" is also done/not applicable? 
+    // Or do we strictly follow user instruction "SISANYA PRORATA 10%"? 
+    // If no remaining materials exist, we grant the full 10% to ensure max score can reach 100%.
+    if (remainingMaterials.length > 0) {
+        const totalNeeded = remainingMaterials.reduce((acc, m) => acc + (m.quantity_needed || 0), 0)
+        const totalOut = remainingMaterials.reduce((acc, m) => acc + (m.total_out || 0), 0)
+
+        const prorataProgress = totalNeeded > 0 ? (totalOut / totalNeeded) : 0
+        const contribution = prorataProgress * 10
+
+        currentWeightedScore += contribution
+    } else {
+        // No remaining materials found -> Auto-grant the 10% buffer so projects can reach 100%
+        currentWeightedScore += 10
+    }
+
+    const overallProgress = Math.min(100, Math.round(currentWeightedScore))
+
+    await supabase
+        .from('projects')
+        .update({ progress: overallProgress })
+        .eq('id', projectId)
 
     revalidatePath(`/dashboard/projects/${projectId}`)
     return { success: true, updatedCount: updates.length }

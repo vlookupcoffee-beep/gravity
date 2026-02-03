@@ -162,7 +162,7 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         return { success: false, error: 'No valid items found to insert. Check CSV format (Item Code, Quantity)' }
     }
 
-    // 4. Upsert Items (Conflict on item_code)
+    // 4. Upsert Items to OLD table (backward compatibility)
     const { error } = await supabase
         .from('project_items')
         .upsert(itemsToUpsert, { onConflict: 'project_id,item_code' })
@@ -172,7 +172,38 @@ export async function uploadProjectItems(projectId: string, providerId: string, 
         return { success: false, error: error.message }
     }
 
-    // 5. Update Project totals
+    // 5. ALSO populate NEW tables (materials + project_material_requirements)
+    for (const item of itemsToUpsert) {
+        // 5a. Upsert material
+        const { data: material } = await supabase
+            .from('materials')
+            .upsert({
+                name: item.item_code,
+                description: item.description,
+                unit: item.unit,
+                khs_item_code: item.item_code
+            }, { onConflict: 'name' })
+            .select()
+            .single()
+
+        if (material) {
+            // 5b. Upsert requirement
+            await supabase
+                .from('project_material_requirements')
+                .upsert({
+                    project_id: projectId,
+                    material_id: material.id,
+                    quantity_needed: uploadType === 'vendor' ? item.quantity : item.quantity_mandor,
+                    unit_price_vendor: item.unit_price,
+                    unit_price_mandor: item.unit_price_mandor,
+                    item_code: item.item_code,
+                    description: item.description,
+                    distribution_name: ''
+                }, { onConflict: 'project_id,material_id,distribution_name' })
+        }
+    }
+
+    // 6. Update Project totals
     await updateProjectValue(projectId)
     revalidatePath(`/dashboard/projects/${projectId}`)
 
@@ -213,6 +244,33 @@ export async function addProjectItem(projectId: string, khsItem: any, quantity: 
     if (error) {
         console.error('Error adding project item:', error)
         return { success: false, error: error.message }
+    }
+
+    // ALSO populate NEW tables
+    const { data: material } = await supabase
+        .from('materials')
+        .upsert({
+            name: khsItem.item_code,
+            description: khsItem.description,
+            unit: khsItem.unit,
+            khs_item_code: khsItem.item_code
+        }, { onConflict: 'name' })
+        .select()
+        .single()
+
+    if (material) {
+        await supabase
+            .from('project_material_requirements')
+            .upsert({
+                project_id: projectId,
+                material_id: material.id,
+                quantity_needed: uploadType === 'vendor' ? quantity : (existing?.quantity_mandor || 0),
+                unit_price_vendor: itemToUpsert.unit_price,
+                unit_price_mandor: itemToUpsert.unit_price_mandor,
+                item_code: khsItem.item_code,
+                description: khsItem.description,
+                distribution_name: ''
+            }, { onConflict: 'project_id,material_id,distribution_name' })
     }
 
     await updateProjectValue(projectId)

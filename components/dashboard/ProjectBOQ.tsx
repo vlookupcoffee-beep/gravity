@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Search, Trash2, Save, X, Upload, Package, FileSpreadsheet } from 'lucide-react'
-import { getKHSItems, addProjectItem, getProjectItems, deleteProjectItem, deleteAllProjectItems } from '@/app/actions/boq-actions'
+import { getKHSItems, addProjectItem } from '@/app/actions/boq-actions'
 import { getKHSProviders } from '@/app/actions/get-khs-providers'
+import { getProjectBOQUnified, deleteProjectBOQItem, deleteAllProjectBOQ } from '@/app/actions/boq-unified-actions'
 
 interface Props {
     projectId: string
@@ -41,7 +42,7 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
     }, [selectedProvider, searchTerm])
 
     async function loadProjectItems() {
-        const data = await getProjectItems(projectId)
+        const data = await getProjectBOQUnified(projectId)
         setItems(data || [])
     }
 
@@ -77,7 +78,7 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
 
     async function handleDelete(itemId: string) {
         if (!confirm('Are you sure you want to delete this item?')) return
-        await deleteProjectItem(itemId, projectId)
+        await deleteProjectBOQItem(itemId, projectId)
         loadProjectItems()
         onUpdate?.()
     }
@@ -99,7 +100,7 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
             return
         }
 
-        const result = await deleteAllProjectItems(projectId)
+        const result = await deleteAllProjectBOQ(projectId)
 
         if (result.success) {
             alert('✅ Semua item BOQ berhasil dihapus!')
@@ -146,8 +147,9 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
 
-    const totalValueVendor = items.reduce((acc, item) => acc + (Number(item.unit_price || 0) * Number(item.quantity || 0)), 0)
-    const totalValueMandor = items.reduce((acc, item) => acc + (Number(item.unit_price_mandor || 0) * Number(item.quantity_mandor || 0)), 0)
+    // Use pre-calculated totals from DB (more accurate)
+    const totalValueVendor = items.reduce((acc, item) => acc + (Number(item.total_value_vendor || 0)), 0)
+    const totalValueMandor = items.reduce((acc, item) => acc + (Number(item.total_value_mandor || 0)), 0)
 
     return (
         <div className="bg-[#1E293B] rounded-xl border border-gray-700 overflow-hidden">

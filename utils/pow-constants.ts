@@ -58,3 +58,39 @@ export const PROJECT_STATUS_OPTIONS = [
     "SUBMIT ABD V4",
     "ATP"
 ];
+
+/**
+ * Weighted Status Mapping for Overall Progress Calculation
+ */
+export const STATUS_WEIGHT_MAPPING = [
+    {
+        name: "DD-BRNG-HDPE",
+        weight: 30,
+        identifiers: ["DD-BRNG-HDPE-40-1"]
+    },
+    {
+        name: "HDPE",
+        weight: 10,
+        identifiers: ["HDPE-40-33"]
+    },
+    {
+        name: "KABEL",
+        weight: 15,
+        identifiers: ["AC-ADSS-SM-96C", "AC-ADSS-SM-12C", "AC-ADSS-SM-24C", "AC-ADSS-SM-48C", "AC-ADSS-SM-144C"]
+    },
+    {
+        name: "ACCESSORIES",
+        weight: 10,
+        identifiers: ["FS-OF-SM", "CO-OF-SM"]
+    },
+    {
+        name: "PIT_MH",
+        weight: 10,
+        identifiers: ["MH-PIT-120", "MH-PIT-80"]
+    },
+    {
+        name: "TIANG",
+        weight: 15,
+        identifiers: ["NP-7.0-140-3S", "NP-7.0-140-2S", "NP-9.0-140-3S"]
+    }
+];

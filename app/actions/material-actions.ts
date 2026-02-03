@@ -413,6 +413,36 @@ export async function getProjectMaterialSummary(projectId: string, distributionN
         console.error('Error getting project requirements:', reqError)
     }
 
+    // 3. Get Reported Volumes (Work Done from Daily Reports)
+    // We only count reports that are 'approved' (or 'completed'?) - Let's assume 'approved' for now based on typical flows.
+    // If status column is just text, we should check distinct values ideally. 
+    // For now, we fetch ALL and filter in memory if needed, or join.
+    const { data: reportItems, error: reportError } = await supabase
+        .from('daily_report_items')
+        .select(`
+            material_id,
+            quantity_today,
+            daily_reports!inner (
+                project_id,
+                status
+            )
+        `)
+        .eq('daily_reports.project_id', projectId)
+        .eq('daily_reports.status', 'APPROVED')
+
+    if (reportError) {
+        console.error('Error getting report items:', reportError)
+    }
+
+    const reportVolumeMap = new Map<string, number>()
+    if (reportItems) {
+        reportItems.forEach((item: any) => {
+            const mid = item.material_id
+            const qty = item.quantity_today || 0
+            reportVolumeMap.set(mid, (reportVolumeMap.get(mid) || 0) + qty)
+        })
+    }
+
     const summaryMap = new Map<string, { id: string, name: string, unit: string, total_in: number, total_out: number, quantity_needed: number }>()
 
     // Process Transactions
@@ -448,6 +478,20 @@ export async function getProjectMaterialSummary(projectId: string, distributionN
             }
         })
     }
+
+    // Process Reported Volumes (Override or Max)
+    // We update the existing items or add new ones if they only exist in reports (unlikely but possible)
+    reportVolumeMap.forEach((reportedQty, materialId) => {
+        if (summaryMap.has(materialId)) {
+            const current = summaryMap.get(materialId)!
+            // LOGIC: The "Used" amount is the GREATER of StockOut or Reported.
+            // This handles cases where they reported work but didn't do stock out, OR did stock out but didn't report.
+            current.total_out = Math.max(current.total_out, reportedQty)
+        }
+        // Note: If material exists in Report but NOT in Transaction or Requirement, we technically could add it, 
+        // but getProjectMaterialSummary relies on Requirements/Transactions to define the 'Universe' of items usually.
+        // Let's rely on Requirements to define the universe for Progress Calculation.
+    })
 
     // Process Requirements
     if (requirements) {
