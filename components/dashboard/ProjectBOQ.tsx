@@ -214,14 +214,9 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
                                 <tr>
                                     <th className="px-6 py-4">Item Code</th>
                                     <th className="px-6 py-4">Description</th>
-                                    {userRole !== 'mandor' && (
-                                        <>
-                                            <th className="px-6 py-4 text-right bg-green-500/[0.02]">Vendor Price</th>
-                                            <th className="px-6 py-4 text-center bg-green-500/[0.02]">Qty Vendor</th>
-                                        </>
-                                    )}
+                                    <th className="px-6 py-4 text-center">Quantity</th>
+                                    {userRole !== 'mandor' && <th className="px-6 py-4 text-right bg-green-500/[0.02]">Vendor Price</th>}
                                     <th className="px-6 py-4 text-right bg-blue-500/[0.02]">Mandor Price</th>
-                                    <th className="px-6 py-4 text-center bg-blue-500/[0.02]">Qty Mandor</th>
                                     {userRole !== 'mandor' && <th className="px-6 py-4">Actions</th>}
                                 </tr>
                             </thead>
@@ -230,20 +225,11 @@ export default function ProjectBOQ({ projectId, onUpdate, userRole }: Props) {
                                     <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-6 py-4 text-blue-400 font-mono text-[11px] font-black">{item.item_code}</td>
                                         <td className="px-6 py-4 text-gray-300 font-medium">{item.description}</td>
-
-                                        {userRole !== 'mandor' && (
-                                            <>
-                                                <td className="px-6 py-4 text-right text-gray-500 bg-green-500/[0.02] font-mono">{formatCurrency(item.unit_price)}</td>
-                                                <td className="px-6 py-4 text-center text-white font-black bg-green-500/[0.02]">
-                                                    {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity || 0)} <span className="text-[10px] text-gray-500">{item.unit}</span>
-                                                </td>
-                                            </>
-                                        )}
-
-                                        <td className="px-6 py-4 text-right text-gray-500 bg-blue-500/[0.02] font-mono">{formatCurrency(item.unit_price_mandor || 0)}</td>
-                                        <td className="px-6 py-4 text-center text-white font-black bg-blue-500/[0.02]">
-                                            {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity_mandor || 0)} <span className="text-[10px] text-gray-500">{item.unit}</span>
+                                        <td className="px-6 py-4 text-center text-white font-black">
+                                            {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(item.quantity || 0)} <span className="text-[10px] text-gray-500">{item.unit}</span>
                                         </td>
+                                        {userRole !== 'mandor' && <td className="px-6 py-4 text-right text-gray-500 bg-green-500/[0.02] font-mono">{formatCurrency(item.unit_price)}</td>}
+                                        <td className="px-6 py-4 text-right text-gray-500 bg-blue-500/[0.02] font-mono">{formatCurrency(item.unit_price_mandor || 0)}</td>
 
                                         {userRole !== 'mandor' && (
                                             <td className="px-6 py-4">
