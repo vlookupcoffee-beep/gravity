@@ -1,8 +1,7 @@
 
-// Next.js Proxy (v16 convention) 
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
 
     // Check for custom session cookie
