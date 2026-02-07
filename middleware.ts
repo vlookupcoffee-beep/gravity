@@ -1,26 +1,36 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
+    const hasSession = request.cookies.has('gravity_session')
+    const isLoginPath = path.startsWith('/login')
 
-    // Minimal logic to see if it even runs
+    // Root path handling
     if (path === '/') {
-        return NextResponse.next()
+        if (hasSession) {
+            return NextResponse.redirect(new URL('/dashboard', request.url))
+        } else {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
+    }
+
+    // Protect dashboard routes
+    if (path.startsWith('/dashboard')) {
+        if (!hasSession) {
+            const redirectUrl = new URL('/login', request.url)
+            redirectUrl.searchParams.set('redirectTo', path)
+            return NextResponse.redirect(redirectUrl)
+        }
+    }
+
+    // Redirect authenticated users away from login
+    if (isLoginPath && hasSession) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
     return NextResponse.next()
 }
 
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - api (API routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         */
-        '/((?!api|_next/static|_next/image|favicon.ico).*)',
-    ],
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }
