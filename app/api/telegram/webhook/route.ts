@@ -172,7 +172,31 @@ export async function POST(request: NextRequest) {
 
             // 4. INFO MENU
             if (command === 'menu_info') {
-                const infoMsg = `🤖 **Bot Project Gravity**\nVer: 2.0 (Menu Based)\n\nFitur:\n- Monitoring Progres\n- Laporan Harian\n- Manajemen Material\n- Keuangan Proyek (Admin)\n\nDeveloped by ID-NET Team.`;
+                let infoMsg = `🤖 **Bot Project Gravity v2.0**\n`;
+                infoMsg += `Developed by ID-NET Team.\n\n`;
+
+                infoMsg += `🚀 **CARA PENGGUNAAN:**\n`;
+                infoMsg += `1. Klik **List Project** untuk cek status & progres.\n`;
+                infoMsg += `2. Klik **Update Material** untuk cek stok atau input material masuk.\n`;
+                infoMsg += `3. Klik **Finance** (Admin) untuk input pembayaran termin.\n`;
+                infoMsg += `4. Kirim **Laporan Harian** langsung di chat ini (Gunakan format di bawah).\n\n`;
+
+                infoMsg += `📝 **FORMAT LAPORAN HARIAN:**\n`;
+                infoMsg += `\`\`\`\n`;
+                infoMsg += `Site Name : [Nama]\n`;
+                infoMsg += `Man Power : [Jumlah]\n`;
+                infoMsg += `Executor : [Nama]\n`;
+                infoMsg += `Today Activity : [Kegiatan]\n`;
+                infoMsg += `Tomorrow Plan : [Rencana]\n`;
+                infoMsg += `[ItemMaterial] : [In]/[Out]/[Req]\n`;
+                infoMsg += `\`\`\`\n\n`;
+
+                infoMsg += `📥 **FORMAT MATERIAL MASUK (/terima):**\n`;
+                infoMsg += `\`Project : [Nama]\nDistribusi : [Opsional]\nList Material :\n[Item] : [Jumlah]\`\n\n`;
+
+                infoMsg += `💰 **FORMAT PEMBAYARAN (/bayar):**\n`;
+                infoMsg += `\`Project : [Nama]\nMilestone : [Nama Milestone]\``;
+
                 const buttons = [[{ text: "🔙 Kembali", callback_data: `menu_main` }]];
                 await editTelegramMessage(chatId, messageId, infoMsg, { inline_keyboard: buttons });
                 await answerCallbackQuery(callbackQuery.id);
