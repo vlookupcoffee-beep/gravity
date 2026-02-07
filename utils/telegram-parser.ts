@@ -117,3 +117,88 @@ export function parseTelegramMessage(text: string): ParsedReport {
 
     return report;
 }
+
+export interface ParsedMaterialInput {
+    projectName: string | null;
+    items: ParsedItem[];
+    distribution: string | null;
+    date: string | null;
+}
+
+export function parseMaterialInput(text: string): ParsedMaterialInput {
+    const lines = text.split('\n');
+    const input: ParsedMaterialInput = {
+        projectName: null,
+        items: [],
+        distribution: null,
+        date: null
+    };
+
+    let currentSection: 'header' | 'items' = 'header';
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+
+        if (trimmed.toLowerCase().includes('list material :')) {
+            currentSection = 'items';
+            continue;
+        }
+
+        if (currentSection === 'header') {
+            if (trimmed.toLowerCase().startsWith('project')) input.projectName = trimmed.split(':')[1]?.trim() || null;
+            if (trimmed.toLowerCase().startsWith('distribusi')) input.distribution = trimmed.split(':')[1]?.trim() || null;
+            if (trimmed.toLowerCase().startsWith('tanggal')) input.date = trimmed.split(':')[1]?.trim() || null;
+        } else if (currentSection === 'items') {
+            // Format: Material Name : Quantity
+            const parts = trimmed.split(':');
+            if (parts.length >= 2) {
+                const namePart = parts[0].trim();
+                const qtyPart = parseFloat(parts[1].trim());
+
+                if (!isNaN(qtyPart)) {
+                    input.items.push({
+                        rawName: namePart,
+                        scope: 0,
+                        totalDone: qtyPart, // Reuse this field for input quantity
+                        todayDone: 0
+                    });
+                }
+            }
+        }
+    }
+
+    return input;
+}
+
+export interface ParsedPaymentInput {
+    projectName: string | null;
+    milestoneName: string | null;
+    amount: number | null;
+    date: string | null;
+}
+
+export function parsePaymentInput(text: string): ParsedPaymentInput {
+    const lines = text.split('\n');
+    const input: ParsedPaymentInput = {
+        projectName: null,
+        milestoneName: null,
+        amount: null,
+        date: null
+    };
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+
+        if (trimmed.toLowerCase().startsWith('project')) input.projectName = trimmed.split(':')[1]?.trim() || null;
+        if (trimmed.toLowerCase().startsWith('milestone')) input.milestoneName = trimmed.split(':')[1]?.trim() || null;
+        if (trimmed.toLowerCase().startsWith('jumlah')) {
+            const rawAmount = trimmed.split(':')[1]?.trim().replace(/[^0-9]/g, '');
+            input.amount = rawAmount ? parseFloat(rawAmount) : null;
+        }
+        if (trimmed.toLowerCase().startsWith('tanggal')) input.date = trimmed.split(':')[1]?.trim() || null;
+    }
+
+    return input;
+}

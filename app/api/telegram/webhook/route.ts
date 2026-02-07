@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { parseTelegramMessage } from '@/utils/telegram-parser'
+import { parseTelegramMessage, parseMaterialInput, parsePaymentInput } from '@/utils/telegram-parser'
 import { syncPowProgressWithMaterials } from '@/app/actions/pow-sync-actions'
 import { getProjectDetails } from '@/app/actions/get-project-details'
 import { formatProjectReport } from '@/app/actions/telegram-actions'
@@ -121,6 +121,310 @@ export async function POST(request: NextRequest) {
             const data = callbackQuery.data as string
             const requesterId = callbackQuery.from.id
             const isAdmin = authUser?.is_admin || false
+
+            // Callback Logic: approve_lapor:[reportId] (ADMIN ONLY)
+            // --- NEW MENU CALLBACKS ---
+            const command = data.split(':')[0];
+
+            // 1. PROJECT MENU -> List Projects for Status
+            if (command === 'menu_project') {
+                const { data: projects } = await supabase.from('projects').select('id, name').in('id', allowedProjectIds).order('name');
+                if (!projects || projects.length === 0) {
+                    await answerCallbackQuery(callbackQuery.id, "📭 Tidak ada proyek.");
+                    return NextResponse.json({ success: true });
+                }
+                const buttons = projects.map(p => ([{ text: p.name, callback_data: `status_proj:${p.id}` }]));
+                buttons.push([{ text: "🔙 Kembali", callback_data: `menu_main` }]);
+
+                await editTelegramMessage(chatId, messageId, "📂 **Pilih Proyek** untuk melihat status:", { inline_keyboard: buttons });
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // 2. MATERIAL MENU -> Sub-menu
+            if (command === 'menu_material') {
+                const buttons = [
+                    [{ text: "📊 Status Material", callback_data: `mat_stat_menu` }],
+                    [{ text: "📥 Input Material Masuk", callback_data: `mat_in_menu` }],
+                    [{ text: "🔙 Kembali", callback_data: `menu_main` }]
+                ];
+                await editTelegramMessage(chatId, messageId, "📦 **Menu Material**\nPilih opsi:", { inline_keyboard: buttons });
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // 3. FINANCE MENU -> Sub-menu (Admin Only checked in display, but double check here)
+            if (command === 'menu_finance') {
+                if (!isAdmin) {
+                    await answerCallbackQuery(callbackQuery.id, "🚫 Admin Only");
+                    return NextResponse.json({ success: true });
+                }
+                const buttons = [
+                    [{ text: "💸 Input Pembayaran", callback_data: `pay_in_menu` }],
+                    [{ text: "📋 List Status Pembayaran", callback_data: `pay_stat_menu` }],
+                    [{ text: "ℹ️ Informasi Nilai Project", callback_data: `pay_info_menu` }],
+                    [{ text: "🔙 Kembali", callback_data: `menu_main` }]
+                ];
+                await editTelegramMessage(chatId, messageId, "💰 **Menu Finance**\nPilih opsi:", { inline_keyboard: buttons });
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // 4. INFO MENU
+            if (command === 'menu_info') {
+                const infoMsg = `🤖 **Bot Project Gravity**\nVer: 2.0 (Menu Based)\n\nFitur:\n- Monitoring Progres\n- Laporan Harian\n- Manajemen Material\n- Keuangan Proyek (Admin)\n\nDeveloped by ID-NET Team.`;
+                const buttons = [[{ text: "🔙 Kembali", callback_data: `menu_main` }]];
+                await editTelegramMessage(chatId, messageId, infoMsg, { inline_keyboard: buttons });
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // 5. MAIN MENU (Back button)
+            if (command === 'menu_main') {
+                let message = `👋 **Halo!**\n\nSelamat datang di Bot Project *ID-NET*.\nID Anda: \`${userId}\`\n\nSilakan pilih menu di bawah:`;
+                const keyboard = [
+                    [{ text: "📂 List Project", callback_data: `menu_project` }],
+                    [{ text: "📦 Update Material", callback_data: `menu_material` }],
+                    [{ text: "ℹ️ Informasi", callback_data: `menu_info` }]
+                ];
+                if (isAdmin) {
+                    keyboard.splice(2, 0, [{ text: "💰 Finance (Admin)", callback_data: `menu_finance` }]);
+                }
+                await editTelegramMessage(chatId, messageId, message, { inline_keyboard: keyboard });
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // --- SUB-MENU ACTIONS (Select Project Handlers) ---
+
+            // Helper to get project list buttons for a specific target action
+            const sendProjectList = async (title: string, actionPrefix: string) => {
+                const { data: projects } = await supabase.from('projects').select('id, name').in('id', allowedProjectIds).order('name');
+                if (!projects || projects.length === 0) {
+                    await answerCallbackQuery(callbackQuery.id, "📭 Tidak ada proyek.");
+                    return;
+                }
+                const buttons = projects.map(p => ([{ text: p.name, callback_data: `${actionPrefix}:${p.id}` }]));
+                // Determine back button destination
+                let backCmd = 'menu_main';
+                if (actionPrefix.startsWith('mat_')) backCmd = 'menu_material';
+                if (actionPrefix.startsWith('pay_')) backCmd = 'menu_finance';
+
+                buttons.push([{ text: "🔙 Kembali", callback_data: backCmd }]);
+                await editTelegramMessage(chatId, messageId, title, { inline_keyboard: buttons });
+            };
+
+            if (command === 'mat_stat_menu') {
+                await sendProjectList("📊 Pilih Proyek untuk cek **Status Material**:", "status_mat");
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+            if (command === 'mat_in_menu') {
+                await sendProjectList("📥 Pilih Proyek untuk **Input Material Masuk**:", "format_mat_in");
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+            if (command === 'pay_in_menu') {
+                if (!isAdmin) return NextResponse.json({ success: true });
+                await sendProjectList("💸 Pilih Proyek untuk **Input Pembayaran**:", "format_pay_in");
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+            if (command === 'pay_stat_menu') {
+                if (!isAdmin) return NextResponse.json({ success: true });
+                await sendProjectList("📋 Pilih Proyek untuk cek **Status Pembayaran**:", "pay_stat");
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+            if (command === 'pay_info_menu') {
+                if (!isAdmin) return NextResponse.json({ success: true });
+                await sendProjectList("ℹ️ Pilih Proyek untuk cek **Nilai Project**:", "pay_info");
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // --- EXECUTION CALLBACKS ---
+
+            // A. SHOW PROJECT STATUS (Reusing /status logic)
+            if (command === 'status_proj') {
+                const projectId = data.split(':')[1];
+                if (!allowedProjectIds.includes(projectId)) return NextResponse.json({ success: true });
+
+                const projectDetails = await getProjectDetails(projectId);
+                const materialSummary = projectDetails.materialSummary || []
+                let totalNeeded = 0
+                let totalUsed = 0
+                materialSummary.forEach((m: any) => {
+                    totalNeeded += m.quantity_needed || 0
+                    totalUsed += m.total_out || 0
+                })
+                const materialRatio = totalNeeded > 0 ? Math.round((totalUsed / totalNeeded) * 100) : 0
+
+                const reportMessage = await formatProjectReport({
+                    ...projectDetails,
+                    materialRatio
+                })
+
+                // We can't edit message with long text usually, or maybe we can? 
+                // formatProjectReport returns markdown. 
+                // Let's send NEW message to avoid layout issues, or edit if fits.
+                // Usually status report is long. Let's Send New and maybe delete menu? 
+                // Or just Send New.
+                await sendTelegramReply(chatId, reportMessage);
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // B. SHOW MATERIAL STATUS (Reusing /material logic)
+            if (command === 'status_mat') {
+                const projectId = data.split(':')[1];
+                if (!allowedProjectIds.includes(projectId)) return NextResponse.json({ success: true });
+
+                const projectDetails = await getProjectDetails(projectId)
+                const summary = await getProjectMaterialSummary(projectId)
+                const dists = await getAvailableDistributions(projectId) // Needed? Not for overview.
+
+                let msg = `📊 **MATERIAL: ${projectDetails.name}**\n`
+                msg += `📍 **TOTAL PROJECT**\n\n`
+                if (summary.length === 0) msg += "Belum ada data material.\n";
+
+                summary.forEach((m: any) => {
+                    const sisa = m.total_in - m.total_out
+                    const usage = m.quantity_needed > 0 ? Math.min(100, Math.round((m.total_out / m.quantity_needed) * 100)) : 0;
+                    if (usage === 0 && m.total_in === 0) return;
+
+                    msg += `\n🔸 **${m.name}**\n`
+                    msg += `\`KEB: ${m.quantity_needed} | MSK: ${m.total_in} | TPK: ${m.total_out} | SIS: ${sisa}\`\n`
+                })
+
+                // Add buttons for distribution breakdown if needed? 
+                // Simplify for now: Just show total.
+                await sendTelegramReply(chatId, msg);
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // C. GIVE INPUT TEMPLATE (Material Masuk)
+            if (command === 'format_mat_in') {
+                const projectId = data.split(':')[1];
+                const { data: proj } = await supabase.from('projects').select('name').eq('id', projectId).single();
+
+                if (!proj) {
+                    await answerCallbackQuery(callbackQuery.id, "❌ Proyek tidak ditemukan.");
+                    return NextResponse.json({ success: true });
+                }
+
+                let template = `Copy & Isi format ini:\n\n`;
+                template += `\`\`\`\n`;
+                template += `/terima\n`;
+                template += `Project : ${proj.name}\n`;
+                template += `Distribusi : [Gudang/Area1]\n`;
+                template += `Tanggal : [YYYY-MM-DD] (Opsional)\n\n`;
+                template += `List Material :\n`;
+                template += `Kabel 24c : 1000\n`;
+                template += `Tiang 7m : 10\n`;
+                template += `(Tambahkan item lain...)\n`;
+                template += `\`\`\``;
+
+                await sendTelegramReply(chatId, template);
+                await answerCallbackQuery(callbackQuery.id, "📋 Template dikirim!");
+                return NextResponse.json({ success: true });
+            }
+
+            // D. GIVE PAYMENT TEMPLATE
+            if (command === 'format_pay_in') {
+                const projectId = data.split(':')[1];
+                const { data: proj } = await supabase.from('projects').select('name').eq('id', projectId).single();
+
+                if (!proj) {
+                    await answerCallbackQuery(callbackQuery.id, "❌ Proyek tidak ditemukan.");
+                    return NextResponse.json({ success: true });
+                }
+
+                // Fetch pending milestones for hint?
+                const { data: pending } = await supabase.from('project_payment_milestones')
+                    .select('label').eq('project_id', projectId).eq('is_paid', false).limit(5);
+
+                let template = `Copy & Isi format ini:\n\n`;
+                template += `\`\`\`\n`;
+                template += `/bayar\n`;
+                template += `Project : ${proj.name}\n`;
+                template += `Milestone : [Nama Milestone]\n`;
+                template += `Tanggal : [YYYY-MM-DD] (Opsional)\n`;
+                template += `\`\`\`\n`;
+                if (pending && pending.length > 0) {
+                    template += `\n💡 Pending: ${pending.map(m => m.label).join(', ')}`;
+                }
+
+                await sendTelegramReply(chatId, template);
+                await answerCallbackQuery(callbackQuery.id, "📋 Template dikirim!");
+                return NextResponse.json({ success: true });
+            }
+
+            // E. SHOW PAYMENT STATUS
+            if (command === 'pay_stat') {
+                const projectId = data.split(':')[1];
+                if (!isAdmin) return NextResponse.json({ success: true });
+
+                const { data: milestones } = await supabase.from('project_payment_milestones')
+                    .select('*').eq('project_id', projectId).order('created_at');
+
+                const { data: proj } = await supabase.from('projects').select('name').eq('id', projectId).single();
+
+                if (!proj) {
+                    await answerCallbackQuery(callbackQuery.id, "❌ Proyek tidak ditemukan.");
+                    return NextResponse.json({ success: true });
+                }
+
+                if (!milestones || milestones.length === 0) {
+                    await sendTelegramReply(chatId, `📭 Belum ada data pembayaran untuk *${proj.name}*.`);
+                    return NextResponse.json({ success: true });
+                }
+
+                let msg = `💰 **STATUS PEMBAYARAN**\nProyek: *${proj.name}*\n\n`;
+                milestones.forEach(m => {
+                    const status = m.is_paid ? '✅ LUNAS' : '⏳ BELUM';
+                    const date = m.paid_at ? `(${new Date(m.paid_at).toLocaleDateString()}): ` : '';
+                    const amt = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(m.amount);
+                    msg += `• **${m.label}** (${m.percentage}%)\n   ${status} - ${amt}\n`;
+                });
+
+                await sendTelegramReply(chatId, msg);
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
+
+            // F. SHOW PROJECT INFO (VALUE)
+            if (command === 'pay_info') {
+                const projectId = data.split(':')[1];
+                if (!isAdmin) return NextResponse.json({ success: true });
+
+                const { data: proj } = await supabase.from('projects').select('name').eq('id', projectId).single();
+
+                if (!proj) {
+                    await answerCallbackQuery(callbackQuery.id, "❌ Proyek tidak ditemukan.");
+                    return NextResponse.json({ success: true });
+                }
+
+                // Calculate total value from milestones
+                const { data: milestones } = await supabase.from('project_payment_milestones')
+                    .select('amount, is_paid').eq('project_id', projectId);
+
+                const totalValue = milestones?.reduce((acc, m) => acc + m.amount, 0) || 0;
+                const paidValue = milestones?.filter(m => m.is_paid).reduce((acc, m) => acc + m.amount, 0) || 0;
+                const remaining = totalValue - paidValue;
+
+                const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+
+                let msg = `ℹ️ **INFO NILAI PROYEK**\nProyek: *${proj.name}*\n\n`;
+                msg += `💵 Total Nilai: *${fmt(totalValue)}*\n`;
+                msg += `✅ Terbayar: *${fmt(paidValue)}*\n`;
+                msg += `⏳ Sisa: *${fmt(remaining)}*`;
+
+                await sendTelegramReply(chatId, msg);
+                await answerCallbackQuery(callbackQuery.id);
+                return NextResponse.json({ success: true });
+            }
 
             // Callback Logic: approve_lapor:[reportId] (ADMIN ONLY)
             if (data.startsWith('approve_lapor:')) {
@@ -490,60 +794,141 @@ export async function POST(request: NextRequest) {
         }
         // text, chatId, userId are already extracted at the top
 
-        // Case: /start command - Show Telegram ID & Help
+        // Case: /start command - Show Main Menu
         if (text.startsWith('/start')) {
-            let startMessage = `👋 **Halo!**\n\n`
-            startMessage += `ID Telegram Anda adalah: \`${userId}\`\n\n`
-
-            if (isAuthorized) {
-                startMessage += `✅ Anda terdaftar sebagai pengguna **resmi**.\n`
-                startMessage += `📊 Anda memiliki akses ke **${allowedProjectIds.length} proyek**.\n\n`
-
-                startMessage += `🚀 **PERINTAH UTAMA:**\n`
-                startMessage += `• \`/project\` - Tabel daftar proyek milik Anda.\n`
-                startMessage += `• \`/status [Proyek]\` - Detail progres Proyek.\n`
-                startMessage += `• \`/material [Proyek]\` - Stok material & distribusi.\n`
-                startMessage += `• \`/lapor\` - Pilih proyek dan dapatkan format laporan.\n`
-                startMessage += `• \`/lapor [Proyek]\` - Langsung ambil format laporan proyek.\n\n`
-
-                startMessage += `📝 **FORMAT LAPOR SINGKAT:**\n`
-                startMessage += `(Salin, isi, lalu kirim kembali ke bot)\n`
-                startMessage += `\`\`\`\n`
-                startMessage += `/lapor\n`
-                startMessage += `Site Name : [Nama Proyek]\n`
-                startMessage += `Man Power : [Jumlah]\n`
-                startMessage += `Executor : [Nama]\n`
-                startMessage += `Waspang : [Nama]\n`
-                startMessage += `Today Activity : [Kegiatan]\n`
-                startMessage += `Tomorrow Plan : [Rencana]\n\n`
-                startMessage += `[Material] : [HariIni]/[Total]/[Scope]\n`
-                startMessage += `\`\`\`\n\n`
-
-                startMessage += `✨ **FITUR BARU: APPROVE & MILESTONE**\n`
-                startMessage += `Saat Admin menyetujui laporan:\n`
-                startMessage += `1. Klik tombol **✅ Approve**\n`
-                startMessage += `2. Bot akan menampilkan tombol Milestone (Kick Off, Survey, dll)\n`
-                startMessage += `3. Klik milestone yang selesai untuk tandai 100% secara instan.\n\n`
-
-                startMessage += `🚀 **AUTO-UPDATE PoW (OTOMATIS):**\n`
-                startMessage += `Sistem akan otomatis 100% jika isi *Today Activity* mengandung:\n`
-                startMessage += `• **Kick Off** / **KOM**\n`
-                startMessage += `• **Survey** / **Aanwijzing**\n`
-                startMessage += `• **Ijin** / **Permit** / **Perijinan**\n`
-                startMessage += `• **DRM** / **Design Review**\n`
-                startMessage += `• **ABD** / **Submit ABD**\n`
-                startMessage += `• **ATP** / **BAST**\n\n`
-                startMessage += `📦 *Material & Delivery juga otomatis terupdate dari laporan.*`
-
-                await sendTelegramReply(chatId, startMessage)
-            } else {
-                startMessage += `⚠️ Anda **belum terdaftar** sebagai pengguna resmi.`
-                await sendTelegramReply(chatId, startMessage, {
+            if (!isAuthorized) {
+                await sendTelegramReply(chatId, `🚫 **Akses Belum Aktif.**\nID \`${userId}\` belum terdaftar. Minta akses ke admin.`, {
                     inline_keyboard: [[{ text: "🙋‍♂️ Minta Akses", callback_data: `request_access:${userId}` }]]
                 })
+                return NextResponse.json({ success: true })
             }
 
-            return NextResponse.json({ success: true }, { status: 200 })
+            let message = `👋 **Halo!**\n\nSelamat datang di Bot Project *ID-NET*.\nID Anda: \`${userId}\`\n\nSilakan pilih menu di bawah:`;
+
+            const keyboard = [
+                [{ text: "📂 List Project", callback_data: `menu_project` }],
+                [{ text: "📦 Update Material", callback_data: `menu_material` }],
+                [{ text: "ℹ️ Informasi", callback_data: `menu_info` }]
+            ];
+
+            if (authUser?.is_admin) {
+                keyboard.splice(2, 0, [{ text: "💰 Finance (Admin)", callback_data: `menu_finance` }]);
+            }
+
+            await sendTelegramReply(chatId, message, { inline_keyboard: keyboard });
+            return NextResponse.json({ success: true })
+        }
+
+        // --- NEW INPUT HANDLERS ---
+
+        if (text.startsWith('/terima')) {
+            const input = parseMaterialInput(text);
+
+            if (!input.projectName || input.items.length === 0) {
+                await sendTelegramReply(chatId, "⚠️ **Format Salah.**\nGunakan menu *Update Material* -> *Input Material Masuk* untuk mendapatkan format yang benar.");
+                return NextResponse.json({ success: true })
+            }
+
+            // Find Project
+            const { data: projects } = await supabase.from('projects').select('id, name').ilike('name', `%${input.projectName}%`).limit(1);
+            if (!projects || projects.length === 0) {
+                await sendTelegramReply(chatId, `❌ Proyek *${input.projectName}* tidak ditemukan.`);
+                return NextResponse.json({ success: true })
+            }
+            const projectId = projects[0].id;
+
+            if (!allowedProjectIds.includes(projectId)) {
+                await sendTelegramReply(chatId, "🚫 Anda tidak memiliki akses ke proyek ini.");
+                return NextResponse.json({ success: true })
+            }
+
+            // Process Items
+            let successCount = 0;
+            const errors = [];
+            for (const item of input.items) {
+                const { data: mats } = await supabase.from('materials').select('id, current_stock').ilike('name', `%${item.rawName}%`).limit(1);
+                if (mats && mats.length > 0) {
+                    const matId = mats[0].id;
+                    const { error: txError } = await supabase.from('material_transactions').insert({
+                        project_id: projectId,
+                        material_id: matId,
+                        quantity: item.totalDone, // reusing field
+                        transaction_type: 'IN',
+                        distribution_name: input.distribution ? input.distribution.toUpperCase() : null,
+                        notes: `Via Telegram: ${input.date || 'Today'}`,
+                        created_by: userId
+                    });
+
+                    if (!txError) {
+                        // Update Stock
+                        const newStock = (mats[0].current_stock || 0) + item.totalDone;
+                        await supabase.from('materials').update({ current_stock: newStock }).eq('id', matId);
+                        successCount++;
+                    } else {
+                        errors.push(`${item.rawName}: DB Error`);
+                    }
+                } else {
+                    errors.push(`${item.rawName}: Material tidak ditemukan`);
+                }
+            }
+
+            await sendTelegramReply(chatId, `✅ **Input Material Berhasil!**\n\n📦 ${successCount} item tercatat masuk ke *${projects[0].name}*.\n${errors.length > 0 ? `⚠️ Gagal: ${errors.join(', ')}` : ''}`);
+            return NextResponse.json({ success: true })
+        }
+
+        if (text.startsWith('/bayar')) {
+            if (!authUser?.is_admin) {
+                await sendTelegramReply(chatId, "🚫 Perintah ini hanya untuk Admin.");
+                return NextResponse.json({ success: true })
+            }
+
+            const input = parsePaymentInput(text);
+
+            if (!input.projectName || !input.milestoneName) {
+                await sendTelegramReply(chatId, "⚠️ **Format Salah.**\nGunakan menu *Finance* -> *Input Pembayaran* untuk format yang benar.");
+                return NextResponse.json({ success: true })
+            }
+
+            // Find Project
+            const { data: projects } = await supabase.from('projects').select('id, name').ilike('name', `%${input.projectName}%`).limit(1);
+            if (!projects || projects.length === 0) {
+                await sendTelegramReply(chatId, `❌ Proyek *${input.projectName}* tidak ditemukan.`);
+                return NextResponse.json({ success: true })
+            }
+            const projectId = projects[0].id;
+
+            // Find Milestone
+            const { data: milestones } = await supabase.from('project_payment_milestones')
+                .select('id, label, amount, is_paid')
+                .eq('project_id', projectId)
+                .ilike('label', `%${input.milestoneName}%`)
+                .limit(1);
+
+            if (!milestones || milestones.length === 0) {
+                await sendTelegramReply(chatId, `❌ Milestone *${input.milestoneName}* tidak ditemukan di proyek ini.`);
+                return NextResponse.json({ success: true })
+            }
+
+            const ms = milestones[0];
+            if (ms.is_paid) {
+                await sendTelegramReply(chatId, `⚠️ Milestone ini sudah berstatus **LUNAS** sebelumnya.`);
+                return NextResponse.json({ success: true })
+            }
+
+            // Update
+            await supabase.from('project_payment_milestones').update({
+                is_paid: true,
+                paid_at: new Date().toISOString()
+            }).eq('id', ms.id);
+
+            // Also record as expense if OUT
+            // (Logic handled in actions usually, but we do it here directly or valid?)
+            // Let's keep it simple: just update paid status. 
+            // Ideally we should use the action `updateMilestonePayment` if possible, but importing server actions in route handler can be tricky regarding context.
+            // We'll trust direct DB update for now.
+
+            await sendTelegramReply(chatId, `✅ **Pembayaran Tercatat!**\n\n💰 *${ms.label}* pada proyek *${projects[0].name}* telah ditandai LUNAS.`);
+            return NextResponse.json({ success: true })
         }
 
         // Block unauthorized users from other commands
