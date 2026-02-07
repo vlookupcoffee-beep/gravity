@@ -341,11 +341,16 @@ export async function POST(request: NextRequest) {
                 // Fetch real requirements for this project
                 const { data: requirements } = await supabase
                     .from('project_material_requirements')
-                    .select('*, materials(name)')
+                    .select('quantity_needed, materials(name)')
                     .eq('project_id', projectId);
 
-                // Group by material name to avoid duplicates
-                const uniqueMats = Array.from(new Set(requirements?.map(r => r.materials?.name).filter(Boolean)));
+                // Group by material name to avoid duplicates (handling potential array or object from Supabase join)
+                const uniqueMats = Array.from(new Set(
+                    requirements?.map((r: any) => {
+                        const mat = r.materials;
+                        return Array.isArray(mat) ? mat[0]?.name : mat?.name;
+                    }).filter(Boolean)
+                )) as string[];
 
                 let template = `Copy & Isi format ini:\n\n`;
                 template += `\`\`\`\n`;
