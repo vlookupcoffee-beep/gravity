@@ -338,6 +338,15 @@ export async function POST(request: NextRequest) {
                     return NextResponse.json({ success: true });
                 }
 
+                // Fetch real requirements for this project
+                const { data: requirements } = await supabase
+                    .from('project_material_requirements')
+                    .select('*, materials(name)')
+                    .eq('project_id', projectId);
+
+                // Group by material name to avoid duplicates
+                const uniqueMats = Array.from(new Set(requirements?.map(r => r.materials?.name).filter(Boolean)));
+
                 let template = `Copy & Isi format ini:\n\n`;
                 template += `\`\`\`\n`;
                 template += `/terima\n`;
@@ -345,9 +354,16 @@ export async function POST(request: NextRequest) {
                 template += `Distribusi : [Gudang/Area1]\n`;
                 template += `Tanggal : [YYYY-MM-DD] (Opsional)\n\n`;
                 template += `List Material :\n`;
-                template += `Kabel 24c : 1000\n`;
-                template += `Tiang 7m : 10\n`;
-                template += `(Tambahkan item lain...)\n`;
+
+                if (uniqueMats.length > 0) {
+                    uniqueMats.forEach(name => {
+                        template += `${name} : 0\n`;
+                    });
+                } else {
+                    template += `Kabel 24c : 0\n`;
+                    template += `Tiang 7m : 0\n`;
+                    template += `(Ketik material lain sesuai kebutuhan...)\n`;
+                }
                 template += `\`\`\``;
 
                 await sendTelegramReply(chatId, template);
