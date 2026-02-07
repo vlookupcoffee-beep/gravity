@@ -1,33 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-    const path = request.nextUrl.pathname
-    const hasSession = request.cookies.has('gravity_session')
-    const isLoginPath = path.startsWith('/login')
-
-    if (path === '/') {
-        if (hasSession) {
-            return NextResponse.redirect(new URL('/dashboard', request.url))
-        } else {
-            return NextResponse.redirect(new URL('/login', request.url))
-        }
-    }
-
-    if (path.startsWith('/dashboard')) {
-        if (!hasSession) {
-            const redirectUrl = new URL('/login', request.url)
-            redirectUrl.searchParams.set('redirectTo', path)
-            return NextResponse.redirect(redirectUrl)
-        }
-    }
-
-    if (isLoginPath && hasSession) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-
+export function middleware(request: NextRequest) {
     return NextResponse.next()
 }
 
 export const config = {
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+    matcher: '/diagnose-middleware',
 }
