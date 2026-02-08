@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { getProjectMaterialSummary } from './material-actions'
 import { revalidatePath } from 'next/cache'
+import { logAuditAction } from './audit-actions'
 
 import { TASK_MATERIAL_KW_MAPPING, STATUS_WEIGHT_MAPPING } from '@/utils/pow-constants'
 
@@ -185,7 +186,24 @@ export async function syncPowProgressWithMaterials(projectId: string) {
         currentWeightedScore += 10
     }
 
+
     const overallProgress = Math.min(100, Math.round(currentWeightedScore))
+
+    // 6. Record progress history for S-Curve
+    const today = new Date().toISOString().split('T')[0]
+    await supabase.from('project_progress_history').upsert({
+        project_id: projectId,
+        record_date: today,
+        actual_progress: overallProgress
+    }, { onConflict: 'project_id,record_date' })
+
+    // 7. Log the sync action
+    await logAuditAction({
+        tableName: 'projects',
+        recordId: projectId,
+        action: 'SYNC',
+        newData: { progress: overallProgress, tasksUpdated: updates.length }
+    })
 
     await supabase
         .from('projects')
@@ -193,7 +211,7 @@ export async function syncPowProgressWithMaterials(projectId: string) {
         .eq('id', projectId)
 
     revalidatePath(`/dashboard/projects/${projectId}`)
-    return { success: true, updatedCount: updates.length }
+    return { success: true, updatedCount: updates.length, progress: overallProgress }
 }
 
 

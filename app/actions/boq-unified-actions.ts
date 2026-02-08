@@ -76,6 +76,8 @@ export async function getProjectBOQSummary(projectId: string) {
     }
 }
 
+import { logAuditAction } from './audit-actions'
+
 /**
  * Upload BOQ items - NEW VERSION
  * Now populates both materials and project_material_requirements
@@ -97,6 +99,12 @@ export async function uploadProjectBOQUnified(
     try {
         const results = []
         const errors = []
+
+        // Fetch current BOQ for audit if updates are happening
+        const { data: currentBOQ } = await supabase
+            .from('project_material_requirements')
+            .select('*')
+            .eq('project_id', projectId);
 
         for (const item of items) {
             try {
@@ -152,6 +160,20 @@ export async function uploadProjectBOQUnified(
         revalidatePath(`/dashboard/projects/${projectId}`)
         revalidatePath('/dashboard/projects')
 
+
+        // Log the batch upload action
+        await logAuditAction({
+            tableName: 'project_material_requirements',
+            recordId: projectId,
+            action: 'UPDATE',
+            oldData: { itemCount: currentBOQ?.length || 0 },
+            newData: {
+                addedCount: results.length,
+                totalItems: items.length,
+                errors: errors.length > 0 ? errors.length : undefined
+            }
+        });
+
         return {
             success: errors.length === 0,
             count: results.length,
@@ -169,12 +191,14 @@ export async function deleteProjectBOQItem(itemId: string, projectId: string) {
     const supabase = await createClient()
 
     try {
-        // 1. Get item details first to find item_code
+        // 1. Get item details first for logging and backward compatibility
         const { data: itemToDelete } = await supabase
             .from('project_material_requirements')
-            .select('item_code')
+            .select('*')
             .eq('id', itemId)
             .single()
+
+        if (!itemToDelete) return { success: false, error: 'Item not found' }
 
         // 2. Delete from NEW table
         const { error } = await supabase
@@ -183,6 +207,14 @@ export async function deleteProjectBOQItem(itemId: string, projectId: string) {
             .eq('id', itemId)
 
         if (error) throw error
+
+        // 3. Log the deletion
+        await logAuditAction({
+            tableName: 'project_material_requirements',
+            recordId: itemId,
+            action: 'DELETE',
+            oldData: itemToDelete
+        });
 
         // 3. Delete from OLD table (backward compatibility)
         if (itemToDelete?.item_code) {

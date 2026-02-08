@@ -12,6 +12,8 @@ import ProjectPoW from '@/components/dashboard/ProjectPoW'
 import EditProjectModal from '@/components/dashboard/EditProjectModal'
 import DailyReportHistory from '@/components/dashboard/DailyReportHistory'
 import ProjectReportModal from '@/components/dashboard/ProjectReportModal'
+import SCurveChart from '@/components/dashboard/SCurveChart'
+import AuditLogList from '@/components/dashboard/AuditLogList'
 import { HardDrive, Map as MapIcon, FileBarChart } from 'lucide-react'
 import { getCurrentUser } from '@/app/actions/auth-actions'
 
@@ -70,9 +72,9 @@ export default function ProjectDetailPage() {
                             <h1 className="text-xl sm:text-2xl font-black text-white truncate tracking-tight">{project.name}</h1>
                             <div className="flex items-center gap-3 text-[10px] text-gray-500 mt-1 uppercase font-bold tracking-widest">
                                 <span className={`px-2 py-0.5 rounded-md border ${project.status?.toLowerCase().includes('done') || project.status?.toLowerCase().includes('atp') ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                        project.status?.toLowerCase().includes('kick off') ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                                            project.status?.toLowerCase().includes('survey') ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' :
-                                                'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                    project.status?.toLowerCase().includes('kick off') ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                                        project.status?.toLowerCase().includes('survey') ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' :
+                                            'bg-blue-500/10 text-blue-400 border-blue-500/20'
                                     }`}>
                                     {project.status || 'Perencanaan'}
                                 </span>
@@ -126,6 +128,9 @@ export default function ProjectDetailPage() {
                             </p>
                         </div>
 
+                        {/* S-Curve Chart Section */}
+                        <SCurveChart projectId={project.id} />
+
                         {/* Plan of Work Section */}
                         <ProjectPoW projectId={project.id} onUpdate={() => loadProject(project.id)} />
 
@@ -176,6 +181,9 @@ export default function ProjectDetailPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Audit Logs / Activity */}
+                        <AuditLogList projectId={project.id} />
                     </div>
                 </div>
 
